@@ -26,7 +26,13 @@ export class PluginLoaderService implements OnModuleInit {
     private readonly hookManager: HookManager,
     private readonly pluginStorage: PluginStorageService,
   ) {
-    this.pluginsDir = this.configService.get<string>('plugins.dir') ?? './plugins';
+    const configuredDir = this.configService.get<string>('plugins.dir') ?? './plugins';
+    this.pluginsDir = path.resolve(process.cwd(), configuredDir);
+  }
+
+  /** Resolve plugin directory paths so require() works from dist/. */
+  private resolvePluginPath(pluginPath: string): string {
+    return path.isAbsolute(pluginPath) ? pluginPath : path.resolve(process.cwd(), pluginPath);
   }
 
   onModuleInit(): void {
@@ -58,7 +64,7 @@ export class PluginLoaderService implements OnModuleInit {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
 
-      const pluginPath = path.join(dir, entry.name);
+      const pluginPath = this.resolvePluginPath(path.join(dir, entry.name));
       const manifestPath = path.join(pluginPath, 'manifest.json');
 
       if (!fs.existsSync(manifestPath)) {
@@ -82,7 +88,8 @@ export class PluginLoaderService implements OnModuleInit {
   }
 
   loadPlugin(pluginPath: string): PluginInstance {
-    const manifestPath = path.join(pluginPath, 'manifest.json');
+    const resolvedPath = this.resolvePluginPath(pluginPath);
+    const manifestPath = path.join(resolvedPath, 'manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent) as PluginManifest;
 
@@ -104,10 +111,18 @@ export class PluginLoaderService implements OnModuleInit {
       status: PluginStatus.INSTALLED,
       config: storedConfig ?? {},
       instance: null,
+      pluginPath: resolvedPath,
       loadedAt: new Date(),
     };
 
     this.plugins.set(manifest.id, pluginInstance);
+
+    this.pluginStorage.registerLoadedPlugin({
+      id: manifest.id,
+      name: manifest.name,
+      version: manifest.version,
+      type: manifest.type,
+    });
 
     this.logger.log(`Plugin loaded: ${manifest.name} v${manifest.version}`, {
       pluginId: manifest.id,
@@ -134,8 +149,12 @@ export class PluginLoaderService implements OnModuleInit {
 
       // Load the plugin instance if not already loaded
       if (!plugin.instance) {
-        const mainPath = path.join(this.pluginsDir, pluginId, plugin.manifest.main);
-        // Dynamic require for user plugins
+        const basePath = plugin.pluginPath ?? path.join(this.pluginsDir, pluginId);
+        const mainPath = path.join(basePath, plugin.manifest.main);
+        if (!fs.existsSync(mainPath)) {
+          throw new Error(`Plugin main file not found: ${mainPath}`);
+        }
+        // Dynamic require for user plugins (absolute path — relative paths break from dist/)
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pluginModule = require(mainPath) as { default?: new () => IPlugin };
         if (pluginModule.default) {

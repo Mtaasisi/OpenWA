@@ -253,6 +253,11 @@ export interface IWhatsAppEngine {
   // Chats / conversations (WhatsApp client)
   listChats(): Promise<ChatSummary[]>;
   markChatRead(chatId: string): Promise<void>;
+  downloadMessageMedia(waMessageId: string): Promise<{
+    mimetype: string;
+    data: Buffer;
+    filename?: string;
+  } | null>;
 
   // Groups - Basic
   getGroups(): Promise<Group[]>;

@@ -78,20 +78,56 @@ flowchart TB
     WH_DETAIL --> WH_LOGS
 ```
 
-### Navigation Structure
+### Navigation Structure (current)
+
+Main sidebar (top-level routes):
 
 ```
-/                       → Dashboard Home
-/sessions               → Session List
-/sessions/:id           → Session Detail
-/sessions/:id/chat      → Test Chat Interface
-/webhooks               → Webhook List
-/webhooks/:id           → Webhook Detail
-/api-keys               → API Keys Management
-/logs                   → Activity Logs
-/settings               → Settings
-/settings/profile       → Profile Settings
-/settings/appearance    → Theme Settings
+/                       → Dashboard home
+/sessions               → WhatsApp sessions (manage; also in Settings → WhatsApp accounts)
+/inbox                  → Unified inbox
+/products               → Product SKU catalog
+/settings               → Settings hub (see below)
+```
+
+**Not in sidebar** (reachable via Settings, redirects, or deep links):
+
+```
+/webhooks               → Redirects to Settings → Integrations → Webhooks
+/infrastructure         → Redirects to Settings → Integrations → Infrastructure
+/api-keys               → Redirects to Settings → Integrations → API keys (admin)
+/plugins                → Redirects to Settings → Integrations → Plugins (admin)
+/message-tester         → Redirects to Settings → API → Developer tools
+/logs                   → Redirects to Settings → API → Developer tools
+/themes                 → Custom theme editor (gallery in Settings → Appearance)
+```
+
+Dashboard stat cards link to: sessions → Settings WhatsApp accounts, messages → Inbox, webhooks → Integrations, API calls → API & system.
+
+### Settings hub (`/settings?section=…`)
+
+| Section | Query | Contents |
+|---------|-------|----------|
+| Account | `account` | Role, API key, connection |
+| Appearance | `appearance` | Light/dark/system, theme gallery, language |
+| Inbox | `inbox` | Default view, default session, CRM panel, product send defaults |
+| WhatsApp accounts | `sessions` | Embedded Sessions page |
+| Notifications | `notifications` | Webhook alerts, email (server; admin edit) |
+| API & system | `api` | Auto-reconnect, debug, rate limit, docs |
+| Developer tools | `api&tool=message-tester` \| `logs` | Message tester, audit logs |
+| Integrations | `integrations&integration=…` | INAUZWA, webhooks, plugins, infrastructure, API keys |
+| Data & privacy | `data` | Clear local preferences |
+| About | `about` | Version, API base, inbox shortcut |
+
+Footer **appearance** button opens `/settings?section=appearance`.
+
+Legacy paths `/settings/profile` and `/settings/appearance` are not used; use query params instead.
+
+### Navigation Structure (legacy doc — superseded)
+
+```
+/settings/profile       → (use /settings?section=account)
+/settings/appearance    → (use /settings?section=appearance)
 ```
 
 ## 17.3 Wireframes

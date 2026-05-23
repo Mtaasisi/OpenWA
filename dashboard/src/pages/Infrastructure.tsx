@@ -83,7 +83,7 @@ interface RateLimitConfig {
   max: number;
 }
 
-export function Infrastructure() {
+export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
   useDocumentTitle(t('infrastructure.title'));
   const toast = useToast();
@@ -293,8 +293,10 @@ export function Infrastructure() {
   };
 
   return (
-    <div className="infrastructure-page">
-      <PageHeader title={t('infrastructure.title')} subtitle={t('infrastructure.subtitle')} />
+    <div className={`infrastructure-page ${embedded ? 'settings-embed' : ''}`}>
+      {!embedded && (
+        <PageHeader title={t('infrastructure.title')} subtitle={t('infrastructure.subtitle')} />
+      )}
 
       <div className="infra-sections">
         {/* Server Configuration */}

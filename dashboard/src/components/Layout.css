@@ -114,6 +114,23 @@
   flex-direction: column;
   gap: 0.25rem;
   overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+  overscroll-behavior: contain;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
 }
 
 .sidebar.collapsed .sidebar-nav {
@@ -184,7 +201,11 @@
   overflow: hidden;
 }
 
-.sidebar.collapsed .theme-toggle-btn,
+.sidebar-footer__settings {
+  width: 100%;
+}
+
+.sidebar.collapsed .sidebar-footer__settings,
 .sidebar.collapsed .logout-btn {
   justify-content: center;
   padding: 0.6rem;
@@ -229,6 +250,19 @@
   transition:
     margin-left 0.3s ease,
     width 0.3s ease;
+}
+
+.main-content:has(.inbox-page) {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-content:has(.inbox-page) > .inbox-page {
+  flex: 1;
+  min-height: 0;
 }
 
 .main-content.expanded {
@@ -369,4 +403,22 @@
   [dir="rtl"] .main-content.mobile {
     margin-right: 0;
   }
+}
+
+/* ==================== Tactical inbox (full-bleed, no app sidebar) ==================== */
+.layout--tactical-inbox {
+  min-height: 100vh;
+}
+
+.main-content--tactical-inbox {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: none;
+  padding: 0 !important;
+  height: 100vh;
+  overflow: hidden;
+}
+
+[dir="rtl"] .main-content--tactical-inbox {
+  margin-right: 0 !important;
 }

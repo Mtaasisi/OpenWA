@@ -28,7 +28,7 @@ function useWindowSize() {
 
 const columnHelper = createColumnHelper<ApiKey>();
 
-export function ApiKeys() {
+export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
   useDocumentTitle(t('apiKeys.title'));
   const { data: apiKeys = [], isLoading: loading } = useApiKeysQuery();
@@ -202,17 +202,26 @@ export function ApiKeys() {
   }
 
   return (
-    <div className="api-keys-page">
-      <PageHeader
-        title={t('apiKeys.title')}
-        subtitle={t('apiKeys.subtitle')}
-        actions={
-          <button className="btn-primary" onClick={() => setShowModal(true)}>
+    <div className={`api-keys-page ${embedded ? 'settings-embed' : ''}`}>
+      {!embedded ? (
+        <PageHeader
+          title={t('apiKeys.title')}
+          subtitle={t('apiKeys.subtitle')}
+          actions={
+            <button className="btn-primary" onClick={() => setShowModal(true)}>
+              <Plus size={18} />
+              {t('apiKeys.createBtn')}
+            </button>
+          }
+        />
+      ) : (
+        <div className="settings-embed-toolbar">
+          <button className="btn-primary" type="button" onClick={() => setShowModal(true)}>
             <Plus size={18} />
             {t('apiKeys.createBtn')}
           </button>
-        }
-      />
+        </div>
+      )}
 
       {showModal && (
         <div

@@ -17,9 +17,9 @@ interface ApiResponse {
 
 const messageTypes = ['text', 'image', 'video', 'audio', 'document'] as const;
 
-export function MessageTester() {
+export function MessageTester({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
-  useDocumentTitle(t('messageTester.title'));
+  useDocumentTitle(embedded ? t('settings.title') : t('messageTester.title'));
   const { canWrite } = useRole();
   const { data: allSessions = [], isLoading: loadingSessions } = useSessionsQuery();
   const sessions = allSessions.filter(s => s.status === 'ready');
@@ -94,8 +94,13 @@ export function MessageTester() {
   if (loadingSessions) {
     return (
       <div
-        className="message-tester"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}
+        className={`message-tester ${embedded ? 'settings-embed' : ''}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: embedded ? '200px' : '400px',
+        }}
       >
         <Loader2 className="animate-spin" size={32} />
       </div>
@@ -103,8 +108,10 @@ export function MessageTester() {
   }
 
   return (
-    <div className="message-tester">
-      <PageHeader title={t('messageTester.title')} subtitle={t('messageTester.subtitle')} />
+    <div className={`message-tester ${embedded ? 'settings-embed' : ''}`}>
+      {!embedded && (
+        <PageHeader title={t('messageTester.title')} subtitle={t('messageTester.subtitle')} />
+      )}
 
       <div className="tester-panels">
         <div className="compose-panel">

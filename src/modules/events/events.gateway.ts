@@ -42,8 +42,12 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleConnection(client: Socket) {
-    // Extract API key from header or query param
-    const apiKey = (client.handshake.headers['x-api-key'] as string) || (client.handshake.query.apiKey as string);
+    // Extract API key from auth payload, header, or query param
+    const auth = client.handshake.auth as { apiKey?: string } | undefined;
+    const apiKey =
+      auth?.apiKey ||
+      (client.handshake.headers['x-api-key'] as string) ||
+      (client.handshake.query.apiKey as string);
 
     if (!apiKey) {
       this.logger.warn(`Client ${client.id} rejected: No API key provided`);

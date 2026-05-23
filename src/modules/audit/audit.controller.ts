@@ -1,7 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AuditService, AuditQueryOptions } from './audit.service';
 import { AuditLog, AuditAction, AuditSeverity } from './entities/audit-log.entity';
+import { RequireRole } from '../auth/decorators/auth.decorators';
+import { ApiKeyRole } from '../auth/entities/api-key.entity';
 
 @ApiTags('audit')
 @Controller('audit')
@@ -14,6 +16,7 @@ export class AuditController {
   @ApiQuery({ name: 'severity', required: false, enum: AuditSeverity })
   @ApiQuery({ name: 'sessionId', required: false })
   @ApiQuery({ name: 'apiKeyId', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'Search action, session, API key, IP' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
   @ApiResponse({
@@ -25,6 +28,7 @@ export class AuditController {
     @Query('severity') severity?: AuditSeverity,
     @Query('sessionId') sessionId?: string,
     @Query('apiKeyId') apiKeyId?: string,
+    @Query('q') search?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ): Promise<{ data: AuditLog[]; total: number }> {
@@ -33,9 +37,21 @@ export class AuditController {
     if (severity) options.severity = severity;
     if (sessionId) options.sessionId = sessionId;
     if (apiKeyId) options.apiKeyId = apiKeyId;
+    if (search) options.search = search;
     if (limit) options.limit = parseInt(limit, 10);
     if (offset) options.offset = parseInt(offset, 10);
 
     return this.auditService.findAll(options);
+  }
+
+  @Post('cleanup-qr-poll-noise')
+  @RequireRole(ApiKeyRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Delete duplicate session_qr_generated rows from old QR polling (admin)',
+  })
+  async cleanupQrPollNoise(): Promise<{ deleted: number }> {
+    const deleted = await this.auditService.removeQrPollNoise();
+    return { deleted };
   }
 }

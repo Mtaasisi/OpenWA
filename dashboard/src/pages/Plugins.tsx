@@ -17,8 +17,8 @@ import {
   Zap,
   X,
 } from 'lucide-react';
-import { pluginsApi } from '../services/api';
-import type { Plugin } from '../services/api';
+import { pluginsApi, infraApi } from '../services/api';
+import type { InfraStatus, Plugin, PluginConfigPropertySchema, PluginConfigSchema } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import {
   usePluginsQuery,
@@ -48,7 +48,89 @@ interface EngineConfig {
   browserArgs: string;
 }
 
-export default function Plugins() {
+function buildPluginConfigValues(
+  schema: PluginConfigSchema,
+  existing: Record<string, unknown>,
+): Record<string, unknown> {
+  const values: Record<string, unknown> = { ...existing };
+  for (const [key, prop] of Object.entries(schema.properties)) {
+    if (values[key] === undefined && prop.default !== undefined) {
+      values[key] = prop.default;
+    }
+  }
+  return values;
+}
+
+function formatConfigFieldValue(value: unknown, prop: PluginConfigPropertySchema): string {
+  if (prop.type === 'array' && Array.isArray(value)) {
+    return value.map(String).join(', ');
+  }
+  if (value === undefined || value === null) {
+    return '';
+  }
+  return String(value);
+}
+
+function parseConfigFieldValue(raw: string, prop: PluginConfigPropertySchema): unknown {
+  if (prop.type === 'number') {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : prop.default ?? 0;
+  }
+  if (prop.type === 'boolean') {
+    return raw === 'true';
+  }
+  if (prop.type === 'array') {
+    if (!raw.trim()) {
+      return Array.isArray(prop.default) ? prop.default : [];
+    }
+    return raw
+      .split(/[,;\s]+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(s => Number(s))
+      .filter(n => Number.isFinite(n));
+  }
+  return raw;
+}
+
+function hasPluginConfigForm(plugin: Plugin): boolean {
+  return plugin.type === 'engine' || Boolean(plugin.configSchema?.properties);
+}
+
+function getSuggestedApiBaseUrl(infraStatus?: InfraStatus): string {
+  if (infraStatus?.api?.baseUrl) {
+    return infraStatus.api.baseUrl.replace(/\/$/, '');
+  }
+  const env = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (env) {
+    return env.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:2785`;
+  }
+  return 'http://localhost:2785';
+}
+
+function buildExtensionPluginConfig(
+  plugin: Plugin,
+  saved: Record<string, unknown>,
+  hints: { apiBaseUrl: string; apiKey: string },
+): Record<string, unknown> {
+  if (!plugin.configSchema) {
+    return saved;
+  }
+  const merged: Record<string, unknown> = { ...saved };
+  if (!String(merged.apiBaseUrl ?? '').trim()) {
+    merged.apiBaseUrl = hints.apiBaseUrl;
+  }
+  if (!String(merged.apiKey ?? '').trim() && hints.apiKey) {
+    merged.apiKey = hints.apiKey;
+  }
+  return buildPluginConfigValues(plugin.configSchema, merged);
+}
+
+export function Plugins({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
   useDocumentTitle(t('plugins.title'));
   const toast = useToast();
@@ -71,6 +153,10 @@ export default function Plugins() {
     browserArgs: '--no-sandbox --disable-gpu',
   });
   const [savingConfig, setSavingConfig] = useState(false);
+  const [configLoading, setConfigLoading] = useState(false);
+  const [extensionConfig, setExtensionConfig] = useState<Record<string, unknown>>({});
+  const [configAutofillHint, setConfigAutofillHint] = useState(false);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   const refetchAll = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.plugins });
@@ -110,16 +196,79 @@ export default function Plugins() {
     }
   };
 
-  const handleOpenConfig = (plugin: Plugin) => {
+  const handleOpenConfig = async (plugin: Plugin) => {
     setConfigPlugin(plugin);
+    setConfigAutofillHint(false);
     setShowConfigModal(true);
+
+    if (plugin.type === 'engine') {
+      setEngineConfig({
+        type: infraStatus?.engine?.type || 'whatsapp-web.js',
+        headless: infraStatus?.engine?.headless ?? true,
+        sessionDataPath: infraStatus?.engine?.sessionDataPath || './data/sessions',
+        browserArgs: infraStatus?.engine?.browserArgs || '--no-sandbox --disable-gpu',
+      });
+      return;
+    }
+
+    if (!plugin.configSchema?.properties) {
+      setExtensionConfig({});
+      return;
+    }
+
+    const hints = {
+      apiBaseUrl: getSuggestedApiBaseUrl(infraStatus),
+      apiKey: sessionStorage.getItem('openwa_api_key') ?? '',
+    };
+
+    setConfigLoading(true);
+    try {
+      const fresh = await pluginsApi.get(plugin.id);
+      setConfigPlugin(fresh);
+      setExtensionConfig(buildExtensionPluginConfig(fresh, fresh.config ?? {}, hints));
+      setConfigAutofillHint(
+        !String(fresh.config?.apiKey ?? '').trim() && Boolean(hints.apiKey) && !String(fresh.config?.apiBaseUrl ?? '').trim(),
+      );
+    } catch {
+      setExtensionConfig(buildExtensionPluginConfig(plugin, plugin.config ?? {}, hints));
+      setConfigAutofillHint(
+        !String(plugin.config?.apiKey ?? '').trim() && Boolean(hints.apiKey) && !String(plugin.config?.apiBaseUrl ?? '').trim(),
+      );
+    } finally {
+      setConfigLoading(false);
+    }
+  };
+
+  const updateExtensionField = (key: string, raw: string, prop: PluginConfigPropertySchema) => {
+    setExtensionConfig(prev => ({
+      ...prev,
+      [key]: parseConfigFieldValue(raw, prop),
+    }));
   };
 
   const handleSaveConfig = async () => {
+    if (!configPlugin) return;
     setSavingConfig(true);
     try {
-      toast.success(t('plugins.toasts.savedTitle'), t('plugins.toasts.savedDesc'));
+      if (configPlugin.type === 'engine') {
+        await infraApi.saveConfig({
+          engine: {
+            headless: engineConfig.headless,
+            sessionDataPath: engineConfig.sessionDataPath,
+            browserArgs: engineConfig.browserArgs,
+          },
+        });
+        toast.success(t('plugins.toasts.savedTitle'), t('plugins.toasts.savedDesc'));
+        void queryClient.invalidateQueries({ queryKey: queryKeys.infraStatus });
+      } else {
+        const result = await pluginsApi.updateConfig(configPlugin.id, extensionConfig);
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+        toast.success(t('plugins.toasts.savedTitle'), t('plugins.toasts.pluginConfigSavedDesc'));
+      }
       setShowConfigModal(false);
+      refetchAll();
     } catch (err) {
       toast.error(t('plugins.toasts.saveFailed'), err instanceof Error ? err.message : t('common.unknownError'));
     } finally {
@@ -141,17 +290,26 @@ export default function Plugins() {
   const activeEngine = engines.find(e => e.id === currentEngine);
 
   return (
-    <div className="plugins-page">
-      <PageHeader
-        title={t('plugins.title')}
-        subtitle={t('plugins.subtitle')}
-        actions={
-          <button className="btn-secondary" onClick={refetchAll}>
+    <div className={`plugins-page ${embedded ? 'settings-embed' : ''}`}>
+      {embedded ? (
+        <div className="settings-embed-toolbar">
+          <button className="btn-secondary" type="button" onClick={refetchAll}>
             <RefreshCw size={16} />
             {t('plugins.refresh')}
           </button>
-        }
-      />
+        </div>
+      ) : (
+        <PageHeader
+          title={t('plugins.title')}
+          subtitle={t('plugins.subtitle')}
+          actions={
+            <button className="btn-secondary" type="button" onClick={refetchAll}>
+              <RefreshCw size={16} />
+              {t('plugins.refresh')}
+            </button>
+          }
+        />
+      )}
 
       {error && (
         <div className="error-banner">
@@ -178,13 +336,21 @@ export default function Plugins() {
           <div className="engine-features">
             <p className="features-label">{t('plugins.supportedFeatures')}</p>
             <div className="features-list">
-              {activeEngine.features.slice(0, 8).map(feature => (
+              {(showAllFeatures ? activeEngine.features : activeEngine.features.slice(0, 8)).map(feature => (
                 <span key={feature} className="feature-tag">
                   {feature}
                 </span>
               ))}
               {activeEngine.features.length > 8 && (
-                <span className="feature-more">{t('plugins.more', { count: activeEngine.features.length - 8 })}</span>
+                <button
+                  type="button"
+                  className="feature-more"
+                  onClick={() => setShowAllFeatures(v => !v)}
+                >
+                  {showAllFeatures
+                    ? t('plugins.showLess')
+                    : t('plugins.more', { count: activeEngine.features.length - 8 })}
+                </button>
               )}
             </div>
           </div>
@@ -391,6 +557,56 @@ export default function Plugins() {
                     </div>
                   </div>
                 </>
+              ) : configPlugin.configSchema?.properties ? (
+                <>
+                  {configAutofillHint && (
+                    <div className="config-info-banner" style={{ background: 'rgba(37, 211, 102, 0.08)', borderColor: 'rgba(37, 211, 102, 0.25)', color: 'var(--text-secondary)' }}>
+                      <CheckCircle size={16} />
+                      <span>{t('plugins.config.autofillNotice')}</span>
+                    </div>
+                  )}
+                  {configLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                      <Loader2 className="animate-spin" size={28} />
+                    </div>
+                  ) : (
+                <div className="config-form">
+                  {Object.entries(configPlugin.configSchema.properties).map(([key, prop]) => (
+                    <div key={key} className="form-group">
+                      <label htmlFor={`plugin-cfg-${key}`}>{prop.title ?? key}</label>
+                      {prop.description && <small className="form-hint">{prop.description}</small>}
+                      {prop.type === 'boolean' ? (
+                        <label className="toggle-switch" style={{ marginTop: '0.5rem' }}>
+                          <input
+                            id={`plugin-cfg-${key}`}
+                            type="checkbox"
+                            checked={Boolean(extensionConfig[key])}
+                            onChange={e => updateExtensionField(key, String(e.target.checked), prop)}
+                          />
+                          <span className="toggle-slider" />
+                        </label>
+                      ) : prop.type === 'array' ? (
+                        <input
+                          id={`plugin-cfg-${key}`}
+                          type="text"
+                          value={formatConfigFieldValue(extensionConfig[key], prop)}
+                          onChange={e => updateExtensionField(key, e.target.value, prop)}
+                          placeholder={t('plugins.config.arrayPlaceholder')}
+                        />
+                      ) : (
+                        <input
+                          id={`plugin-cfg-${key}`}
+                          type={prop.secret ? 'password' : prop.type === 'number' ? 'number' : 'text'}
+                          value={formatConfigFieldValue(extensionConfig[key], prop)}
+                          onChange={e => updateExtensionField(key, e.target.value, prop)}
+                          autoComplete={prop.secret ? 'off' : undefined}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                  )}
+                </>
               ) : (
                 <div className="no-config">
                   <Settings size={48} style={{ opacity: 0.3 }} />
@@ -403,7 +619,7 @@ export default function Plugins() {
               <button className="btn-secondary" onClick={() => setShowConfigModal(false)}>
                 {t('common.cancel')}
               </button>
-              {configPlugin.type === 'engine' && (
+              {hasPluginConfigForm(configPlugin) && (
                 <button className="btn-primary" onClick={handleSaveConfig} disabled={savingConfig}>
                   {savingConfig ? <Loader2 size={16} className="animate-spin" /> : t('plugins.config.save')}
                 </button>
@@ -415,3 +631,5 @@ export default function Plugins() {
     </div>
   );
 }
+
+export default Plugins;

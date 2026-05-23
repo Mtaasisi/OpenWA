@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import './styles/tactical-overlay.css';
 
 :root {
   --primary: #25d366;
@@ -17,6 +18,9 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --radius: 10px;
+  --bg-main: var(--bg-light);
+  --scroll-thumb: rgba(15, 23, 42, 0.2);
+  --scroll-thumb-hover: rgba(15, 23, 42, 0.32);
 }
 
 /* Dark Mode */
@@ -31,6 +35,9 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --bg-main: #0f172a;
+  --scroll-thumb: rgba(148, 163, 184, 0.28);
+  --scroll-thumb-hover: rgba(148, 163, 184, 0.42);
 }
 
 /* System preference dark mode */
@@ -46,6 +53,9 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --bg-main: #0f172a;
+    --scroll-thumb: rgba(148, 163, 184, 0.28);
+    --scroll-thumb-hover: rgba(148, 163, 184, 0.42);
   }
 }
 
@@ -91,4 +101,39 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Minimal scrollbars — thin, transparent track */
+.scroll-minimal {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+  overscroll-behavior: contain;
+}
+
+.scroll-minimal::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.scroll-minimal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-minimal::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: var(--radius, 999px);
+}
+
+.scroll-minimal::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+.scroll-minimal-x-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+
+.scroll-minimal-x-hidden::-webkit-scrollbar {
+  display: none;
 }

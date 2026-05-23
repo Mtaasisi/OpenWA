@@ -77,6 +77,26 @@ export default () => ({
     },
   },
 
+  // Plugin configuration
+  plugins: {
+    enabled: process.env.PLUGINS_ENABLED !== 'false',
+    dir: process.env.PLUGINS_DIR || './plugins',
+  },
+
+  // INAUZWA inventory import (optional)
+  inauzwa: {
+    databaseUrl: process.env.INAUZWA_DATABASE_URL || process.env.INAUZWA_SUPABASE_DB_URL,
+    apiUrl: process.env.INAUZWA_API_URL,
+    apiToken: process.env.INAUZWA_API_TOKEN,
+    branchId: process.env.INAUZWA_BRANCH_ID,
+    vendorId: process.env.INAUZWA_VENDOR_ID,
+    currency: process.env.INAUZWA_CURRENCY || 'TZS',
+    supabaseUrl: process.env.INAUZWA_SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    supabaseAnonKey: process.env.INAUZWA_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
+    autoSyncEnabled: process.env.INAUZWA_AUTO_SYNC_ENABLED === 'true',
+    autoSyncIntervalMinutes: parseInt(process.env.INAUZWA_AUTO_SYNC_INTERVAL_MINUTES || '60', 10),
+  },
+
   // Storage configuration
   storage: {
     type: process.env.STORAGE_TYPE || 'local',

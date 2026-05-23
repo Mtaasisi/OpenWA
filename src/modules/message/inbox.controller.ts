@@ -1,7 +1,9 @@
-import { Controller, Get, Patch, Body, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Req, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Request } from 'express';
 import { MessageService, ConversationSummary } from './message.service';
+import { InboxCrmService } from './inbox-crm.service';
+import { UpdateInboxThreadCrmDto, InboxThreadCrmDto } from './dto/inbox-thread-crm.dto';
 import { ApiKey, ApiKeyRole } from '../auth/entities/api-key.entity';
 import { RequireRole } from '../auth/decorators/auth.decorators';
 
@@ -10,7 +12,10 @@ type AuthedRequest = Request & { apiKey: ApiKey };
 @ApiTags('inbox')
 @Controller('inbox')
 export class InboxController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly inboxCrmService: InboxCrmService,
+  ) {}
 
   @Get('conversations')
   @ApiOperation({ summary: 'List conversations across all accessible sessions (unified inbox)' })
@@ -24,7 +29,7 @@ export class InboxController {
   }
 
   @Patch('conversations/read')
-  @RequireRole(ApiKeyRole.OPERATOR)
+  @RequireRole(ApiKeyRole.VIEWER)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark a conversation as read' })
   @ApiResponse({ status: 200, description: 'Conversation marked read' })
@@ -33,5 +38,27 @@ export class InboxController {
   ): Promise<{ ok: boolean }> {
     await this.messageService.markConversationRead(body.sessionId, body.chatId);
     return { ok: true };
+  }
+
+  @Get('threads/crm')
+  @ApiOperation({ summary: 'Get CRM metadata for a conversation thread' })
+  @ApiResponse({ status: 200, description: 'Thread CRM record' })
+  getThreadCrm(
+    @Query('sessionId') sessionId: string,
+    @Query('chatId') chatId: string,
+  ): Promise<InboxThreadCrmDto> {
+    return this.inboxCrmService.getThreadCrm(sessionId, chatId);
+  }
+
+  @Patch('threads/crm')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update CRM metadata for a conversation thread' })
+  @ApiResponse({ status: 200, description: 'Updated thread CRM record' })
+  updateThreadCrm(
+    @Body() body: UpdateInboxThreadCrmDto & { sessionId: string; chatId: string },
+  ): Promise<InboxThreadCrmDto> {
+    const { sessionId, chatId, ...dto } = body;
+    return this.inboxCrmService.upsertThreadCrm(sessionId, chatId, dto);
   }
 }

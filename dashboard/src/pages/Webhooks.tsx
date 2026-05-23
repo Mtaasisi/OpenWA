@@ -34,7 +34,7 @@ const availableEventNames = [
   '*',
 ] as const;
 
-export function Webhooks() {
+export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
   useDocumentTitle(t('webhooks.title'));
   const { canWrite } = useRole();
@@ -178,8 +178,8 @@ export function Webhooks() {
   if (loading) {
     return (
       <div
-        className="webhooks-page"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}
+        className={`webhooks-page ${embedded ? 'settings-embed' : ''}`}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: embedded ? '200px' : '400px' }}
       >
         <Loader2 className="animate-spin" size={32} />
       </div>
@@ -187,7 +187,7 @@ export function Webhooks() {
   }
 
   return (
-    <div className="webhooks-page">
+    <div className={`webhooks-page ${embedded ? 'settings-embed' : ''}`}>
       {toast && (
         <div className={`toast ${toast.type}`}>
           {toast.type === 'success' ? <Check size={18} /> : <AlertTriangle size={18} />}
@@ -198,18 +198,29 @@ export function Webhooks() {
         </div>
       )}
 
-      <PageHeader
-        title={t('webhooks.title')}
-        subtitle={t('webhooks.subtitle')}
-        actions={
-          canWrite && (
-            <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
-              <Plus size={18} />
-              {t('webhooks.addWebhook')}
-            </button>
-          )
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          title={t('webhooks.title')}
+          subtitle={t('webhooks.subtitle')}
+          actions={
+            canWrite && (
+              <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+                <Plus size={18} />
+                {t('webhooks.addWebhook')}
+              </button>
+            )
+          }
+        />
+      )}
+
+      {embedded && canWrite && (
+        <div className="settings-embed-toolbar">
+          <button className="btn-primary" type="button" onClick={() => setShowCreateModal(true)}>
+            <Plus size={18} />
+            {t('webhooks.addWebhook')}
+          </button>
+        </div>
+      )}
 
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
@@ -374,6 +385,17 @@ export function Webhooks() {
                 <WebhookIcon size={48} strokeWidth={1} />
                 <h3>{t('webhooks.empty.title')}</h3>
                 <p>{t('webhooks.empty.description')}</p>
+                {canWrite && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ marginTop: '1rem' }}
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    <Plus size={18} />
+                    {t('webhooks.addWebhook')}
+                  </button>
+                )}
               </div>
             ) : (
               webhooks.map(webhook => (

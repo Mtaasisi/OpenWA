@@ -11,13 +11,10 @@ import './App.css';
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Sessions = lazy(() => import('./pages/Sessions').then(m => ({ default: m.Sessions })));
-const Webhooks = lazy(() => import('./pages/Webhooks').then(m => ({ default: m.Webhooks })));
-const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
-const ApiKeys = lazy(() => import('./pages/ApiKeys').then(m => ({ default: m.ApiKeys })));
-const MessageTester = lazy(() => import('./pages/MessageTester').then(m => ({ default: m.MessageTester })));
 const Inbox = lazy(() => import('./pages/Inbox').then(m => ({ default: m.Inbox })));
-const Infrastructure = lazy(() => import('./pages/Infrastructure').then(m => ({ default: m.Infrastructure })));
-const Plugins = lazy(() => import('./pages/Plugins'));
+const Themes = lazy(() => import('./pages/Themes').then(m => ({ default: m.Themes })));
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+const Products = lazy(() => import('./pages/Products').then(m => ({ default: m.Products })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,9 +70,12 @@ function AppContent() {
       method: 'POST',
       headers: { 'X-API-Key': savedKey },
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) return null;
+        return res.json() as Promise<{ valid?: boolean; role?: string }>;
+      })
       .then(data => {
-        if (data.valid && data.role) {
+        if (data?.valid && data.role) {
           setRole(data.role as UserRole);
         }
       })
@@ -102,13 +102,61 @@ function AppContent() {
           <Route path="/" element={<Layout onLogout={handleLogout} userRole={role} />}>
             <Route index element={<Dashboard />} />
             <Route path="sessions" element={<Sessions />} />
-            <Route path="webhooks" element={<Webhooks />} />
-            {role === 'admin' && <Route path="api-keys" element={<ApiKeys />} />}
-            <Route path="logs" element={<Logs />} />
-            <Route path="message-tester" element={<MessageTester />} />
+            <Route
+              path="webhooks"
+              element={
+                <Navigate
+                  to="/settings?section=integrations&integration=webhooks&moved=webhooks"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="infrastructure"
+              element={
+                <Navigate
+                  to="/settings?section=integrations&integration=infrastructure&moved=infrastructure"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="api-keys"
+              element={
+                <Navigate
+                  to="/settings?section=integrations&integration=api-keys&moved=api-keys"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="plugins"
+              element={
+                <Navigate
+                  to="/settings?section=integrations&integration=plugins&moved=plugins"
+                  replace
+                />
+              }
+            />
+            <Route
+              path="logs"
+              element={
+                <Navigate to="/settings?section=api&tool=logs&moved=logs" replace />
+              }
+            />
+            <Route
+              path="message-tester"
+              element={
+                <Navigate
+                  to="/settings?section=api&tool=message-tester&moved=message-tester"
+                  replace
+                />
+              }
+            />
             <Route path="inbox" element={<Inbox />} />
-            <Route path="infrastructure" element={<Infrastructure />} />
-            {role === 'admin' && <Route path="plugins" element={<Plugins />} />}
+            <Route path="products" element={<Products />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="themes" element={<Themes />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

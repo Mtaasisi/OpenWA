@@ -158,6 +158,8 @@ export interface PluginInstance {
   status: PluginStatus;
   config: Record<string, unknown>;
   instance: IPlugin | null;
+  /** Absolute or relative path to the plugin folder (for loading main on enable). */
+  pluginPath?: string;
   error?: string;
   loadedAt?: Date;
   enabledAt?: Date;

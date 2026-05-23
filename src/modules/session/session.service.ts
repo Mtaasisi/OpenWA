@@ -24,6 +24,8 @@ import { createLogger } from '../../common/services/logger.service';
 import { EventsGateway } from '../events/events.gateway';
 import { WebhookService } from '../webhook/webhook.service';
 import { HookManager } from '../../core/hooks';
+import { AuditService } from '../audit/audit.service';
+import { AuditAction } from '../audit/entities/audit-log.entity';
 
 interface ReconnectState {
   attempts: number;
@@ -42,6 +44,10 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
   // Reconnection state per session
   private reconnectStates: Map<string, ReconnectState> = new Map();
 
+  /** Avoid flooding audit logs when WhatsApp refreshes QR frequently */
+  private lastQrAuditAt = new Map<string, number>();
+  private static readonly QR_AUDIT_MIN_INTERVAL_MS = 60_000;
+
   constructor(
     @InjectRepository(Session, 'data')
     private readonly sessionRepository: Repository<Session>,
@@ -53,6 +59,7 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
     private readonly hookManager: HookManager,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -248,7 +255,16 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
       baseDelay: config?.reconnectBaseDelay ?? 5000,
     });
 
-    await this.initializeEngine(id, session);
+    const engine = this.engineFactory.create({
+      sessionId: session.name,
+      proxyUrl: session.proxyUrl || undefined,
+      proxyType: session.proxyType || undefined,
+    });
+    this.engines.set(id, engine);
+    await this.updateStatus(id, SessionStatus.INITIALIZING);
+
+    void this.bootstrapEngine(id, session, engine).catch(() => undefined);
+
     return this.findOne(id);
   }
 
@@ -265,17 +281,57 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
       proxyType: session.proxyType || undefined,
     });
     this.engines.set(id, engine);
-
     await this.updateStatus(id, SessionStatus.INITIALIZING);
+    await this.bootstrapEngine(id, session, engine);
+  }
 
-    await engine.initialize({
-      onQRCode: (): void => {
+  private async bootstrapEngine(id: string, session: Session, engine: IWhatsAppEngine): Promise<void> {
+    try {
+      await engine.initialize(this.buildEngineCallbacks(id, session));
+    } catch (error: unknown) {
+      await this.handleEngineInitFailure(id, engine, error);
+      throw error;
+    }
+  }
+
+  private async handleEngineInitFailure(
+    id: string,
+    engine: IWhatsAppEngine,
+    error: unknown,
+  ): Promise<void> {
+    const message = error instanceof Error ? error.message : String(error);
+    this.logger.error(`Engine initialization failed for session ${id}`, message, {
+      sessionId: id,
+      action: 'engine_init_failed',
+    });
+    try {
+      await engine.destroy();
+    } catch {
+      // ignore cleanup errors
+    }
+    this.engines.delete(id);
+    this.cancelReconnect(id);
+    await this.updateStatus(id, SessionStatus.FAILED);
+  }
+
+  private buildEngineCallbacks(id: string, session: Session): Parameters<IWhatsAppEngine['initialize']>[0] {
+    return {
+      onQRCode: (qrCode: string): void => {
         this.logger.log('QR code generated', {
           sessionId: id,
           action: 'qr_generated',
         });
 
-        // Execute hook for QR event
+        const now = Date.now();
+        const lastQrAudit = this.lastQrAuditAt.get(id) ?? 0;
+        if (now - lastQrAudit >= SessionService.QR_AUDIT_MIN_INTERVAL_MS) {
+          this.lastQrAuditAt.set(id, now);
+          void this.auditService.logInfo(AuditAction.SESSION_QR_GENERATED, {
+            sessionId: id,
+            sessionName: session.name,
+          });
+        }
+
         void this.hookManager.execute(
           'session:qr',
           { sessionId: id },
@@ -285,6 +341,7 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
           },
         );
 
+        this.eventsGateway.emitQRCode(id, qrCode);
         void this.updateStatus(id, SessionStatus.QR_READY);
       },
       onReady: (phone: string, pushName: string): void => {
@@ -312,11 +369,17 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
         }
 
         void this.sessionRepository.update(id, {
-          status: SessionStatus.READY,
           phone,
           pushName,
           connectedAt: new Date(),
           lastActiveAt: new Date(),
+        });
+
+        void this.updateStatus(id, SessionStatus.READY);
+
+        void this.auditService.logInfo(AuditAction.SESSION_CONNECTED, {
+          sessionId: id,
+          sessionName: session.name,
         });
       },
       onMessage: (message): void => {
@@ -374,6 +437,12 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
           action: 'disconnected',
         });
 
+        void this.auditService.logInfo(AuditAction.SESSION_DISCONNECTED, {
+          sessionId: id,
+          sessionName: session.name,
+          metadata: { reason },
+        });
+
         // Execute hook for disconnected event
         void this.hookManager.execute(
           'session:disconnected',
@@ -403,7 +472,7 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
           void this.updateStatus(id, newStatus);
         }
       },
-    });
+    };
   }
 
   private scheduleReconnect(id: string, session: Session): void {
@@ -501,10 +570,10 @@ export class SessionService implements OnModuleDestroy, OnModuleInit {
     const qrCode = engine.getQRCode();
 
     if (!qrCode) {
-      if (session.status === SessionStatus.READY) {
-        throw new BadRequestException('Session is already authenticated, no QR code needed');
-      }
-      throw new BadRequestException('QR code is not ready yet. Please wait...');
+      return {
+        qrCode: '',
+        status: session.status,
+      };
     }
 
     return {

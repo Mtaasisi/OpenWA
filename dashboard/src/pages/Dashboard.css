@@ -57,6 +57,20 @@
   box-shadow: var(--shadow-md);
 }
 
+.stat-card--link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.stat-card--link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .stat-header {
   display: flex;
   justify-content: space-between;

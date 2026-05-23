@@ -1,0 +1,63 @@
+{
+  "id": "auto-reply-after-hours",
+  "name": "After-hours auto-reply",
+  "version": "1.0.0",
+  "type": "extension",
+  "description": "Sends an automatic reply when messages arrive outside configured business hours.",
+  "author": "OpenWA",
+  "main": "index.js",
+  "provides": ["auto-reply", "business-hours"],
+  "hooks": ["message:received"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiBaseUrl": {
+        "type": "string",
+        "title": "API base URL",
+        "description": "OpenWA API URL (same host as dashboard proxy target)",
+        "default": "http://localhost:2785"
+      },
+      "apiKey": {
+        "type": "string",
+        "title": "API key",
+        "description": "Operator or admin API key for sending messages",
+        "secret": true
+      },
+      "message": {
+        "type": "string",
+        "title": "Reply text",
+        "default": "Thanks for your message. We are currently closed and will respond during business hours (Mon–Fri 9:00–17:00)."
+      },
+      "timezone": {
+        "type": "string",
+        "title": "Timezone",
+        "default": "Africa/Dar_es_Salaam"
+      },
+      "startHour": {
+        "type": "number",
+        "title": "Business day starts (hour, 0–23)",
+        "default": 9
+      },
+      "endHour": {
+        "type": "number",
+        "title": "Business day ends (hour, 0–23)",
+        "default": 17
+      },
+      "weekdays": {
+        "type": "array",
+        "title": "Business weekdays (0=Sun … 6=Sat)",
+        "default": [1, 2, 3, 4, 5]
+      },
+      "replyToGroups": {
+        "type": "boolean",
+        "title": "Reply in group chats",
+        "default": false
+      },
+      "cooldownHours": {
+        "type": "number",
+        "title": "Hours between auto-replies per chat",
+        "default": 12
+      }
+    }
+  }
+}

@@ -1,29 +1,21 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Smartphone,
-  Webhook,
-  Key,
-  FileText,
   LogOut,
-  Send,
   Inbox,
-  Server,
-  Puzzle,
-  Sun,
-  Moon,
-  Monitor,
+  Package,
+  Settings as SettingsIcon,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
-  Languages,
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { type UserRole } from '../hooks/useRole';
-import { supportedLanguages, type SupportedLanguage } from '../i18n';
+import type { SupportedLanguage } from '../i18n';
 import './Layout.css';
 
 interface LayoutProps {
@@ -34,22 +26,16 @@ interface LayoutProps {
 const allNavItems = [
   { to: '/', icon: LayoutDashboard, key: 'dashboard' as const, adminOnly: false },
   { to: '/sessions', icon: Smartphone, key: 'sessions' as const, adminOnly: false },
-  { to: '/webhooks', icon: Webhook, key: 'webhooks' as const, adminOnly: false },
-  { to: '/api-keys', icon: Key, key: 'apiKeys' as const, adminOnly: true },
   { to: '/inbox', icon: Inbox, key: 'inbox' as const, adminOnly: false },
-  { to: '/message-tester', icon: Send, key: 'messageTester' as const, adminOnly: false },
-  { to: '/infrastructure', icon: Server, key: 'infrastructure' as const, adminOnly: false },
-  { to: '/plugins', icon: Puzzle, key: 'plugins' as const, adminOnly: true },
-  { to: '/logs', icon: FileText, key: 'logs' as const, adminOnly: false },
+  { to: '/products', icon: Package, key: 'products' as const, adminOnly: false },
 ];
-
-const themeIcons = { light: Sun, dark: Moon, system: Monitor };
 
 export function Layout({ onLogout, userRole }: LayoutProps) {
   const { t, i18n } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
-  const ThemeIcon = themeIcons[theme];
-  const themeLabel = t(`theme.${theme}`);
+  const { activeTheme } = useTheme();
+  const location = useLocation();
+  const isTacticalInbox =
+    location.pathname === '/inbox' && activeTheme.effects === 'tactical';
 
   const navItems = allNavItems.filter(item => !item.adminOnly || userRole === 'admin');
 
@@ -82,17 +68,11 @@ export function Layout({ onLogout, userRole }: LayoutProps) {
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   const currentLang = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0] as SupportedLanguage;
-  const cycleLanguage = () => {
-    const idx = supportedLanguages.indexOf(currentLang);
-    const next = supportedLanguages[(idx + 1) % supportedLanguages.length];
-    void i18n.changeLanguage(next);
-  };
-  const languageLabel = currentLang === 'he' ? 'עברית' : 'EN';
   const isRtl = currentLang === 'he';
 
   return (
-    <div className="layout">
-      {isMobile && (
+    <div className={`layout ${isTacticalInbox ? 'layout--tactical-inbox' : ''}`}>
+      {isMobile && !isTacticalInbox && (
         <header className="mobile-header">
           <button className="mobile-menu-btn" onClick={toggleMobile} aria-label={t('common.expand')}>
             {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -105,8 +85,11 @@ export function Layout({ onLogout, userRole }: LayoutProps) {
         </header>
       )}
 
-      {isMobile && isMobileOpen && <div className="sidebar-overlay" onClick={() => setIsMobileOpen(false)} />}
+      {isMobile && !isTacticalInbox && isMobileOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileOpen(false)} />
+      )}
 
+      {!isTacticalInbox && (
       <aside
         className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''} ${isMobileOpen ? 'open' : ''}`}
       >
@@ -153,31 +136,26 @@ export function Layout({ onLogout, userRole }: LayoutProps) {
         </nav>
 
         <div className="sidebar-footer">
-          <button
-            className="theme-toggle-btn"
-            onClick={cycleLanguage}
-            title={t('common.language')}
-            aria-label={t('common.language')}
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => `nav-item sidebar-footer__settings ${isActive ? 'active' : ''}`}
+            onClick={handleNavClick}
+            title={isCollapsed ? t('nav.settings') : undefined}
           >
-            <Languages size={18} />
-            {!isCollapsed && <span>{languageLabel}</span>}
-          </button>
-          <button
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
-            title={t('theme.label', { value: themeLabel })}
-          >
-            <ThemeIcon size={18} />
-            {!isCollapsed && <span>{themeLabel}</span>}
-          </button>
+            <SettingsIcon size={20} />
+            {!isCollapsed && <span>{t('nav.settings')}</span>}
+          </NavLink>
           <button className="logout-btn" onClick={onLogout} title={isCollapsed ? t('common.logout') : undefined}>
             <LogOut size={20} />
             {!isCollapsed && <span>{t('common.logout')}</span>}
           </button>
         </div>
       </aside>
+      )}
 
-      <main className={`main-content ${isCollapsed ? 'expanded' : ''} ${isMobile ? 'mobile' : ''}`}>
+      <main
+        className={`main-content ${isCollapsed && !isTacticalInbox ? 'expanded' : ''} ${isMobile && !isTacticalInbox ? 'mobile' : ''} ${isTacticalInbox ? 'main-content--tactical-inbox' : ''}`}
+      >
         <Outlet />
       </main>
     </div>

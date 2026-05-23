@@ -7,6 +7,8 @@ import { Message, MessageDirection, MessageStatus } from './entities/message.ent
 import { InboxThreadRead } from './entities/inbox-thread-read.entity';
 import { SessionService } from '../session/session.service';
 import { HookManager } from '../../core/hooks';
+import { StorageService } from '../../common/storage/storage.service';
+import { InboxCrmService } from './inbox-crm.service';
 
 const mockEngineResult = { id: 'wa-msg-1', timestamp: 1706868000 };
 
@@ -35,6 +37,7 @@ describe('MessageService', () => {
   let threadReadRepository: jest.Mocked<Partial<Repository<InboxThreadRead>>>;
   let sessionService: jest.Mocked<Partial<SessionService>>;
   let hookManager: jest.Mocked<Partial<HookManager>>;
+  let storageService: jest.Mocked<Partial<StorageService>>;
   let mockEngine: ReturnType<typeof createMockEngine>;
 
   beforeEach(async () => {
@@ -51,8 +54,14 @@ describe('MessageService', () => {
       create: jest.fn().mockImplementation((x: unknown) => x),
     };
 
+    storageService = {
+      getFile: jest.fn(),
+      putFile: jest.fn().mockResolvedValue(undefined),
+    };
+
     mockEngine = createMockEngine();
     mockEngine.markChatRead = jest.fn().mockResolvedValue(undefined);
+    mockEngine.downloadMessageMedia = jest.fn().mockResolvedValue(null);
 
     sessionService = {
       getEngine: jest.fn().mockReturnValue(mockEngine),
@@ -73,6 +82,11 @@ describe('MessageService', () => {
         { provide: getRepositoryToken(InboxThreadRead, 'data'), useValue: threadReadRepository },
         { provide: SessionService, useValue: sessionService },
         { provide: HookManager, useValue: hookManager },
+        { provide: StorageService, useValue: storageService },
+        {
+          provide: InboxCrmService,
+          useValue: { getCrmMapForSession: jest.fn().mockResolvedValue(new Map()) },
+        },
       ],
     }).compile();
 

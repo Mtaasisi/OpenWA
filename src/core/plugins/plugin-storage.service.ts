@@ -84,12 +84,10 @@ export class PluginStorageService {
   }
 
   setPluginStatus(pluginId: string, status: PluginStatus): void {
-    const entry = this.registry.get(pluginId);
-    if (entry) {
-      entry.status = status;
-      entry.updatedAt = new Date();
-      this.saveRegistry();
-    }
+    const entry = this.ensureEntry(pluginId);
+    entry.status = status;
+    entry.updatedAt = new Date();
+    this.saveRegistry();
   }
 
   // ============================================================================
@@ -102,12 +100,59 @@ export class PluginStorageService {
   }
 
   setPluginConfig(pluginId: string, config: Record<string, unknown>): void {
-    const entry = this.registry.get(pluginId);
-    if (entry) {
-      entry.config = config;
-      entry.updatedAt = new Date();
+    const entry = this.ensureEntry(pluginId);
+    entry.config = config;
+    entry.updatedAt = new Date();
+    this.saveRegistry();
+  }
+
+  registerLoadedPlugin(meta: {
+    id: string;
+    name: string;
+    version: string;
+    type: PluginRegistryEntry['type'];
+    builtIn?: boolean;
+  }): void {
+    const existing = this.registry.get(meta.id);
+    if (existing) {
+      existing.name = meta.name;
+      existing.version = meta.version;
+      existing.type = meta.type;
+      existing.updatedAt = new Date();
       this.saveRegistry();
+      return;
     }
+    this.registry.set(meta.id, {
+      id: meta.id,
+      type: meta.type,
+      name: meta.name,
+      version: meta.version,
+      status: PluginStatus.INSTALLED,
+      config: {},
+      builtIn: meta.builtIn ?? false,
+      installedAt: new Date(),
+      updatedAt: new Date(),
+    });
+    this.saveRegistry();
+  }
+
+  private ensureEntry(pluginId: string): PluginRegistryEntry {
+    let entry = this.registry.get(pluginId);
+    if (!entry) {
+      entry = {
+        id: pluginId,
+        type: 'extension' as PluginRegistryEntry['type'],
+        name: pluginId,
+        version: '0.0.0',
+        status: PluginStatus.INSTALLED,
+        config: {},
+        builtIn: false,
+        installedAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.registry.set(pluginId, entry);
+    }
+    return entry;
   }
 
   // ============================================================================

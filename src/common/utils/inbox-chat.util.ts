@@ -30,6 +30,45 @@ export function shouldPersistMessage(incoming: IncomingMessage): boolean {
   return true;
 }
 
+const MEDIA_MESSAGE_TYPES = new Set(['image', 'sticker', 'video', 'audio', 'ptt', 'document']);
+
+export function isMediaMessageType(type: string): boolean {
+  return MEDIA_MESSAGE_TYPES.has(type);
+}
+
+export function defaultMimetypeForMessageType(type: string): string {
+  switch (type) {
+    case 'image':
+    case 'sticker':
+      return 'image/jpeg';
+    case 'video':
+      return 'video/mp4';
+    case 'audio':
+    case 'ptt':
+      return 'audio/ogg';
+    case 'document':
+      return 'application/octet-stream';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+export function extensionForMimetype(mimetype: string): string {
+  const map: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'video/mp4': 'mp4',
+    'audio/ogg': 'ogg',
+    'audio/mpeg': 'mp3',
+    'application/pdf': 'pdf',
+  };
+  if (map[mimetype]) return map[mimetype];
+  const sub = mimetype.split('/')[1];
+  return sub?.split(';')[0] || 'bin';
+}
+
 export function formatMessagePreview(body: string | null | undefined, type: string): string {
   const text = body?.trim();
   if (text) return text.slice(0, 200);

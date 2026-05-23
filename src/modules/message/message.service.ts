@@ -1,22 +1,36 @@
-import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SessionService } from '../session/session.service';
+import { SessionStatus } from '../session/entities/session.entity';
+import { InboxCrmService } from './inbox-crm.service';
 import { SendTextMessageDto, SendMediaMessageDto, MessageResponseDto } from './dto';
 import { IncomingMessage, MediaInput } from '../../engine/interfaces/whatsapp-engine.interface';
 import { Message, MessageDirection, MessageStatus } from './entities/message.entity';
 import { InboxThreadRead } from './entities/inbox-thread-read.entity';
 import { HookManager } from '../../core/hooks';
+import { StorageService } from '../../common/storage/storage.service';
 import {
   formatMessagePreview,
   isInboxChat,
   shouldPersistMessage,
+  isMediaMessageType,
+  extensionForMimetype,
+  defaultMimetypeForMessageType,
 } from '../../common/utils/inbox-chat.util';
 
 export interface GetMessagesOptions {
   chatId?: string;
   limit?: number;
   offset?: number;
+}
+
+interface MediaFileMeta {
+  mimetype?: string;
+  filename?: string;
+  hasData?: boolean;
+  storagePath?: string;
+  hasMedia?: boolean;
 }
 
 export interface ConversationSummary {
@@ -31,6 +45,10 @@ export interface ConversationSummary {
   messageCount: number;
   unreadCount: number;
   hasUnread: boolean;
+  resolved: boolean;
+  hasFollowUp: boolean;
+  customerName?: string | null;
+  linkedExternalId?: string | null;
 }
 
 @Injectable()
@@ -43,6 +61,8 @@ export class MessageService {
     @Inject(forwardRef(() => SessionService))
     private readonly sessionService: SessionService,
     private readonly hookManager: HookManager,
+    private readonly storageService: StorageService,
+    private readonly inboxCrmService: InboxCrmService,
   ) {}
 
   async sendText(sessionId: string, dto: SendTextMessageDto): Promise<MessageResponseDto> {
@@ -243,24 +263,112 @@ export class MessageService {
   ): Promise<{ messages: Message[]; total: number }> {
     const { chatId, limit = 50, offset = 0 } = options;
 
-    const query = this.messageRepository
+    const baseQuery = this.messageRepository
       .createQueryBuilder('message')
-      .where('message.sessionId = :sessionId', { sessionId })
-      .skip(offset)
-      .take(limit);
+      .where('message.sessionId = :sessionId', { sessionId });
 
     if (chatId) {
-      query.andWhere('message.chatId = :chatId', { chatId });
-      query.orderBy('message.timestamp', 'ASC').addOrderBy('message.createdAt', 'ASC');
-    } else {
-      query.orderBy('message.createdAt', 'DESC');
+      baseQuery.andWhere('message.chatId = :chatId', { chatId });
     }
 
-    const [rows, total] = await query.getManyAndCount();
+    const total = await baseQuery.getCount();
+
+    const query = baseQuery.clone();
+    if (chatId) {
+      query.orderBy('message.timestamp', 'ASC').addOrderBy('message.createdAt', 'ASC');
+      const skip = Math.max(0, total - limit - offset);
+      query.skip(skip).take(limit);
+    } else {
+      query.orderBy('message.createdAt', 'DESC').skip(offset).take(limit);
+    }
+
+    const rows = await query.getMany();
     const messages = rows.filter(
       m => isInboxChat(m.chatId) && !['notification_template', 'e2e_notification', 'gp2', 'protocol'].includes(m.type),
     );
-    return { messages, total: chatId ? messages.length : total };
+    return { messages, total };
+  }
+
+  /**
+   * Load message attachment (cached on disk or downloaded from WhatsApp when session is active).
+   */
+  async getMessageMedia(
+    sessionId: string,
+    messageId: string,
+  ): Promise<{ buffer: Buffer; mimetype: string; filename?: string }> {
+    const message = await this.messageRepository.findOne({
+      where: { id: messageId, sessionId },
+    });
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    const hasMedia =
+      isMediaMessageType(message.type) ||
+      Boolean((message.metadata as { media?: unknown } | null)?.media);
+    if (!hasMedia) {
+      throw new NotFoundException('Message has no media');
+    }
+
+    const meta = (message.metadata as { media?: MediaFileMeta } | null)?.media;
+
+    if (meta?.storagePath) {
+      try {
+        const buffer = await this.storageService.getFile(meta.storagePath);
+        return {
+          buffer,
+          mimetype: meta.mimetype || defaultMimetypeForMessageType(message.type),
+          filename: meta.filename,
+        };
+      } catch {
+        /* re-download below */
+      }
+    }
+
+    if (!message.waMessageId) {
+      throw new NotFoundException('Media not available for this message');
+    }
+
+    const session = await this.sessionService.findOne(sessionId);
+    if (session.status !== SessionStatus.READY) {
+      throw new NotFoundException('Session is not active — start it to load media');
+    }
+
+    const engine = this.sessionService.getEngine(sessionId);
+    if (!engine) {
+      throw new NotFoundException('Session is not active — start it to load media');
+    }
+
+    let downloaded: { mimetype: string; data: Buffer; filename?: string } | null;
+    try {
+      downloaded = await engine.downloadMessageMedia(message.waMessageId);
+    } catch {
+      throw new NotFoundException('Session is not active — start it to load media');
+    }
+    if (!downloaded) {
+      throw new NotFoundException('Could not download media from WhatsApp');
+    }
+
+    const ext = extensionForMimetype(downloaded.mimetype);
+    const storagePath = `inbox/${sessionId}/${messageId}.${ext}`;
+    await this.storageService.putFile(storagePath, downloaded.data);
+
+    message.metadata = {
+      ...(message.metadata ?? {}),
+      media: {
+        mimetype: downloaded.mimetype,
+        filename: downloaded.filename,
+        hasData: true,
+        storagePath,
+      },
+    };
+    await this.messageRepository.save(message);
+
+    return {
+      buffer: downloaded.data,
+      mimetype: downloaded.mimetype,
+      filename: downloaded.filename,
+    };
   }
 
   /**
@@ -325,6 +433,8 @@ export class MessageService {
         messageCount: parseInt(row.messageCount, 10) || 0,
         unreadCount: dbUnread,
         hasUnread: dbUnread > 0,
+        resolved: false,
+        hasFollowUp: false,
       });
     }
 
@@ -351,9 +461,26 @@ export class MessageService {
       }
     }
 
-    return Array.from(byChatId.values())
+    const summaries = Array.from(byChatId.values())
       .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
       .slice(0, limit);
+
+    const crmMap = await this.inboxCrmService.getCrmMapForSession(
+      sessionId,
+      summaries.map(s => s.chatId),
+    );
+    for (const summary of summaries) {
+      const crm = crmMap.get(summary.chatId);
+      summary.resolved = crm?.resolved ?? false;
+      summary.hasFollowUp = Boolean(crm?.followUpAt && crm.followUpAt > new Date());
+      summary.customerName = crm?.customerName ?? null;
+      summary.linkedExternalId = crm?.linkedExternalId ?? null;
+      if (summary.customerName?.trim()) {
+        summary.displayName = summary.customerName.trim();
+      }
+    }
+
+    return summaries;
   }
 
   private fallbackChatLabel(chatId: string): string {
@@ -525,6 +652,7 @@ export class MessageService {
         mimetype: incoming.media.mimetype,
         filename: incoming.media.filename,
         hasData: !!incoming.media.data,
+        hasMedia: true,
       };
     }
     return meta;

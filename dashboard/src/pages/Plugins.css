@@ -82,6 +82,11 @@
 }
 
 .feature-more {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
   padding: 0.25rem 0.5rem;
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -432,6 +437,14 @@
 
 .config-form .form-group {
   margin-bottom: 1.25rem;
+}
+
+.config-form .form-group .form-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: -0.25rem 0 0.5rem;
+  line-height: 1.4;
 }
 
 .config-form .form-group label {

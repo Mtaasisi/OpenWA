@@ -1,0 +1,628 @@
+/**
+ * Tactical Overlay v4.2 — HUD chrome when data-theme-id="tactical-overlay"
+ * Matches OmniCRM mock: cyan telemetry, black panels, mono type, scanline grid.
+ */
+
+[data-theme-id='tactical-overlay'] {
+  --tactical-border: rgba(34, 211, 238, 0.15);
+  --tactical-border-strong: rgba(34, 211, 238, 0.4);
+  --tactical-glow: rgba(34, 211, 238, 0.05);
+  --font-data: 'JetBrains Mono', ui-monospace, monospace;
+  --font-body: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] body {
+  font-family: var(--font-data);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+}
+
+[data-theme-id='tactical-overlay'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.18;
+  background: linear-gradient(to bottom, transparent 50%, rgba(34, 211, 238, 0.02) 50%);
+  background-size: 100% 4px;
+}
+
+[data-theme-id='tactical-overlay'] .layout {
+  background: var(--bg-light);
+}
+
+[data-theme-id='tactical-overlay'] .main-content {
+  position: relative;
+}
+
+[data-theme-id='tactical-overlay'] .main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 0;
+}
+
+[data-theme-id='tactical-overlay'] .main-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Sidebar ── */
+[data-theme-id='tactical-overlay'] .sidebar {
+  background: #000;
+  border-color: var(--border);
+}
+
+[data-theme-id='tactical-overlay'] .sidebar-header,
+[data-theme-id='tactical-overlay'] .mobile-header {
+  background: #000;
+  border-color: var(--border);
+}
+
+[data-theme-id='tactical-overlay'] .brand-name,
+[data-theme-id='tactical-overlay'] .page-header h1 {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .nav-item {
+  border-radius: 0;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+
+[data-theme-id='tactical-overlay'] .nav-item:hover {
+  border-color: var(--tactical-border);
+  background: rgba(34, 211, 238, 0.04);
+}
+
+[data-theme-id='tactical-overlay'] .nav-item.active {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: var(--tactical-border-strong);
+  box-shadow: inset 0 0 10px var(--tactical-glow);
+  color: var(--primary);
+}
+
+[data-theme-id='tactical-overlay'] .theme-toggle-btn,
+[data-theme-id='tactical-overlay'] .logout-btn {
+  border-radius: 0;
+  border: 1px solid var(--tactical-border);
+  text-transform: uppercase;
+  font-size: 0.625rem;
+}
+
+/* ── Scrollbars ── */
+[data-theme-id='tactical-overlay'] ::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+[data-theme-id='tactical-overlay'] ::-webkit-scrollbar-track {
+  background: #02060c;
+}
+
+[data-theme-id='tactical-overlay'] ::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.2);
+  border-radius: 0;
+}
+
+/* ── Buttons & inputs ── */
+[data-theme-id='tactical-overlay'] button,
+[data-theme-id='tactical-overlay'] .themes-btn,
+[data-theme-id='tactical-overlay'] .inbox-filter-chip,
+[data-theme-id='tactical-overlay'] .inbox-view-toggle button,
+[data-theme-id='tactical-overlay'] .inbox-crm-tab,
+[data-theme-id='tactical-overlay'] .themes-appearance-btn {
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] input,
+[data-theme-id='tactical-overlay'] select,
+[data-theme-id='tactical-overlay'] textarea {
+  border-radius: 0;
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+}
+
+[data-theme-id='tactical-overlay'] input:focus,
+[data-theme-id='tactical-overlay'] select:focus,
+[data-theme-id='tactical-overlay'] textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: inset 0 0 8px var(--tactical-glow);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-filter-chip.active,
+[data-theme-id='tactical-overlay'] .inbox-view-toggle button.active,
+[data-theme-id='tactical-overlay'] .inbox-crm-tab.active,
+[data-theme-id='tactical-overlay'] .themes-appearance-btn.active,
+[data-theme-id='tactical-overlay'] .themes-btn--primary,
+[data-theme-id='tactical-overlay'] .inbox-send-btn:not(.inbox-send-btn--disabled) {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-start-btn,
+[data-theme-id='tactical-overlay'] .inbox-link-btn {
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* ── Cards & panels ── */
+[data-theme-id='tactical-overlay'] .stat-card,
+[data-theme-id='tactical-overlay'] .theme-card,
+[data-theme-id='tactical-overlay'] .inbox-conversations,
+[data-theme-id='tactical-overlay'] .inbox-thread,
+[data-theme-id='tactical-overlay'] .inbox-crm-panel,
+[data-theme-id='tactical-overlay'] .inbox-crm-drawer {
+  border-radius: 0;
+  box-shadow: none;
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-conversations {
+  background: #03070d;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-thread {
+  background: var(--bg-light);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-crm-panel,
+[data-theme-id='tactical-overlay'] .inbox-crm-drawer {
+  background: #03070d;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-conversation-item.active {
+  background: rgba(34, 211, 238, 0.06);
+  border-left: 2px solid var(--primary);
+  box-shadow: inset 0 0 12px var(--tactical-glow);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-avatar,
+[data-theme-id='tactical-overlay'] .inbox-crm-avatar {
+  border-radius: 0;
+  border: 1px solid var(--tactical-border-strong);
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-session-badge {
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-status-chip {
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  border: 1px solid var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-status-chip--needs_reply {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-status-chip--resolved {
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--primary);
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-unread-badge {
+  border-radius: 0;
+  background: var(--error);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.5625rem;
+  border: 1px solid #000;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-chat-header,
+[data-theme-id='tactical-overlay'] .inbox-toolbar,
+[data-theme-id='tactical-overlay'] .inbox-conversations-header,
+[data-theme-id='tactical-overlay'] .inbox-list-toolbar,
+[data-theme-id='tactical-overlay'] .inbox-crm-header {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  border-color: var(--border);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-chat-header-title,
+[data-theme-id='tactical-overlay'] .inbox-crm-header-name,
+[data-theme-id='tactical-overlay'] .inbox-conversation-name {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-session-status {
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  border: 1px solid var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-session-status--ready {
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--primary);
+}
+
+/* ── Message bubbles (HUD frames) ── */
+[data-theme-id='tactical-overlay'] .inbox-bubble {
+  border-radius: 0;
+  border: 1px solid var(--tactical-border);
+  background: rgba(34, 211, 238, 0.02);
+  box-shadow: inset 0 0 10px var(--tactical-glow);
+  position: relative;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble.outgoing {
+  border-color: rgba(8, 145, 178, 0.35);
+  background: rgba(8, 145, 178, 0.04);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble-wrap.incoming::before,
+[data-theme-id='tactical-overlay'] .inbox-bubble-wrap.outgoing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(34, 211, 238, 0.35);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble-wrap.incoming::before {
+  left: 0;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble-wrap.outgoing::after {
+  right: 0;
+  background: rgba(8, 145, 178, 0.35);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble-body {
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-bubble-meta {
+  text-transform: uppercase;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-date-separator {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.5625rem;
+  color: var(--primary);
+  animation: tactical-blink 2s ease-in-out infinite;
+}
+
+@keyframes tactical-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+[data-theme-id='tactical-overlay'] .inbox-load-older-btn {
+  border-radius: 0;
+  border: 1px solid var(--tactical-border);
+  background: rgba(34, 211, 238, 0.05);
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-composer textarea {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-composer textarea::placeholder {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-composer {
+  border-radius: 0;
+  border: 1px solid var(--tactical-border);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-composer-hint {
+  text-transform: uppercase;
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-disconnected-banner {
+  border-radius: 0;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-crm-details dt {
+  color: var(--primary);
+  letter-spacing: 0.2em;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-crm-tab.active {
+  border-bottom: 1px solid var(--primary);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-crm-action-btn--primary {
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.2);
+}
+
+[data-theme-id='tactical-overlay'] .inbox-hint--ok {
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .inbox-sync-indicator {
+  color: var(--primary-hover);
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+}
+
+[data-theme-id='tactical-overlay'] .page-header__subtitle {
+  font-family: var(--font-data);
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+[data-theme-id='tactical-overlay'] .theme-card.is-active {
+  box-shadow: 0 0 0 1px var(--primary), 0 0 20px rgba(34, 211, 238, 0.15);
+}
+
+/* ── Products catalog ── */
+[data-theme-id='tactical-overlay'] .products-sync-card,
+[data-theme-id='tactical-overlay'] .products-sync-setup,
+[data-theme-id='tactical-overlay'] .product-card,
+[data-theme-id='tactical-overlay'] .products-toolbar .search-input,
+[data-theme-id='tactical-overlay'] .products-empty,
+[data-theme-id='tactical-overlay'] .products-delete-dialog {
+  border-radius: 0;
+  border-color: var(--tactical-border);
+  box-shadow: none;
+}
+
+[data-theme-id='tactical-overlay'] .products-sync-card h3,
+[data-theme-id='tactical-overlay'] .products-sync-setup__title {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+[data-theme-id='tactical-overlay'] .product-card__title {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme-id='tactical-overlay'] .products-page .btn-primary {
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.2);
+}
+
+[data-theme-id='tactical-overlay'] .products-page .btn-secondary,
+[data-theme-id='tactical-overlay'] .products-page .btn-danger {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .product-card__stock.in-stock {
+  color: var(--success);
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+[data-theme-id='tactical-overlay'] .product-editor.product-editor-drawer {
+  border-radius: 0;
+  border-color: var(--tactical-border);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.35);
+  background: #03070d;
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__header,
+[data-theme-id='tactical-overlay'] .product-editor__footer {
+  background: #02060c;
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__header h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__footer .btn-primary {
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__icon-btn {
+  border-radius: 0;
+  padding: 0;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  background: #02060c;
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__icon-btn:hover {
+  border-color: var(--tactical-border-strong);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__icon-btn--edit {
+  color: var(--primary);
+  border-color: var(--tactical-border-strong);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.12);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__icon-btn--edit:hover {
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.22);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__icon-btn--close:hover {
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+[data-theme-id='tactical-overlay'] .product-details__visual,
+[data-theme-id='tactical-overlay'] .product-details__meta {
+  border-radius: 0;
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .product-details__category,
+[data-theme-id='tactical-overlay'] .product-details__status {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__tabs {
+  background: #02060c;
+  border-color: var(--tactical-border);
+}
+
+[data-theme-id='tactical-overlay'] .product-editor__tab {
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+
+[data-theme-id='tactical-overlay'] .products-table-shell,
+[data-theme-id='tactical-overlay'] .products-stat-card,
+[data-theme-id='tactical-overlay'] .variant-group-card {
+  border-radius: 0;
+  border-color: var(--tactical-border);
+}
+
+/* Products page still used RetailPOS pill radii — square them to match tactical grid */
+[data-theme-id='tactical-overlay'] .products-filter-chip,
+[data-theme-id='tactical-overlay'] .products-search,
+[data-theme-id='tactical-overlay'] .products-table__thumb,
+[data-theme-id='tactical-overlay'] .products-table__category,
+[data-theme-id='tactical-overlay'] .products-table__stock-bar,
+[data-theme-id='tactical-overlay'] .products-table__stock-fill,
+[data-theme-id='tactical-overlay'] .products-table__stock-badge,
+[data-theme-id='tactical-overlay'] .products-table__row-delete,
+[data-theme-id='tactical-overlay'] .products-sync-setup__badge,
+[data-theme-id='tactical-overlay'] .inbox-products-picker__item,
+[data-theme-id='tactical-overlay'] .inbox-products-picker__variant-panel,
+[data-theme-id='tactical-overlay'] .inbox-products-picker__variant-item {
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .products-filter-chip:has(input:checked) {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+}
+
+[data-theme-id='tactical-overlay'] .products-stat-card__label,
+[data-theme-id='tactical-overlay'] .variant-units-table thead {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Global square chrome (all pages / overlays / toasts) ──
+   Page CSS ships RetailPOS radii; tactical HUD uses square panels everywhere. */
+html[data-theme-id='tactical-overlay'] *,
+html[data-theme-id='tactical-overlay'] *::before,
+html[data-theme-id='tactical-overlay'] *::after {
+  border-radius: 0 !important;
+}
+
+/* Settings active nav — match inbox/products filter chips */
+[data-theme-id='tactical-overlay'] .settings-nav__btn.active {
+  background: var(--primary);
+  color: #000;
+  border: 1px solid var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .settings-badge,
+[data-theme-id='tactical-overlay'] .status-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border: 1px solid var(--tactical-border);
+}
+
+/* Page shells — square borders + HUD typography */
+[data-theme-id='tactical-overlay'] :is(
+  .page-header,
+  [class*='-card'],
+  [class*='-shell'],
+  [class*='-panel'],
+  [class*='-dialog'],
+  [class*='-table-container']
+) {
+  border-color: var(--tactical-border);
+  box-shadow: none;
+}

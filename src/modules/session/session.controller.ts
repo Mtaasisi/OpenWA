@@ -1,13 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Request } from 'express';
 import { SessionService } from './session.service';
 import { MessageService } from '../message/message.service';
 import { CreateSessionDto, SessionResponseDto, QRCodeResponseDto } from './dto';
 import { Session } from './entities/session.entity';
-import { AuditService } from '../audit/audit.service';
+import { AuditService, AuditContext } from '../audit/audit.service';
 import { AuditAction } from '../audit/entities/audit-log.entity';
 import { RequireRole } from '../auth/decorators/auth.decorators';
-import { ApiKeyRole } from '../auth/entities/api-key.entity';
+import { ApiKey, ApiKeyRole } from '../auth/entities/api-key.entity';
+
+type AuthedRequest = Request & { apiKey?: ApiKey };
 
 @ApiTags('sessions')
 @Controller('sessions')
@@ -17,6 +20,19 @@ export class SessionController {
     private readonly auditService: AuditService,
     private readonly messageService: MessageService,
   ) {}
+
+  private auditContext(req: AuthedRequest, extra: Partial<AuditContext> = {}): AuditContext {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip =
+      typeof forwarded === 'string'
+        ? forwarded.split(',')[0].trim()
+        : req.ip || req.socket?.remoteAddress || undefined;
+    return {
+      apiKey: req.apiKey,
+      ipAddress: ip,
+      ...extra,
+    };
+  }
 
   // Transform entity to DTO with lastActive field name
   private transformSession(session: Session): SessionResponseDto {
@@ -42,12 +58,12 @@ export class SessionController {
     type: SessionResponseDto,
   })
   @ApiResponse({ status: 409, description: 'Session name already exists' })
-  async create(@Body() dto: CreateSessionDto): Promise<Session> {
+  async create(@Body() dto: CreateSessionDto, @Req() req: AuthedRequest): Promise<Session> {
     const session = await this.sessionService.create(dto);
-    await this.auditService.logInfo(AuditAction.SESSION_CREATED, {
-      sessionId: session.id,
-      sessionName: session.name,
-    });
+    await this.auditService.logInfo(
+      AuditAction.SESSION_CREATED,
+      this.auditContext(req, { sessionId: session.id, sessionName: session.name }),
+    );
     return session;
   }
 
@@ -84,13 +100,13 @@ export class SessionController {
   @ApiParam({ name: 'id', description: 'Session ID' })
   @ApiResponse({ status: 204, description: 'Session deleted' })
   @ApiResponse({ status: 404, description: 'Session not found' })
-  async delete(@Param('id') id: string): Promise<void> {
+  async delete(@Param('id') id: string, @Req() req: AuthedRequest): Promise<void> {
     const session = await this.sessionService.findOne(id);
     await this.sessionService.delete(id);
-    await this.auditService.logInfo(AuditAction.SESSION_DELETED, {
-      sessionId: id,
-      sessionName: session.name,
-    });
+    await this.auditService.logInfo(
+      AuditAction.SESSION_DELETED,
+      this.auditContext(req, { sessionId: id, sessionName: session.name }),
+    );
   }
 
   @Post(':id/start')
@@ -106,12 +122,12 @@ export class SessionController {
   })
   @ApiResponse({ status: 400, description: 'Session already started' })
   @ApiResponse({ status: 404, description: 'Session not found' })
-  async start(@Param('id') id: string): Promise<SessionResponseDto> {
+  async start(@Param('id') id: string, @Req() req: AuthedRequest): Promise<SessionResponseDto> {
     const session = await this.sessionService.start(id);
-    await this.auditService.logInfo(AuditAction.SESSION_STARTED, {
-      sessionId: session.id,
-      sessionName: session.name,
-    });
+    await this.auditService.logInfo(
+      AuditAction.SESSION_STARTED,
+      this.auditContext(req, { sessionId: session.id, sessionName: session.name }),
+    );
     return this.transformSession(session);
   }
 
@@ -125,12 +141,12 @@ export class SessionController {
     type: SessionResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Session not found' })
-  async stop(@Param('id') id: string): Promise<SessionResponseDto> {
+  async stop(@Param('id') id: string, @Req() req: AuthedRequest): Promise<SessionResponseDto> {
     const session = await this.sessionService.stop(id);
-    await this.auditService.logInfo(AuditAction.SESSION_STOPPED, {
-      sessionId: session.id,
-      sessionName: session.name,
-    });
+    await this.auditService.logInfo(
+      AuditAction.SESSION_STOPPED,
+      this.auditContext(req, { sessionId: session.id, sessionName: session.name }),
+    );
     return this.transformSession(session);
   }
 
@@ -143,7 +159,7 @@ export class SessionController {
   }
 
   @Patch(':id/conversations/:chatId/read')
-  @RequireRole(ApiKeyRole.OPERATOR)
+  @RequireRole(ApiKeyRole.VIEWER)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark a conversation as read (dashboard + WhatsApp sendSeen)' })
   @ApiParam({ name: 'id', description: 'Session ID' })
@@ -177,11 +193,7 @@ export class SessionController {
   })
   @ApiResponse({ status: 404, description: 'Session not found' })
   async getQRCode(@Param('id') id: string): Promise<QRCodeResponseDto> {
-    const qrCode = await this.sessionService.getQRCode(id);
-    await this.auditService.logInfo(AuditAction.SESSION_QR_GENERATED, {
-      sessionId: id,
-    });
-    return qrCode;
+    return this.sessionService.getQRCode(id);
   }
 
   @Get(':id/groups')

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   sessionApi,
+  statsApi,
   inboxApi,
   messageApi,
   webhookApi,
@@ -8,8 +9,10 @@ import {
   auditApi,
   infraApi,
   pluginsApi,
+  settingsApi,
   type Webhook,
   type InboxMessage,
+  type Settings,
 } from '../services/api';
 
 const INBOX_SKIP_MESSAGE_TYPES = new Set([
@@ -22,15 +25,22 @@ const INBOX_SKIP_MESSAGE_TYPES = new Set([
 /** Poll interval when session is connected (ms). */
 export const INBOX_POLL_INTERVAL_MS = 5_000;
 
+/** Poll interval when no session is ready (stored history refresh). */
+export const INBOX_SLOW_POLL_INTERVAL_MS = 30_000;
+
+export const INBOX_MESSAGE_PAGE_SIZE = 100;
+
 // ── Query Keys ────────────────────────────────────────────────────────
 
 export const queryKeys = {
   sessions: ['sessions'] as const,
   sessionStats: ['sessions', 'stats'] as const,
+  overviewStats: ['stats', 'overview'] as const,
   sessionGroups: (sessionId: string) => ['sessions', sessionId, 'groups'] as const,
   webhooks: ['webhooks'] as const,
   apiKeys: ['apiKeys'] as const,
-  logs: (params: { severity?: string; page: number; limit: number }) =>
+  settings: ['settings'] as const,
+  logs: (params: { severity?: string; action?: string; q?: string; page: number; limit: number }) =>
     ['logs', params] as const,
   infraStatus: ['infra', 'status'] as const,
   plugins: ['plugins'] as const,
@@ -57,6 +67,15 @@ export function useSessionStatsQuery() {
     queryKey: queryKeys.sessionStats,
     queryFn: sessionApi.getStats,
     staleTime: 30_000,
+  });
+}
+
+export function useOverviewStatsQuery() {
+  return useQuery({
+    queryKey: queryKeys.overviewStats,
+    queryFn: statsApi.getOverview,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
 }
 
@@ -147,13 +166,27 @@ export function useUnifiedInboxConversationsQuery(
 export function useInboxMessagesQuery(
   sessionId: string,
   chatId: string | null,
-  options?: { enabled?: boolean; refetchInterval?: number | false },
+  options?: {
+    enabled?: boolean;
+    refetchInterval?: number | false;
+    limit?: number;
+    olderOffset?: number;
+  },
 ) {
+  const limit = options?.limit ?? INBOX_MESSAGE_PAGE_SIZE;
+  const olderOffset = options?.olderOffset ?? 0;
   return useQuery({
-    queryKey: queryKeys.inboxMessages(sessionId, chatId ?? ''),
-    queryFn: async (): Promise<InboxMessage[]> => {
-      const result = await messageApi.list(sessionId, { chatId: chatId!, limit: 100 });
-      return result.messages.filter(m => !INBOX_SKIP_MESSAGE_TYPES.has(m.type));
+    queryKey: [...queryKeys.inboxMessages(sessionId, chatId ?? ''), limit, olderOffset],
+    queryFn: async (): Promise<{ messages: InboxMessage[]; total: number }> => {
+      const result = await messageApi.list(sessionId, {
+        chatId: chatId!,
+        limit,
+        offset: olderOffset,
+      });
+      return {
+        messages: result.messages.filter(m => !INBOX_SKIP_MESSAGE_TYPES.has(m.type)),
+        total: result.total,
+      };
     },
     enabled: !!sessionId && !!chatId && (options?.enabled ?? true),
     staleTime: 1_000,
@@ -250,12 +283,20 @@ export function useRevokeApiKeyMutation() {
 
 // ── Logs Queries ──────────────────────────────────────────────────────
 
-export function useLogsQuery(params: { severity?: string; page: number; limit: number }) {
+export function useLogsQuery(params: {
+  severity?: string;
+  action?: string;
+  q?: string;
+  page: number;
+  limit: number;
+}) {
   return useQuery({
     queryKey: queryKeys.logs(params),
     queryFn: () =>
       auditApi.list({
         severity: params.severity,
+        action: params.action,
+        q: params.q,
         limit: params.limit,
         offset: (params.page - 1) * params.limit,
       }),
@@ -296,5 +337,26 @@ export function useCurrentEngineQuery() {
     queryKey: queryKeys.currentEngine,
     queryFn: pluginsApi.getCurrentEngine,
     staleTime: 60_000,
+  });
+}
+
+// ── Settings ──────────────────────────────────────────────────────────
+
+export function useSettingsQuery(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.settings,
+    queryFn: settingsApi.get,
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateSettingsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: Partial<Settings>) => settingsApi.update(patch),
+    onSuccess: data => {
+      queryClient.setQueryData(queryKeys.settings, data);
+    },
   });
 }

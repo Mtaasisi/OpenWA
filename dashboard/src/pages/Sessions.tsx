@@ -1,17 +1,19 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Plus, QrCode, RefreshCw, Trash2, Eye, Loader2, Play, Square, X, Search, Filter } from 'lucide-react';
 import { sessionApi, type Session } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useToast } from '../components/Toast';
-import { useWebSocket } from '../hooks/useWebSocket';
 import { useRole } from '../hooks/useRole';
+import { useSessionStartFlow } from '../hooks/useSessionStartFlow';
+import { SessionQrModal } from '../components/SessionQrModal';
+import { isSessionConnecting, isSessionRunning, canCallSessionStart } from '../lib/session-status';
 import { PageHeader } from '../components/PageHeader';
 import './Sessions.css';
 
-export function Sessions() {
+export function Sessions({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
-  useDocumentTitle(t('sessions.title'));
+  useDocumentTitle(embedded ? t('settings.title') : t('sessions.title'));
   const toast = useToast();
   const { canWrite } = useRole();
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -20,13 +22,29 @@ export function Sessions() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newSessionName, setNewSessionName] = useState('');
   const [creating, setCreating] = useState(false);
-  const [qrData, setQrData] = useState<{ sessionId: string; sessionName: string; qrCode: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  useWebSocket({
+  const fetchSessions = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await sessionApi.list();
+      setSessions(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('sessions.create.errorDefault'));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  const { starting, qrModal, closeQrModal, startSessionFlow } = useSessionStartFlow({
+    onReady: () => {
+      toast.success(t('sessions.toasts.readyTitle'), t('sessions.toasts.readyDesc'));
+      void fetchSessions();
+    },
+    onError: msg => setError(msg),
     onSessionStatus: useCallback(
       (event: { sessionId: string; status: string }) => {
         setSessions(prev =>
@@ -42,60 +60,16 @@ export function Sessions() {
     ),
   });
 
-  const fetchSessions = async () => {
-    try {
-      setLoading(true);
-      const data = await sessionApi.list();
-      setSessions(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('sessions.create.errorDefault'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const qrRefreshInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const currentSessionName = useRef<string>('');
-
-  const fetchQR = useCallback(async (sessionId: string) => {
-    try {
-      const qr = await sessionApi.getQR(sessionId);
-      setQrData({ sessionId, sessionName: currentSessionName.current, qrCode: qr.qrCode });
-      if (qr.status === 'ready') {
-        setQrData(null);
-        currentSessionName.current = '';
-        fetchSessions();
-      }
-    } catch {
-      setQrData(null);
-      currentSessionName.current = '';
-      fetchSessions();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (qrData) {
-      currentSessionName.current = qrData.sessionName;
-      qrRefreshInterval.current = setInterval(() => {
-        fetchQR(qrData.sessionId);
-      }, 5000);
-    }
-    return () => {
-      if (qrRefreshInterval.current) clearInterval(qrRefreshInterval.current);
-    };
-  }, [qrData, fetchQR]);
+    void fetchSessions();
+  }, [fetchSessions]);
 
   const handleCreate = async () => {
     if (!newSessionName.trim()) return;
     try {
       setCreating(true);
       const newSession = await sessionApi.create(newSessionName);
-      setSessions([...sessions, newSession]);
+      setSessions(prev => [...prev, newSession]);
       setNewSessionName('');
       setShowCreateModal(false);
       toast.success(t('sessions.create.successTitle'), t('sessions.create.successDesc', { name: newSession.name }));
@@ -112,7 +86,7 @@ export function Sessions() {
     const session = sessions.find(s => s.id === id);
     try {
       await sessionApi.delete(id);
-      setSessions(sessions.filter(s => s.id !== id));
+      setSessions(prev => prev.filter(s => s.id !== id));
       toast.success(
         t('sessions.delete.successTitle'),
         session ? t('sessions.delete.successDescNamed', { name: session.name }) : t('sessions.delete.successDescGeneric'),
@@ -126,47 +100,25 @@ export function Sessions() {
     }
   };
 
-  const handleStart = async (id: string) => {
-    const session = sessions.find(s => s.id === id);
-    if (session && ['initializing', 'connecting', 'qr_ready'].includes(session.status)) {
-      handleShowQR(id);
-      return;
-    }
-
-    try {
-      await sessionApi.start(id);
-      setSessions(sessions.map(s => (s.id === id ? { ...s, status: 'connecting' } : s)));
-      await fetchSessions();
-      handleShowQR(id);
-    } catch (err) {
+  const handleStart = (id: string) => {
+    void startSessionFlow(id, sessions).catch(err => {
       console.error('Failed to start:', err);
-      await fetchSessions();
-      if (err instanceof Error && err.message.includes('already started')) {
-        handleShowQR(id);
-      }
-    }
+      void fetchSessions();
+    });
   };
 
-  const handleShowQR = async (id: string) => {
-    const session = sessions.find(s => s.id === id);
-    const sessionName = session?.name || '';
-    try {
-      const qr = await sessionApi.getQR(id);
-      setQrData({ sessionId: id, sessionName, qrCode: qr.qrCode });
-    } catch (err) {
-      console.error('Failed to get QR:', err);
-      setError(t('sessions.qr.unavailable'));
-    }
+  const handleShowQR = (id: string) => {
+    void startSessionFlow(id, sessions);
   };
 
   const handleStop = async (id: string) => {
     try {
       await sessionApi.stop(id);
-      setSessions(sessions.map(s => (s.id === id ? { ...s, status: 'disconnected' } : s)));
-      if (qrData?.sessionId === id) setQrData(null);
+      setSessions(prev => prev.map(s => (s.id === id ? { ...s, status: 'disconnected' } : s)));
+      if (qrModal?.sessionId === id) closeQrModal();
     } catch (err) {
       console.error('Failed to stop:', err);
-      fetchSessions();
+      void fetchSessions();
     }
   };
 
@@ -187,16 +139,21 @@ export function Sessions() {
     const matchesStatus =
       statusFilter === 'all' ||
       (statusFilter === 'active' && s.status === 'ready') ||
-      (statusFilter === 'inactive' && ['created', 'idle', 'disconnected'].includes(s.status)) ||
-      (statusFilter === 'connecting' && ['initializing', 'connecting', 'qr_ready'].includes(s.status));
+      (statusFilter === 'inactive' && ['created', 'disconnected', 'failed'].includes(s.status)) ||
+      (statusFilter === 'connecting' && isSessionConnecting(s.status));
     return matchesSearch && matchesStatus;
   });
 
   if (loading) {
     return (
       <div
-        className="sessions-page"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}
+        className={`sessions-page ${embedded ? 'settings-embed' : ''}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: embedded ? '200px' : '400px',
+        }}
       >
         <Loader2 className="animate-spin" size={32} />
       </div>
@@ -204,19 +161,34 @@ export function Sessions() {
   }
 
   return (
-    <div className="sessions-page">
-      <PageHeader
-        title={t('sessions.title')}
-        subtitle={t('sessions.subtitle')}
-        actions={
-          canWrite && (
-            <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+    <div className={`sessions-page ${embedded ? 'settings-embed' : ''}`}>
+      {!embedded ? (
+        <PageHeader
+          title={t('sessions.title')}
+          subtitle={t('sessions.subtitle')}
+          actions={
+            canWrite && (
+              <button type="button" className="btn-primary" onClick={() => setShowCreateModal(true)}>
+                <Plus size={18} />
+                {t('sessions.newSession')}
+              </button>
+            )
+          }
+        />
+      ) : (
+        canWrite && (
+          <div className="settings-embed-toolbar">
+            <button type="button" className="btn-primary" onClick={() => setShowCreateModal(true)}>
               <Plus size={18} />
               {t('sessions.newSession')}
             </button>
-          )
-        }
-      />
+            <button type="button" className="btn-secondary" onClick={() => void fetchSessions()}>
+              <RefreshCw size={16} />
+              {t('common.refresh')}
+            </button>
+          </div>
+        )
+      )}
 
       <div className="filters-bar">
         <div className="search-input">
@@ -259,7 +231,7 @@ export function Sessions() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('sessions.create.title')}</h2>
-              <button className="btn-icon" onClick={() => setShowCreateModal(false)}>
+              <button type="button" className="btn-icon" onClick={() => setShowCreateModal(false)}>
                 <X size={20} />
               </button>
             </div>
@@ -292,10 +264,11 @@ export function Sessions() {
                 )}
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowCreateModal(false)}>
+              <button type="button" className="btn-secondary" onClick={() => setShowCreateModal(false)}>
                 {t('common.cancel')}
               </button>
               <button
+                type="button"
                 className="btn-primary"
                 onClick={handleCreate}
                 disabled={
@@ -313,48 +286,14 @@ export function Sessions() {
         </div>
       )}
 
-      {qrData && (
-        <div className="modal-overlay" onClick={() => setQrData(null)}>
-          <div className="modal qr-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title">
-                <h2>{t('sessions.qr.title')}</h2>
-                <span className="session-name">{qrData.sessionName}</span>
-              </div>
-              <button className="btn-close" onClick={() => setQrData(null)} aria-label={t('common.close')}>
-                <X size={20} color="#64748b" />
-              </button>
-            </div>
-            <div className="modal-body" style={{ textAlign: 'center' }}>
-              {qrData.qrCode ? (
-                <>
-                  <img src={qrData.qrCode} alt="QR" style={{ maxWidth: '280px', borderRadius: '12px' }} />
-                  <div className="qr-instructions">
-                    <p className="qr-step"><Trans i18nKey="sessions.qr.step1" components={{ strong: <strong /> }} /></p>
-                    <p className="qr-step"><Trans i18nKey="sessions.qr.step2" components={{ strong: <strong /> }} /></p>
-                    <p className="qr-step"><Trans i18nKey="sessions.qr.step3" components={{ strong: <strong /> }} /></p>
-                  </div>
-                  <p className="qr-auto-refresh">
-                    <RefreshCw size={14} className="spin-slow" /> {t('sessions.qr.autoRefresh')}
-                  </p>
-                </>
-              ) : (
-                <div style={{ padding: '2rem' }}>
-                  <Loader2 className="animate-spin" size={48} />
-                  <p>{t('sessions.qr.generating')}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {qrModal && <SessionQrModal data={qrModal} onClose={closeQrModal} />}
 
       {selectedSession && (
         <div className="modal-overlay" onClick={() => setSelectedSession(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('sessions.details.title')}</h2>
-              <button className="btn-icon" onClick={() => setSelectedSession(null)}>
+              <button type="button" className="btn-icon" onClick={() => setSelectedSession(null)}>
                 <X size={20} />
               </button>
             </div>
@@ -389,7 +328,7 @@ export function Sessions() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setSelectedSession(null)}>
+              <button type="button" className="btn-secondary" onClick={() => setSelectedSession(null)}>
                 {t('common.close')}
               </button>
             </div>
@@ -402,7 +341,7 @@ export function Sessions() {
           <div className="modal confirm-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('sessions.delete.title')}</h2>
-              <button className="btn-icon" onClick={() => setDeleteConfirmId(null)}>
+              <button type="button" className="btn-icon" onClick={() => setDeleteConfirmId(null)}>
                 <X size={20} />
               </button>
             </div>
@@ -417,10 +356,10 @@ export function Sessions() {
               <p className="text-muted">{t('sessions.delete.warning')}</p>
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>
+              <button type="button" className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>
                 {t('common.cancel')}
               </button>
-              <button className="btn-danger" onClick={() => handleDelete(deleteConfirmId)}>
+              <button type="button" className="btn-danger" onClick={() => handleDelete(deleteConfirmId)}>
                 {t('common.delete')}
               </button>
             </div>
@@ -443,14 +382,15 @@ export function Sessions() {
                 <span className={`status-pill ${session.status}`}>{formatStatus(session.status)}</span>
               </div>
 
-              {session.status === 'initializing' || session.status === 'connecting' || session.status === 'qr_ready' ? (
+              {isSessionConnecting(session.status) ? (
                 <div className="qr-placeholder">
                   <QrCode size={80} className="qr-icon" />
                   <p>{session.status === 'qr_ready' ? t('sessions.qr.scanToConnect') : t('sessions.qr.preparing')}</p>
                   <button
+                    type="button"
                     className="btn-sm"
                     onClick={() => handleShowQR(session.id)}
-                    disabled={session.status !== 'qr_ready'}
+                    disabled={session.status !== 'qr_ready' && session.status !== 'authenticating'}
                   >
                     {session.status === 'qr_ready' ? t('sessions.qr.showQr') : t('sessions.qr.loading')}
                   </button>
@@ -473,29 +413,28 @@ export function Sessions() {
               )}
 
               <div className="card-actions">
-                <button className="btn-action" onClick={() => setSelectedSession(session)}>
+                <button type="button" className="btn-action" onClick={() => setSelectedSession(session)}>
                   <Eye size={16} />
                   {t('sessions.actions.view')}
                 </button>
-                {canWrite &&
-                (session.status === 'created' || session.status === 'idle' || session.status === 'disconnected') ? (
-                  <button className="btn-action" onClick={() => handleStart(session.id)}>
-                    <Play size={16} />
-                    {t('sessions.actions.start')}
+                {canWrite && canCallSessionStart(session.status) ? (
+                  <button
+                    type="button"
+                    className="btn-action"
+                    onClick={() => handleStart(session.id)}
+                    disabled={starting}
+                  >
+                    {starting ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
+                    {starting ? t('sessions.actions.starting', { defaultValue: 'Starting…' }) : t('sessions.actions.start')}
                   </button>
-                ) : canWrite && ['ready', 'initializing', 'connecting', 'qr_ready'].includes(session.status) ? (
-                  <button className="btn-action" onClick={() => handleStop(session.id)}>
+                ) : canWrite && isSessionRunning(session.status) ? (
+                  <button type="button" className="btn-action" onClick={() => handleStop(session.id)}>
                     <Square size={16} />
                     {t('sessions.actions.stop')}
                   </button>
-                ) : canWrite ? (
-                  <button className="btn-action" onClick={() => handleStart(session.id)}>
-                    <RefreshCw size={16} />
-                    {t('sessions.actions.reconnect')}
-                  </button>
                 ) : null}
                 {canWrite && (
-                  <button className="btn-action danger" onClick={() => setDeleteConfirmId(session.id)}>
+                  <button type="button" className="btn-action danger" onClick={() => setDeleteConfirmId(session.id)}>
                     <Trash2 size={16} />
                     {t('sessions.actions.delete')}
                   </button>

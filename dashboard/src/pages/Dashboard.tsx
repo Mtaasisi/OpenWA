@@ -2,9 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Send, Webhook, Activity, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { useSessionsQuery, useSessionStatsQuery, useWebhooksQuery, useStopSessionMutation } from '../hooks/queries';
+import {
+  useSessionsQuery,
+  useSessionStatsQuery,
+  useOverviewStatsQuery,
+  useWebhooksQuery,
+  useStopSessionMutation,
+} from '../hooks/queries';
 import { PageHeader } from '../components/PageHeader';
-import './Dashboard.css';
+import { isSessionRunning } from '../lib/session-status';
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -12,6 +18,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { data: sessions = [], isLoading: loadingSessions, error: sessionsError } = useSessionsQuery();
   const { data: stats } = useSessionStatsQuery();
+  const { data: overview } = useOverviewStatsQuery();
   const { data: webhooks = [] } = useWebhooksQuery();
   const stopMutation = useStopSessionMutation();
   const loading = loadingSessions;
@@ -21,6 +28,9 @@ export function Dashboard() {
       ? t('dashboard.loadError')
       : null;
   const webhookCount = webhooks.length;
+  const messagesToday = overview?.messages.today.total ?? 0;
+  const messagesTodayReceived = overview?.messages.today.received ?? 0;
+  const apiCalls24h = overview?.apiActivity24h ?? 0;
 
   const handleDisconnect = async (id: string) => {
     try {
@@ -37,10 +47,32 @@ export function Dashboard() {
       icon: MessageSquare,
       trend: `+${stats?.ready ?? 0}`,
       trendUp: true,
+      linkTo: '/settings?section=sessions',
     },
-    { label: t('dashboard.stats.messagesToday'), value: '—', icon: Send, trend: '0', trendUp: null },
-    { label: t('dashboard.stats.webhooksConfigured'), value: webhookCount, icon: Webhook, trend: '0', trendUp: null },
-    { label: t('dashboard.stats.apiCalls'), value: '—', icon: Activity, trend: '0', trendUp: null },
+    {
+      label: t('dashboard.stats.messagesToday'),
+      value: messagesToday,
+      icon: Send,
+      trend: messagesTodayReceived > 0 ? `+${messagesTodayReceived}` : '0',
+      trendUp: messagesTodayReceived > 0 ? true : null,
+      linkTo: '/inbox',
+    },
+    {
+      label: t('dashboard.stats.webhooksConfigured'),
+      value: webhookCount,
+      icon: Webhook,
+      trend: '0',
+      trendUp: null,
+      linkTo: '/settings?section=integrations&integration=webhooks',
+    },
+    {
+      label: t('dashboard.stats.apiCalls'),
+      value: apiCalls24h,
+      icon: Activity,
+      trend: '0',
+      trendUp: null,
+      linkTo: '/settings?section=api',
+    },
   ];
 
   const formatLastActive = (date?: string) => {
@@ -88,22 +120,40 @@ export function Dashboard() {
       />
 
       <div className="stats-grid">
-        {statsCards.map(({ label, value, icon: Icon, trend, trendUp }) => (
-          <div key={label} className="stat-card">
-            <Icon className="stat-watermark" />
-            <div className="stat-header">
-              <span className="stat-label">{label}</span>
-              <Icon size={20} className="stat-icon" />
-            </div>
-            <div className="stat-value">{typeof value === 'number' ? value.toLocaleString() : value}</div>
-            {trend !== '0' && (
-              <div className={`stat-trend ${trendUp ? 'up' : 'down'}`}>
-                {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                {trend}
+        {statsCards.map(({ label, value, icon: Icon, trend, trendUp, linkTo }) => {
+          const card = (
+            <>
+              <Icon className="stat-watermark" />
+              <div className="stat-header">
+                <span className="stat-label">{label}</span>
+                <Icon size={20} className="stat-icon" />
               </div>
-            )}
-          </div>
-        ))}
+              <div className="stat-value">{typeof value === 'number' ? value.toLocaleString() : value}</div>
+              {trend !== '0' && (
+                <div className={`stat-trend ${trendUp ? 'up' : 'down'}`}>
+                  {trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  {trend}
+                </div>
+              )}
+            </>
+          );
+
+          return linkTo ? (
+            <button
+              key={label}
+              type="button"
+              className="stat-card stat-card--link"
+              onClick={() => navigate(linkTo)}
+              title={t('dashboard.openSection')}
+            >
+              {card}
+            </button>
+          ) : (
+            <div key={label} className="stat-card">
+              {card}
+            </div>
+          );
+        })}
       </div>
 
       <section className="sessions-section">
@@ -139,10 +189,10 @@ export function Dashboard() {
                 <span className={`status-pill ${session.status}`}>{formatStatus(session.status)}</span>
                 <span className="last-active">{formatLastActive(session.lastActive)}</span>
                 <div className="actions">
-                  <button className="btn-sm" onClick={() => navigate('/sessions')}>
+                  <button className="btn-sm" onClick={() => navigate('/settings?section=sessions')}>
                     {t('dashboard.view')}
                   </button>
-                  {['ready', 'initializing', 'connecting', 'qr_ready'].includes(session.status) && (
+                  {isSessionRunning(session.status) && (
                     <button className="btn-sm danger" onClick={() => handleDisconnect(session.id)}>
                       {t('dashboard.disconnect')}
                     </button>

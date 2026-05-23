@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 interface InfraStatus {
+  api: { port: number; baseUrl: string };
   database: { connected: boolean; type: string; host: string };
   redis: { enabled: boolean; connected: boolean; host: string; port: number };
   queue: {
@@ -176,7 +177,11 @@ export class InfraController {
     const sessionDataPath = this.configService.get<string>('engine.sessionDataPath', './data/sessions');
     const browserArgs = this.configService.get<string>('engine.browserArgs', '--no-sandbox --disable-gpu');
 
+    const apiPort = this.configService.get<number>('port', 2785);
+    const apiBaseUrl = (process.env.API_PUBLIC_URL || `http://localhost:${apiPort}`).replace(/\/$/, '');
+
     return {
+      api: { port: apiPort, baseUrl: apiBaseUrl },
       database: { connected: dbConnected, type: dbType, host: dbHost },
       redis: { enabled: redisEnabled, connected: redisConnected, host: redisHost, port: redisPort },
       queue: {

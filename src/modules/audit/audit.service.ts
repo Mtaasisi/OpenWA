@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan } from 'typeorm';
+import { Repository, Between, LessThan, In, IsNull } from 'typeorm';
 import { AuditLog, AuditAction, AuditSeverity } from './entities/audit-log.entity';
 import { ApiKey } from '../auth/entities/api-key.entity';
+import { Session } from '../session/entities/session.entity';
 
-interface AuditContext {
+export interface AuditContext {
   apiKey?: ApiKey;
   sessionId?: string;
   sessionName?: string;
@@ -22,6 +23,7 @@ export interface AuditQueryOptions {
   apiKeyId?: string;
   sessionId?: string;
   severity?: AuditSeverity;
+  search?: string;
   startDate?: Date;
   endDate?: Date;
   limit?: number;
@@ -33,6 +35,8 @@ export class AuditService {
   constructor(
     @InjectRepository(AuditLog, 'main')
     private readonly auditRepository: Repository<AuditLog>,
+    @InjectRepository(Session, 'data')
+    private readonly sessionRepository: Repository<Session>,
   ) {}
 
   async log(
@@ -75,25 +79,74 @@ export class AuditService {
     data: AuditLog[];
     total: number;
   }> {
-    const where: Record<string, unknown> = {};
+    const qb = this.auditRepository.createQueryBuilder('log');
 
-    if (options.action) where.action = options.action;
-    if (options.apiKeyId) where.apiKeyId = options.apiKeyId;
-    if (options.sessionId) where.sessionId = options.sessionId;
-    if (options.severity) where.severity = options.severity;
-
+    if (options.action) {
+      qb.andWhere('log.action = :action', { action: options.action });
+    }
+    if (options.apiKeyId) {
+      qb.andWhere('log.apiKeyId = :apiKeyId', { apiKeyId: options.apiKeyId });
+    }
+    if (options.sessionId) {
+      qb.andWhere('log.sessionId = :sessionId', { sessionId: options.sessionId });
+    }
+    if (options.severity) {
+      qb.andWhere('log.severity = :severity', { severity: options.severity });
+    }
     if (options.startDate && options.endDate) {
-      where.createdAt = Between(options.startDate, options.endDate);
+      qb.andWhere('log.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: options.startDate,
+        endDate: options.endDate,
+      });
+    }
+    if (options.search?.trim()) {
+      const q = `%${options.search.trim().toLowerCase()}%`;
+      qb.andWhere(
+        `(LOWER(log.action) LIKE :q OR LOWER(log.apiKeyName) LIKE :q OR LOWER(log.sessionName) LIKE :q OR LOWER(log.sessionId) LIKE :q OR LOWER(log.ipAddress) LIKE :q OR LOWER(log.errorMessage) LIKE :q)`,
+        { q },
+      );
     }
 
-    const [data, total] = await this.auditRepository.findAndCount({
-      where,
-      order: { createdAt: 'DESC' },
-      take: options.limit || 50,
-      skip: options.offset || 0,
-    });
+    qb.orderBy('log.createdAt', 'DESC');
+    qb.take(options.limit || 50);
+    qb.skip(options.offset || 0);
+
+    const [data, total] = await qb.getManyAndCount();
+    await this.enrichSessionNames(data);
 
     return { data, total };
+  }
+
+  /**
+   * Remove audit rows created by the old QR polling behavior (GET /sessions/:id/qr).
+   * Those entries have no API key and usually no session name.
+   */
+  async removeQrPollNoise(): Promise<number> {
+    const result = await this.auditRepository.delete({
+      action: AuditAction.SESSION_QR_GENERATED,
+      apiKeyId: IsNull(),
+    });
+    return result.affected || 0;
+  }
+
+  private async enrichSessionNames(logs: AuditLog[]): Promise<void> {
+    const missingIds = [
+      ...new Set(
+        logs.filter(l => l.sessionId && !l.sessionName).map(l => l.sessionId as string),
+      ),
+    ];
+    if (missingIds.length === 0) return;
+
+    const sessions = await this.sessionRepository.find({
+      where: { id: In(missingIds) },
+      select: ['id', 'name'],
+    });
+    const nameById = new Map(sessions.map(s => [s.id, s.name]));
+    for (const log of logs) {
+      if (log.sessionId && !log.sessionName) {
+        log.sessionName = nameById.get(log.sessionId) ?? null;
+      }
+    }
   }
 
   async getRecentByApiKey(apiKeyId: string, limit = 10): Promise<AuditLog[]> {

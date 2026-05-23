@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { Session, SessionStatus } from '../session/entities/session.entity';
 import { Message, MessageStatus } from '../message/entities/message.entity';
+import { AuditLog } from '../audit/entities/audit-log.entity';
 import { CacheService } from '../../common/cache';
 
 export interface OverviewStats {
@@ -15,8 +16,11 @@ export interface OverviewStats {
     sent: number;
     received: number;
     failed: number;
-    today: { sent: number; received: number };
+    today: { sent: number; received: number; total: number };
+    last24h: { sent: number; received: number; total: number };
   };
+  /** Count of audit log entries in the last 24 hours (API and platform activity). */
+  apiActivity24h: number;
 }
 
 export interface TimeSeriesPoint {
@@ -46,6 +50,8 @@ export class StatsService {
     private readonly sessionRepo: Repository<Session>,
     @InjectRepository(Message, 'data')
     private readonly messageRepo: Repository<Message>,
+    @InjectRepository(AuditLog, 'main')
+    private readonly auditRepo: Repository<AuditLog>,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -84,9 +90,25 @@ export class StatsService {
     const todaySent = parseInt(todayStats.find(m => m.direction === 'outgoing')?.count || '0');
     const todayReceived = parseInt(todayStats.find(m => m.direction === 'incoming')?.count || '0');
 
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const last24hStats = await this.messageRepo
+      .createQueryBuilder('m')
+      .select('m.direction', 'direction')
+      .addSelect('COUNT(*)', 'count')
+      .where('m.createdAt >= :since24h', { since24h })
+      .groupBy('m.direction')
+      .getRawMany<{ direction: string; count: string }>();
+
+    const last24hSent = parseInt(last24hStats.find(m => m.direction === 'outgoing')?.count || '0');
+    const last24hReceived = parseInt(last24hStats.find(m => m.direction === 'incoming')?.count || '0');
+
     // Count failed messages
     const failed = await this.messageRepo.count({
       where: { status: MessageStatus.FAILED },
+    });
+
+    const apiActivity24h = await this.auditRepo.count({
+      where: { createdAt: MoreThanOrEqual(since24h) },
     });
 
     // Cache session stats
@@ -106,8 +128,18 @@ export class StatsService {
         sent,
         received,
         failed,
-        today: { sent: todaySent, received: todayReceived },
+        today: {
+          sent: todaySent,
+          received: todayReceived,
+          total: todaySent + todayReceived,
+        },
+        last24h: {
+          sent: last24hSent,
+          received: last24hReceived,
+          total: last24hSent + last24hReceived,
+        },
       },
+      apiActivity24h,
     };
   }
 

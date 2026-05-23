@@ -164,10 +164,10 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
           isGroup: chat.isGroup,
         };
 
-        // Record media metadata without blocking on download (avoids Puppeteer timeouts)
+        // Media bytes are fetched on demand via downloadMessageMedia (avoids blocking receive path)
         if (msg.hasMedia) {
           incomingMessage.media = {
-            mimetype: 'application/octet-stream',
+            mimetype: this.guessMimetypeFromMessage(msg),
             filename: undefined,
             data: undefined,
           };
@@ -397,6 +397,37 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     }
     const chat = await this.client!.getChatById(chatId);
     await chat.sendSeen();
+  }
+
+  async downloadMessageMedia(
+    waMessageId: string,
+  ): Promise<{ mimetype: string; data: Buffer; filename?: string } | null> {
+    if (this.status !== EngineStatus.READY || !this.client) {
+      return null;
+    }
+    try {
+      const msg = await this.client!.getMessageById(waMessageId);
+      if (!msg.hasMedia) return null;
+      const media = await msg.downloadMedia();
+      if (!media?.data) return null;
+      return {
+        mimetype: media.mimetype || this.guessMimetypeFromMessage(msg),
+        data: Buffer.from(media.data, 'base64'),
+        filename: media.filename ?? undefined,
+      };
+    } catch (error) {
+      this.logger.warn('downloadMessageMedia failed', { waMessageId, error: String(error) });
+      return null;
+    }
+  }
+
+  private guessMimetypeFromMessage(msg: { type: string; hasMedia?: boolean }): string {
+    const type = msg.type || 'document';
+    if (type === 'image' || type === 'sticker') return 'image/jpeg';
+    if (type === 'video') return 'video/mp4';
+    if (type === 'audio' || type === 'ptt') return 'audio/ogg';
+    if (type === 'document') return 'application/octet-stream';
+    return 'application/octet-stream';
   }
 
   async getGroups(): Promise<Group[]> {

@@ -9,6 +9,9 @@ import { EventsGateway } from '../events/events.gateway';
 import { WebhookService } from '../webhook/webhook.service';
 import { HookManager } from '../../core/hooks';
 import { MessageService } from '../message/message.service';
+import { AuditService } from '../audit/audit.service';
+
+const flushPromises = (): Promise<void> => new Promise(resolve => setImmediate(resolve));
 
 function createMockSession(overrides: Partial<Session> = {}): Session {
   return {
@@ -74,6 +77,7 @@ describe('SessionService', () => {
     eventsGateway = {
       emitSessionStatus: jest.fn(),
       emitMessage: jest.fn(),
+      emitQRCode: jest.fn(),
     };
 
     webhookService = {
@@ -105,6 +109,10 @@ describe('SessionService', () => {
             persistInboundFromEngine: jest.fn().mockResolvedValue(null),
             updateMessageStatusByWaId: jest.fn().mockResolvedValue(null),
           },
+        },
+        {
+          provide: AuditService,
+          useValue: { logInfo: jest.fn().mockResolvedValue({}), log: jest.fn().mockResolvedValue({}) },
         },
       ],
     }).compile();
@@ -228,6 +236,7 @@ describe('SessionService', () => {
       (repository.update as jest.Mock).mockResolvedValue({ affected: 1 });
 
       await service.start('sess-uuid-1');
+      await flushPromises();
 
       expect(engineFactory.create).toHaveBeenCalledWith(expect.objectContaining({ sessionId: 'test-session' }));
       expect(mockEngine.initialize).toHaveBeenCalled();
@@ -305,15 +314,19 @@ describe('SessionService', () => {
       expect(result.qrCode).toBe('data:image/png;base64,iVBOR...');
     });
 
-    it('should throw if session is READY (already authenticated)', async () => {
+    it('should return empty qr when session is READY (already authenticated)', async () => {
       const session = createMockSession({ status: SessionStatus.READY });
       (repository.findOne as jest.Mock).mockResolvedValue(session);
       (repository.update as jest.Mock).mockResolvedValue({ affected: 1 });
 
       await service.start('sess-uuid-1');
+      await flushPromises();
       mockEngine.getQRCode.mockReturnValue(null);
 
-      await expect(service.getQRCode('sess-uuid-1')).rejects.toThrow('already authenticated');
+      const result = await service.getQRCode('sess-uuid-1');
+
+      expect(result.qrCode).toBe('');
+      expect(result.status).toBe(SessionStatus.READY);
     });
   });
 

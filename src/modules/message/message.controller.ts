@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Param, Body, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Query, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { MessageService } from './message.service';
 import { BulkMessageService } from './bulk-message.service';
@@ -36,6 +37,28 @@ export class MessageController {
       limit: limit ? parseInt(limit, 10) : undefined,
       offset: offset ? parseInt(offset, 10) : undefined,
     });
+  }
+
+  @Get(':messageId/media')
+  @ApiOperation({ summary: 'Download message media (image, video, audio, document)' })
+  @ApiParam({ name: 'messageId', description: 'Message UUID' })
+  @ApiResponse({ status: 200, description: 'Media file bytes' })
+  @ApiResponse({ status: 404, description: 'Media not found or session offline' })
+  async getMessageMedia(
+    @Param('sessionId') sessionId: string,
+    @Param('messageId') messageId: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const { buffer, mimetype, filename } = await this.messageService.getMessageMedia(
+      sessionId,
+      messageId,
+    );
+    res.setHeader('Content-Type', mimetype);
+    if (filename) {
+      res.setHeader('Content-Disposition', `inline; filename="${filename.replace(/"/g, '')}"`);
+    }
+    res.setHeader('Cache-Control', 'private, max-age=86400');
+    res.send(buffer);
   }
 
   @Post('send-text')
