@@ -59,3 +59,29 @@ npm run qa:ai-cost-staging
 ```
 
 Migration: `npm run migration:show` — confirm `[X] AddAiCostTracking1781150000000`.
+
+## Production deployment (after merge)
+
+1. **Backup** database before migration.
+2. **Run migration** on the API host:
+   ```bash
+   npm run migration:run:prod
+   # or: npm run migration:run
+   npm run migration:show   # expect [X] AddAiCostTracking1781150000000
+   ```
+3. **Restart** the API process/container so new entities and routes load.
+4. **Smoke test** (from a machine that can reach the API):
+   ```bash
+   OPENWA_API_URL=https://your-api OPENWA_API_KEY=owa_k1_... npm run qa:ai-cost-staging
+   ```
+5. **Dashboard** — Settings → AI → **Usage & Cost** (`/settings?category=ai&panel=ai-usage`).
+6. **Budgets** — confirm defaults (daily $1, monthly $20, auto-reply $0.50) or adjust under Usage panel or Provider cost settings.
+7. **Permissions** — operators get `ai.cost.view` by default; grant `ai.cost.manage` on API keys for staff who should pause auto-reply or edit budgets.
+8. **Live check** — one WhatsApp test message → row in `ai_usage_logs` with `aiCallsCount` ≤ 2.
+
+CI runs `npm run qa:ai-cost-safety` on every PR (Jest regression + usage panel Playwright e2e).
+
+## Pull request
+
+Branch: `feature/ai-cost-optimization`  
+Open PR: https://github.com/Mtaasisi/OpenWA/pull/new/feature/ai-cost-optimization
