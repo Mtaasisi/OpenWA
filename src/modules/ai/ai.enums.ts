@@ -1,0 +1,19 @@
+export enum AiProvider {
+  GEMINI = 'GEMINI',
+  OPENAI = 'OPENAI',
+  ANTHROPIC = 'ANTHROPIC',
+  GROQ = 'GROQ',
+  DEEPSEEK = 'DEEPSEEK',
+  XAI = 'XAI',
+  MISTRAL = 'MISTRAL',
+  TOGETHER = 'TOGETHER',
+  MOONSHOT = 'MOONSHOT',
+  GLM = 'GLM',
+  QWEN = 'QWEN',
+  STEPFUN = 'STEPFUN',
+  OLLAMA = 'OLLAMA',
+  OPENROUTER = 'OPENROUTER',
+  CUSTOM = 'CUSTOM',
+}
+
+export const AI_PROVIDER_VALUES = Object.values(AiProvider);

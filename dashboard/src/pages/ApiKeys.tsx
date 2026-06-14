@@ -12,6 +12,9 @@ import type { ApiKey } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useApiKeysQuery, useCreateApiKeyMutation, useDeleteApiKeyMutation, useRevokeApiKeyMutation } from '../hooks/queries';
 import { PageHeader } from '../components/PageHeader';
+import { ModalOverlay } from '../components/ModalOverlay';
+import { MaterialSymbol } from '../components/MaterialSymbol';
+import { StatusBadge } from '../components/workspace';
 import './ApiKeys.css';
 
 const roleNames = ['admin', 'operator', 'viewer'] as const;
@@ -30,6 +33,10 @@ const columnHelper = createColumnHelper<ApiKey>();
 
 export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
+  const modalOverlayClass = embedded
+    ? 'modal-overlay api-keys-modal-overlay'
+    : 'modal-overlay';
+  const modalShellClass = embedded ? 'api-keys-modal' : 'modal';
   useDocumentTitle(t('apiKeys.title'));
   const { data: apiKeys = [], isLoading: loading } = useApiKeysQuery();
   const createMutation = useCreateApiKeyMutation();
@@ -48,6 +55,15 @@ export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
   const isMobile = windowWidth < 768;
   const isSmall = windowWidth < 640;
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  const metrics = useMemo(
+    () => ({
+      total: apiKeys.length,
+      active: apiKeys.filter(k => k.isActive).length,
+      revoked: apiKeys.filter(k => !k.isActive).length,
+    }),
+    [apiKeys],
+  );
 
   useEffect(() => {
     setColumnVisibility({ key: !isSmall, lastUsed: !isMobile });
@@ -129,11 +145,16 @@ export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
       }),
       columnHelper.accessor('isActive', {
         header: () => t('apiKeys.columns.status'),
-        cell: info => (
-          <span className={`status-badge ${info.getValue() ? 'active' : 'inactive'}`}>
-            {info.getValue() ? t('apiKeys.statuses.active') : t('apiKeys.statuses.revoked')}
-          </span>
-        ),
+        cell: info =>
+          embedded ? (
+            <StatusBadge variant={info.getValue() ? 'success' : 'neutral'}>
+              {info.getValue() ? t('apiKeys.statuses.active') : t('apiKeys.statuses.revoked')}
+            </StatusBadge>
+          ) : (
+            <span className={`status-badge ${info.getValue() ? 'active' : 'inactive'}`}>
+              {info.getValue() ? t('apiKeys.statuses.active') : t('apiKeys.statuses.revoked')}
+            </span>
+          ),
       }),
       columnHelper.accessor('lastUsedAt', {
         id: 'lastUsed',
@@ -179,7 +200,7 @@ export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
         },
       }),
     ],
-    [visibleKeys, copied, t],
+    [visibleKeys, copied, t, embedded],
   );
 
   const table = useReactTable({
@@ -201,137 +222,239 @@ export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
     );
   }
 
-  return (
-    <div className={`api-keys-page ${embedded ? 'settings-embed' : ''}`}>
-      {!embedded ? (
-        <PageHeader
-          title={t('apiKeys.title')}
-          subtitle={t('apiKeys.subtitle')}
-          actions={
-            <button className="btn-primary" onClick={() => setShowModal(true)}>
-              <Plus size={18} />
-              {t('apiKeys.createBtn')}
-            </button>
-          }
-        />
-      ) : (
-        <div className="settings-embed-toolbar">
-          <button className="btn-primary" type="button" onClick={() => setShowModal(true)}>
-            <Plus size={18} />
-            {t('apiKeys.createBtn')}
-          </button>
-        </div>
-      )}
+  const createButton = (
+    <button
+      type="button"
+      className={embedded ? 'api-keys-btn api-keys-btn--primary api-keys-btn--sm' : 'btn-primary'}
+      onClick={() => setShowModal(true)}
+    >
+      <Plus size={embedded ? 14 : 18} />
+      {t('apiKeys.createBtn')}
+    </button>
+  );
 
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
-            setShowModal(false);
-            setCreatedKey(null);
-          }}
-        >
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{createdKey ? t('apiKeys.createdTitle') : t('apiKeys.modalTitle')}</h2>
-              <button
-                className="btn-icon"
-                onClick={() => {
-                  setShowModal(false);
-                  setCreatedKey(null);
-                }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              {createdKey ? (
-                <div>
-                  <p style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>{t('apiKeys.createdHint')}</p>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <code
-                      style={{
-                        flex: 1,
-                        padding: '0.75rem',
-                        background: 'var(--bg-secondary)',
-                        borderRadius: '6px',
-                        wordBreak: 'break-all',
-                      }}
-                    >
-                      {createdKey}
-                    </code>
-                    <button className="btn-primary" onClick={() => copyToClipboard(createdKey, 'modal')}>
-                      {copied === 'modal' ? <Check size={16} /> : <Copy size={16} />}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <label>{t('common.name')}</label>
-                  <input
-                    type="text"
-                    placeholder={t('apiKeys.namePlaceholder')}
-                    value={newKey.name}
-                    onChange={e => setNewKey({ ...newKey, name: e.target.value })}
-                  />
-                  <label>{t('common.role')}</label>
-                  <select value={newKey.role} onChange={e => setNewKey({ ...newKey, role: e.target.value })}>
-                    {roleNames.map(r => (
-                      <option key={r} value={r}>
-                        {t(`apiKeys.roles.${r}`)}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
-            </div>
-            {!createdKey && (
-              <div className="modal-footer">
-                <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                  {t('common.cancel')}
-                </button>
-                <button className="btn-primary" onClick={handleCreate}>
-                  {t('common.create')}
-                </button>
-              </div>
-            )}
+  const keysTable = (
+    <div className="keys-table-container">
+      {apiKeys.length === 0 ? (
+        <div className="empty-table-state">
+          <KeyRound size={48} strokeWidth={1} />
+          <h3>{t('apiKeys.empty.title')}</h3>
+          <p>{t('apiKeys.empty.description')}</p>
+        </div>
+      ) : (
+        <table className="keys-table">
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id} className="table-row header">
+                {headerGroup.headers.map(header => (
+                  <th key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id} className="table-row">
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={`api-keys-page ${embedded ? 'settings-embed api-keys-page--embed' : ''}`}>
+      {!embedded ? (
+        <PageHeader title={t('apiKeys.title')} subtitle={t('apiKeys.subtitle')} actions={createButton} />
+      ) : (
+        <div className="api-keys-kpi-grid">
+          <div className="api-keys-kpi">
+            <p className="api-keys-kpi__label">{t('apiKeys.metrics.total')}</p>
+            <p className="api-keys-kpi__value">{metrics.total}</p>
+          </div>
+          <div className="api-keys-kpi">
+            <p className="api-keys-kpi__label">{t('apiKeys.metrics.active')}</p>
+            <p className="api-keys-kpi__value">{metrics.active}</p>
+          </div>
+          <div className="api-keys-kpi">
+            <p className="api-keys-kpi__label">{t('apiKeys.metrics.revoked')}</p>
+            <p className="api-keys-kpi__value">{metrics.revoked}</p>
           </div>
         </div>
       )}
 
+      {showModal && (
+        <ModalOverlay
+          className={modalOverlayClass}
+          onClose={() => {
+            setShowModal(false);
+            setCreatedKey(null);
+          }}
+        >
+          <div className={modalShellClass} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            {embedded ? (
+              <>
+                <header className="api-keys-modal__head">
+                  <h2>{createdKey ? t('apiKeys.createdTitle') : t('apiKeys.modalTitle')}</h2>
+                  <button
+                    type="button"
+                    className="api-keys-modal__close"
+                    onClick={() => {
+                      setShowModal(false);
+                      setCreatedKey(null);
+                    }}
+                    aria-label={t('common.close')}
+                  >
+                    <MaterialSymbol name="close" size={20} />
+                  </button>
+                </header>
+                <div className="api-keys-modal__body">
+                  {createdKey ? (
+                    <>
+                      <p className="api-keys-modal__hint">{t('apiKeys.createdHint')}</p>
+                      <div className="api-keys-modal__copy-row">
+                        <code className="api-keys-modal__key">{createdKey}</code>
+                        <button
+                          type="button"
+                          className="api-keys-btn api-keys-btn--primary"
+                          onClick={() => copyToClipboard(createdKey, 'modal')}
+                        >
+                          {copied === 'modal' ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="api-keys-modal__field">
+                        <label htmlFor="api-key-name">{t('common.name')}</label>
+                        <input
+                          id="api-key-name"
+                          type="text"
+                          placeholder={t('apiKeys.namePlaceholder')}
+                          value={newKey.name}
+                          onChange={e => setNewKey({ ...newKey, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="api-keys-modal__field">
+                        <label htmlFor="api-key-role">{t('common.role')}</label>
+                        <select
+                          id="api-key-role"
+                          value={newKey.role}
+                          onChange={e => setNewKey({ ...newKey, role: e.target.value })}
+                        >
+                          {roleNames.map(r => (
+                            <option key={r} value={r}>
+                              {t(`apiKeys.roles.${r}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+                </div>
+                {!createdKey && (
+                  <footer className="api-keys-modal__footer">
+                    <button type="button" className="api-keys-btn" onClick={() => setShowModal(false)}>
+                      {t('common.cancel')}
+                    </button>
+                    <button type="button" className="api-keys-btn api-keys-btn--primary" onClick={handleCreate}>
+                      {t('common.create')}
+                    </button>
+                  </footer>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="modal-header">
+                  <h2>{createdKey ? t('apiKeys.createdTitle') : t('apiKeys.modalTitle')}</h2>
+                  <button
+                    className="btn-icon"
+                    onClick={() => {
+                      setShowModal(false);
+                      setCreatedKey(null);
+                    }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  {createdKey ? (
+                    <div>
+                      <p style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>{t('apiKeys.createdHint')}</p>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <code
+                          style={{
+                            flex: 1,
+                            padding: '0.75rem',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '6px',
+                            wordBreak: 'break-all',
+                          }}
+                        >
+                          {createdKey}
+                        </code>
+                        <button className="btn-primary" onClick={() => copyToClipboard(createdKey, 'modal')}>
+                          {copied === 'modal' ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <label>{t('common.name')}</label>
+                      <input
+                        type="text"
+                        placeholder={t('apiKeys.namePlaceholder')}
+                        value={newKey.name}
+                        onChange={e => setNewKey({ ...newKey, name: e.target.value })}
+                      />
+                      <label>{t('common.role')}</label>
+                      <select value={newKey.role} onChange={e => setNewKey({ ...newKey, role: e.target.value })}>
+                        {roleNames.map(r => (
+                          <option key={r} value={r}>
+                            {t(`apiKeys.roles.${r}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                </div>
+                {!createdKey && (
+                  <div className="modal-footer">
+                    <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                      {t('common.cancel')}
+                    </button>
+                    <button className="btn-primary" onClick={handleCreate}>
+                      {t('common.create')}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </ModalOverlay>
+      )}
+
       <div className="api-keys-content">
-        <div className="keys-table-container">
-          {apiKeys.length === 0 ? (
-            <div className="empty-table-state">
-              <KeyRound size={48} strokeWidth={1} />
-              <h3>{t('apiKeys.empty.title')}</h3>
-              <p>{t('apiKeys.empty.description')}</p>
-            </div>
-          ) : (
-            <table className="keys-table">
-              <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className="table-row header">
-                    {headerGroup.headers.map(header => (
-                      <th key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map(row => (
-                  <tr key={row.id} className="table-row">
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {embedded ? (
+          <section className="api-keys-card">
+            <header className="api-keys-card__head">
+              <h2 className="api-keys-card__title">
+                <MaterialSymbol name="key" size={20} />
+                {t('apiKeys.listTitle')}
+              </h2>
+              {createButton}
+            </header>
+            {keysTable}
+          </section>
+        ) : (
+          keysTable
+        )}
 
         <div className="permissions-reference">
           <h3>{t('apiKeys.rolesTitle')}</h3>
@@ -344,49 +467,112 @@ export function ApiKeys({ embedded = false }: { embedded?: boolean } = {}) {
             ))}
           </div>
         </div>
+
+        <div className="permissions-reference">
+          <h3>{t('apiKeys.aiCostPermissionsTitle')}</h3>
+          <div className="permissions-list">
+            {(['ai.cost.view', 'ai.cost.manage'] as const).map(code => (
+              <div key={code} className="perm-item">
+                <code>{code}</code>
+                <span>{t(`apiKeys.aiCostPermissions.${code}`)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {confirmAction && (
-        <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
-          <div className="modal confirm-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>
-                {confirmAction.type === 'delete'
-                  ? t('apiKeys.confirm.deleteTitle')
-                  : t('apiKeys.confirm.revokeTitle')}
-              </h2>
-              <button className="btn-icon" onClick={() => setConfirmAction(null)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="confirm-icon-wrapper">
-                <AlertTriangle size={48} className="confirm-warning-icon" />
-              </div>
-              <p className="confirm-message">
-                <Trans
-                  i18nKey={
-                    confirmAction.type === 'delete'
-                      ? 'apiKeys.confirm.deleteMessage'
-                      : 'apiKeys.confirm.revokeMessage'
-                  }
-                  values={{ name: confirmAction.name }}
-                  components={{ strong: <strong /> }}
-                />
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setConfirmAction(null)}>
-                {t('common.cancel')}
-              </button>
-              <button className="btn-danger" onClick={confirmAndExecute}>
-                {confirmAction.type === 'delete'
-                  ? t('apiKeys.confirm.delete')
-                  : t('apiKeys.confirm.revoke')}
-              </button>
-            </div>
+        <ModalOverlay onClose={() => setConfirmAction(null)} className={modalOverlayClass}>
+          <div
+            className={embedded ? 'api-keys-modal api-keys-modal--confirm' : 'modal confirm-modal'}
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            {embedded ? (
+              <>
+                <header className="api-keys-modal__head">
+                  <h2>
+                    {confirmAction.type === 'delete'
+                      ? t('apiKeys.confirm.deleteTitle')
+                      : t('apiKeys.confirm.revokeTitle')}
+                  </h2>
+                  <button
+                    type="button"
+                    className="api-keys-modal__close"
+                    onClick={() => setConfirmAction(null)}
+                    aria-label={t('common.close')}
+                  >
+                    <MaterialSymbol name="close" size={20} />
+                  </button>
+                </header>
+                <div className="api-keys-modal__body api-keys-modal__body--center">
+                  <AlertTriangle size={44} className="api-keys-modal__warn-icon" />
+                  <p className="api-keys-modal__confirm-text">
+                    <Trans
+                      i18nKey={
+                        confirmAction.type === 'delete'
+                          ? 'apiKeys.confirm.deleteMessage'
+                          : 'apiKeys.confirm.revokeMessage'
+                      }
+                      values={{ name: confirmAction.name }}
+                      components={{ strong: <strong /> }}
+                    />
+                  </p>
+                </div>
+                <footer className="api-keys-modal__footer">
+                  <button type="button" className="api-keys-btn" onClick={() => setConfirmAction(null)}>
+                    {t('common.cancel')}
+                  </button>
+                  <button type="button" className="api-keys-btn api-keys-btn--danger" onClick={confirmAndExecute}>
+                    {confirmAction.type === 'delete'
+                      ? t('apiKeys.confirm.delete')
+                      : t('apiKeys.confirm.revoke')}
+                  </button>
+                </footer>
+              </>
+            ) : (
+              <>
+                <div className="modal-header">
+                  <h2>
+                    {confirmAction.type === 'delete'
+                      ? t('apiKeys.confirm.deleteTitle')
+                      : t('apiKeys.confirm.revokeTitle')}
+                  </h2>
+                  <button className="btn-icon" onClick={() => setConfirmAction(null)}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="confirm-icon-wrapper">
+                    <AlertTriangle size={48} className="confirm-warning-icon" />
+                  </div>
+                  <p className="confirm-message">
+                    <Trans
+                      i18nKey={
+                        confirmAction.type === 'delete'
+                          ? 'apiKeys.confirm.deleteMessage'
+                          : 'apiKeys.confirm.revokeMessage'
+                      }
+                      values={{ name: confirmAction.name }}
+                      components={{ strong: <strong /> }}
+                    />
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn-secondary" onClick={() => setConfirmAction(null)}>
+                    {t('common.cancel')}
+                  </button>
+                  <button className="btn-danger" onClick={confirmAndExecute}>
+                    {confirmAction.type === 'delete'
+                      ? t('apiKeys.confirm.delete')
+                      : t('apiKeys.confirm.revoke')}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -1,0 +1,130 @@
+.ai-usage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ai-usage-panel__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.ai-usage-panel__banner {
+  margin-bottom: 4px;
+}
+
+.ai-usage-panel__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.ai-usage-card {
+  background: var(--surface-elevated, #f8f9fb);
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-usage-card__label {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+}
+
+.ai-usage-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-usage-panel__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .ai-usage-panel__split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-usage-section h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.ai-usage-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-usage-bar-row {
+  display: grid;
+  grid-template-columns: 88px 1fr 72px;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.ai-usage-bar-row__track {
+  height: 10px;
+  background: var(--surface-elevated, #f3f4f6);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ai-usage-bar-row__fill {
+  height: 100%;
+  background: var(--primary, #2563eb);
+  border-radius: 4px;
+  min-width: 2px;
+}
+
+.ai-usage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-usage-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle, #eee);
+}
+
+.ai-usage-budget-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.ai-usage-budget-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.ai-usage-budget-form input {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle, #d1d5db);
+  border-radius: 8px;
+}
+
+.ai-usage-panel__meta {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+}
