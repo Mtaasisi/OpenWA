@@ -32,7 +32,7 @@ export function TrainingDashboardPage() {
           </p>
         </div>
         <div className="aitc-page-header__actions">
-          <button type="button" className="aitc-btn aitc-btn--ghost" onClick={() => navigate('/ai?tab=training')}>
+          <button type="button" className="aitc-btn aitc-btn--ghost" onClick={() => navigate('/ai?tab=training&queue=legacy')}>
             How it works?
           </button>
           <button

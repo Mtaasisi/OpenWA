@@ -114,7 +114,7 @@ export function AiAssistantLogsPanel() {
             </p>
           ) : null}
         </div>
-        <Link to="/ai?tab=training" className="aitc-btn aitc-btn--primary">
+        <Link to="/ai-training-center/dashboard" className="aitc-btn aitc-btn--primary">
           {t('ai.training.openCenter', { defaultValue: 'Open Training Center' })}
         </Link>
       </header>

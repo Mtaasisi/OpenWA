@@ -334,14 +334,14 @@ test.describe('AI Training Center', () => {
   });
 
   test('Training tab renders center with pending items', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('AI Training Center')).toBeVisible();
     await expect(page.getByText('Naomba namba ya customer care')).toBeVisible();
   });
 
   test('review panel auto-selects recommended option and loads preview', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Review' }).first().click();
     await expect(page.getByTestId('ai-training-review-panel')).toBeVisible();
@@ -352,14 +352,14 @@ test.describe('AI Training Center', () => {
   });
 
   test('assistant tab bar includes Training', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('ai-assistant-tab-training')).toBeVisible();
     await expect(page.getByTestId('ai-assistant-tab-chat')).toBeVisible();
   });
 
   test('shows admin-only badge and bulk bar actions', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('ai-training-admin-badge')).toBeVisible();
     await expect(page.getByTestId('ai-training-bulk-bar')).toBeVisible();
@@ -372,7 +372,7 @@ test.describe('AI Training Center', () => {
   });
 
   test('review panel approve and apply closes review', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Review' }).first().click();
     await expect(page.getByTestId('ai-training-review-panel')).toBeVisible();
@@ -393,7 +393,7 @@ test.describe('AI Training Center', () => {
       });
     });
 
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Review' }).first().click();
     await expect(page.getByTestId('ai-training-review-panel')).toBeVisible();
@@ -412,7 +412,7 @@ test.describe('AI Training Center', () => {
       });
     });
 
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page
       .locator('.aitc-card')
@@ -428,7 +428,7 @@ test.describe('AI Training Center', () => {
   });
 
   test('bulk approve shows skip notes for items the server skipped', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.locator('.aitc-card__check input').nth(0).check();
     await page
@@ -449,7 +449,7 @@ test.describe('AI Training Center', () => {
     await seedOperatorSession(page);
     await mockAiLearningApis(page);
     await stubTrainingApis(page);
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/high-risk items require an admin key/i)).toBeVisible();
     await page.locator('.aitc-card__check input').first().check();
@@ -521,7 +521,7 @@ test.describe('AI Training Center', () => {
       });
     });
 
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByTestId('ai-training-settings-open').click();
     await expect(page.getByText('AI Training settings')).toBeVisible({ timeout: 10_000 });
@@ -532,7 +532,7 @@ test.describe('AI Training Center', () => {
   });
 
   test('applied tab shows active-in-inbox badge', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'Applied' }).click();
     await expect(page.getByText('Mko wapi?')).toBeVisible();
@@ -596,13 +596,13 @@ test.describe('AI Training Center', () => {
         JSON.stringify({ compactMode: 'always', showWorkSummary: true, showBranch: true, showStatusBar: true }),
       );
     });
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /^More$/i }).click();
     await expect(page.getByRole('dialog', { name: /More status/i })).toBeVisible();
     await expect(page.getByText('AI Training pending')).toBeVisible({ timeout: 10_000 });
     await page.getByRole('link', { name: 'Open Training Center' }).click();
-    await expect(page).toHaveURL(/\/ai\?tab=training/);
+    await expect(page).toHaveURL(/\/ai-training-center\/dashboard/);
   });
 
   test('deep link opens review panel for pending item', async ({ page }) => {
@@ -628,13 +628,13 @@ test.describe('AI Training Center', () => {
     await expect(page.getByTestId('ai-training-review-panel')).toBeVisible({ timeout: 10_000 });
     await page.getByTestId('ai-training-review-close').click();
     await expect(page.getByTestId('ai-training-review-panel')).toHaveCount(0);
-    await expect(page).toHaveURL(/\/ai\?tab=training(?:$|&)/);
+    await expect(page).toHaveURL(/\/ai\?tab=training.*queue=legacy/);
     await expect(page).not.toHaveURL(/[?&]item=/);
     await expect(page.getByTestId('ai-training-review-panel')).toHaveCount(0, { timeout: 3_000 });
   });
 
   test('opening review from list syncs item query param', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await page
       .locator('[data-item-id="train-2"]')
@@ -675,7 +675,7 @@ test.describe('AI Training Center', () => {
   });
 
   test('separate mode shows direct vs group training filters', async ({ page }) => {
-    await page.goto('/ai?tab=training');
+    await page.goto('/ai?tab=training&queue=legacy');
     await expect(page.getByTestId('ai-training-center')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('ai-training-chat-kind-filter')).toBeVisible();
     await expect(page.getByText('Mko wapi?')).toBeVisible();

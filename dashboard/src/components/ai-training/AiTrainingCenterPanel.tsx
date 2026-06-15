@@ -190,8 +190,13 @@ export function AiTrainingCenterPanel() {
       setSearchParams(
         prev => {
           const next = new URLSearchParams(prev);
-          if (itemId) next.set('item', itemId);
-          else next.delete('item');
+          if (itemId) {
+            next.set('item', itemId);
+            next.set('queue', 'legacy');
+          } else {
+            next.delete('item');
+            if (next.get('tab') === 'training') next.set('queue', 'legacy');
+          }
           return next;
         },
         { replace: true },

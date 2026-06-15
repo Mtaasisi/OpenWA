@@ -39,7 +39,7 @@ export function AITrainingLayout() {
             type="button"
             className="aitc-subnav__link"
             style={{ marginTop: '0.5rem' }}
-            onClick={() => navigate('/ai?tab=training')}
+            onClick={() => navigate('/ai?tab=training&queue=legacy')}
           >
             <MaterialSymbol name="history" size={18} />
             <span>Legacy training queue</span>

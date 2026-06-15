@@ -131,6 +131,16 @@ export function AiChat() {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
+
+  useEffect(() => {
+    if (
+      assistantTab === 'training' &&
+      !searchParams.get('item') &&
+      searchParams.get('queue') !== 'legacy'
+    ) {
+      navigate('/ai-training-center/dashboard', { replace: true });
+    }
+  }, [assistantTab, searchParams, navigate]);
   const pendingPromptRef = useRef<string | null>(searchParams.get('prompt'));
   const pendingSendRef = useRef<string | null>(null);
 
