@@ -50,7 +50,7 @@ test.describe('Inbox — AI training learn strip', () => {
     await expect(strip.getByText(/Teach AI from this reply/i)).toBeVisible();
     await expect(strip.getByRole('link', { name: /Open Training Center/i })).toHaveAttribute(
       'href',
-      /\/ai\?tab=training/,
+      /\/ai-training-center\/unknown-messages/,
     );
   });
 
