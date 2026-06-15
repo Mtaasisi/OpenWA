@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Patient Support Dashboard</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter for a clean sans-serif healthcare look -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-scrollbars">
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 10px;
+    }
+  </style>
+<link class="" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"></head>
+<body class="bg-[#F8F9FB] h-screen flex overflow-hidden">
+<!-- BEGIN: Navigation Sidebar -->
+<aside class="w-20 bg-white border-r border-gray-100 flex flex-col items-center py-6 px-2 gap-6 flex-shrink-0" data-purpose="main-nav">
+<div class="flex gap-2 mb-2">
+<div class="w-3 h-3 rounded-full bg-[#FF5F57] border border-[#E0443E] cursor-pointer hover:opacity-80 transition-opacity"></div>
+<div class="w-3 h-3 rounded-full bg-[#FEBC2E] border border-[#D89F24] cursor-pointer hover:opacity-80 transition-opacity"></div>
+<div class="w-3 h-3 rounded-full bg-[#28C840] border border-[#1AAB29] cursor-pointer hover:opacity-80 transition-opacity"></div>
+</div>
+<!-- Logo -->
+<div class="mb-4">
+<svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+</svg>
+</div>
+<!-- Nav Icons -->
+<nav class="flex flex-col gap-7 flex-1 overflow-y-auto custom-scrollbar no-scrollbar"><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl bg-blue-50/50 text-blue-600 transition-all"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">grid_view</span><span class="text-[10px] font-medium">Dashboard</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">mail</span><span class="text-[10px] font-medium">Inbox</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">group</span><span class="text-[10px] font-medium">Clients</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">smart_toy</span><span class="text-[10px] font-medium">AI Assistant</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">inventory_2</span><span class="text-[10px] font-medium">Products</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">account_tree</span><span class="text-[10px] font-medium">Pipeline</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">request_quote</span><span class="text-[10px] font-medium">Quotes</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all relative hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">history</span><span class="text-[10px] font-medium">Follow-ups</span><span class="absolute top-1 right-2 bg-blue-600 text-white text-[9px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">5</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">description</span><span class="text-[10px] font-medium">Templates</span></button><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">article</span><span class="text-[10px] font-medium">Content</span></button><div class="border-t border-gray-100 w-8 mx-auto my-2"></div><button class="flex flex-col items-center gap-1.5 py-2 px-1 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all mt-auto hover:bg-gray-100"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: &quot;wght&quot; 200;">settings</span><span class="text-[10px] font-medium">Settings</span></button></nav>
+</aside>
+<!-- END: Navigation Sidebar -->
+<!-- Main Content Area with Header -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- BEGIN: New Header -->
+<header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0 z-10" data-purpose="global-header">
+<div class="flex items-center gap-8 flex-1">
+<h1 class="text-lg font-bold text-gray-900 whitespace-nowrap">Patient Support Dashboard</h1>
+<div class="max-w-md w-full relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</span>
+<input class="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-1 focus:ring-blue-100 placeholder-gray-400 transition-all" placeholder="Search for patients, records, or notes..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-gray-400 hover:text-gray-600 transition-colors">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span class="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-semibold text-gray-900">Dr. Julianne</p>
+<p class="text-[10px] text-gray-400">Administrator</p>
+</div>
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-gray-100 object-cover group-hover:ring-2 group-hover:ring-blue-50 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnLh2YJ7V_T0I9-2D8S4zZ1_0e_1U8Z3J-lV9zV-G_Q_R1_R2_R3_R4_R5_R6_R7_R8_R9">
+</div>
+</div>
+</header>
+<!-- END: New Header -->
+<!-- BEGIN: Three-Column Content -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: Chat List Sidebar -->
+<section class="w-72 bg-white border-r border-gray-100 flex flex-col flex-shrink-0" data-purpose="chat-list">
+<!-- Filter Tabs -->
+<div class="px-4 py-4 flex gap-4 text-sm font-medium text-gray-500 border-b border-gray-50 relative">
+<button class="text-gray-900 border-b-2 border-gray-900 pb-1">All</button>
+<button class="hover:text-gray-900 pb-1">Groups&nbsp;<span class="text-gray-400">2</span></button>
+<button class="hover:text-gray-900 pb-1">Unread <span class="text-gray-400">12</span></button>
+<button class="ml-auto text-gray-400 hover:text-gray-900 transition-colors flex items-center" title="Manage Filters"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 200;">filter_list</span></button><div class="absolute top-14 left-4 z-50 w-56 bg-white/80 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-xl p-1.5 flex flex-col gap-0.5">
+<button class="flex items-center justify-between px-3 py-2 rounded-xl bg-blue-50 text-blue-600 transition-colors">
+<span class="text-[13px] font-medium">Show All</span>
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+<button class="flex items-center justify-between px-3 py-2 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+<span class="text-[13px] font-medium">Unread Only</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400" style="font-variation-settings: &quot;wght&quot; 200;">mark_chat_unread</span>
+</button>
+<button class="flex items-center justify-between px-3 py-2 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+<span class="text-[13px] font-medium">Flagged</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400" style="font-variation-settings: &quot;wght&quot; 200;">flag</span>
+</button>
+<button class="flex items-center justify-between px-3 py-2 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+<span class="text-[13px] font-medium">Awaiting Response</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400" style="font-variation-settings: &quot;wght&quot; 200;">hourglass_empty</span>
+</button>
+<div class="h-px bg-gray-100 my-1 mx-2"></div>
+<button class="flex items-center justify-between px-3 py-2 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+<span class="text-[13px] font-medium">Archived</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400" style="font-variation-settings: &quot;wght&quot; 200;">archive</span>
+</button>
+</div></div>
+<!-- List Tabs -->
+<!-- Conversations -->
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Active Item: Stephany -->
+<div class="px-4 py-3 bg-blue-50/30 flex gap-3 cursor-pointer border-l-2 border-blue-500">
+<div class="relative flex-shrink-0">
+<img alt="Stephany M." class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7oN0eTn17Q8zdiRul-n6BusLt9PGfRrc-S1x815XL95J5pm9aaJrTMwL_Xsim3vdk_sUyRIXMyrisGv5QpWboTxvdAZQ3bHUhpwQMv326pBrGa4_ZMmVvn95q-T2tD6tVmDTaJRnXBlK0vsxkyDHLckVTG0KntWVyOiy5L5hJneEoNRm-PbDHiwrS-Vry2bWyy7eflQaKEQT4T3AD9tX9HsuOR7Iyfpp2dm8eV1wMkeCEWupqrOaNrFRqBaRI6b6ToPqhPd0vuU9a">
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-gray-900 truncate">Stephany M. <span class="ml-1 bg-blue-600 text-[10px] text-white px-1.5 py-0.5 rounded">New</span></h4>
+<span class="text-[10px] text-gray-400 flex items-center gap-1">
+<svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
+                9:48
+              </span>
+</div>
+<p class="text-xs text-blue-600 truncate italic">Writing...</p>
+</div>
+</div>
+<!-- Item: Daniel K. -->
+<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 cursor-pointer transition-colors">
+<img alt="Daniel K." class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6GIc5dc5l8YPmANWGLDvIfxtK-wEhlueq9_XIWH2IKzkwDI3rBftI0P5_CGK4U_rsR8GRqtWZDTcu4ul3OPgjpuaVlhPlVyafXORzrxVDUpwlD9QmgUjJEpPhQImgE7RC3LIFPahIgnOBeVmQ4GlvvJYl3aVZGQZuEvmh2vEw6RFTQ-nJ3PjPxaF8cHXOF4ab6F8J-XsE7uwK2WhZiBGdouwJOTKFkbrVsylODmGeF0VCU57oc9gBOYFh9Y4jhNLgym6O0HCZ-zAL">
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-gray-900 truncate">Daniel K.</h4>
+<span class="text-[10px] text-gray-400 flex items-center gap-1">
+<svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
+                9:40
+              </span>
+</div>
+<p class="text-xs text-gray-500 truncate">You: Of course, you can! Just listen to...</p>
+</div>
+</div>
+<!-- Item: Elena T. (Awaiting) -->
+<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 cursor-pointer transition-colors">
+<img alt="Elena T." class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzMyL7v5q0X_bDPy9LC3bnYLEtuUu0H4UTjxhoAvc7fNEiY_fOq13K5rhNqAeWkB8O5t8p8XvPTAQKAa0bxv23S20_4NQiT7c717_fd35z7ozJ2ARPDNSw5M9KuZt8d2cx8A5T9jdnET6bY88ySVi2TPPFAnvJaCWD8d7pU1w6hSioHFYGVwuQhKZLBSlGAqUqC-8jfqcMF6ARq9e_OxpX0icqUmB6YS5oYzq2_3gFcoUAE-APb-St2RKi8lwYGk-hKs2wEYkGvQmS">
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-gray-900 truncate">Elena T. <span class="ml-1 text-red-500 text-[10px] font-medium bg-red-50 px-1.5 py-0.5 rounded">Awaiting</span></h4>
+<span class="text-[10px] text-gray-400">7:45</span>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-xs text-gray-500 truncate">Can I keep taking the supplements yo...</p>
+<span class="bg-blue-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">5</span>
+</div>
+</div>
+</div>
+<!-- Item: Noah B. -->
+<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 cursor-pointer transition-colors">
+<img alt="Noah B." class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3wYiKRIur-rzL2hd7Y3BxCiDC04YDfoynGO8OvEh-fq4zj7PYPErkkJsOtzOqh4EFc2d_QD_xDIJtQ1sruIPCSn3krk_OJY4pYhMl0zB8Wx3QTSAAxn255bBnl7VSHMnC7paZApLE8sg-ohs4ypSWz27zTlwGfDoR0SZq9t_7YyvHApbhclUkNwSs1fpU_SUaep1_4c7ZjwXuqLq6mu2e2LRn3lQbwd3S40xH9BgwjDUANlOL_UBm-YsOsa9HO7wxlbSP38SAng12">
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-gray-900 truncate">Noah B. <span class="ml-1 text-red-500 text-[10px] font-medium bg-red-50 px-1.5 py-0.5 rounded">Awaiting</span></h4>
+<span class="text-[10px] text-gray-400">Fri</span>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-xs text-gray-500 truncate">Still having trouble sleeping after the...</p>
+<span class="bg-blue-600 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">4</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Chat List Sidebar -->
+<!-- BEGIN: Main Chat Area -->
+<main class="flex-1 flex flex-col bg-white" data-purpose="chat-window">
+<!-- Chat Header -->
+<header class="h-14 border-b flex items-center justify-between px-6 flex-shrink-0 bg-white border-gray-50">
+<div class="flex items-center gap-3">
+<img alt="Stephany M." class="w-8 h-8 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbfkuA2IJvP4swaJ_pd5cwelbtLOMS0veMJ3EsjB1QTS5-qVyJvD_0KyhLcmpza2ncrEUo7BmWHR30USHxkPqHJ_YrMbx2JSplGcUv60o4cJL0UGLcLpWs9IOl5eSVguCUdgWxJP6lpo36kMHeBE3SC2X4FAPGePHPQlAwQCCx9dop4p-60Q15z7eqCPc1dGiG_-tPlOygdeJvqR24VA__CbeTFFTLRDi5ouxQ2JzIBDrd7uHplie4_CHboMmssqBVOQpO50AeU9dV">
+<div>
+<h2 class="text-sm font-bold text-gray-900">Stephany M.</h2>
+<p class="text-[10px] text-blue-600 italic">Writing...</p>
+</div>
+</div>
+<div class="flex items-center gap-2 text-gray-400"><div class="flex items-center gap-1 sm:gap-2">
+<!-- Visible on larger screens, hidden on mobile -->
+<div class="hidden md:flex items-center gap-1">
+<button class="flex items-center justify-center gap-2 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white transition-all font-semibold shadow-sm rounded-lg px-3" title="Pause AI"><span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;wght&quot; 400;">pause_circle</span><span class="text-[11px] font-bold uppercase tracking-wider">Pause</span></button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 text-gray-500 transition-colors" title="Schedule"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 200;">calendar_today</span><span class="text-[11px] font-medium uppercase tracking-wider">Schedule</span></button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 text-gray-500 transition-colors" title="Pin"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 200;">push_pin</span><span class="text-[11px] font-medium uppercase tracking-wider">Pin</span></button>
+
+</div>
+<!-- Always visible Details button -->
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100" title="Toggle Patient Details"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 400, &quot;FILL&quot; 1;">info</span><span class="text-[11px] font-bold uppercase tracking-wider">Details</span></button>
+<div class="h-6 w-px bg-gray-100 mx-1"></div>
+<!-- Overflow Menu: Visible on smaller screens -->
+<button class="p-2 rounded-full hover:bg-gray-50 text-gray-400 transition-colors md:hidden" title="More Actions">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 200;">more_horiz</span>
+</button>
+<!-- Desktop More Menu -->
+<button class="hidden md:block p-2 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;wght&quot; 200;">more_horiz</span>
+</button>
+</div></div>
+</header>
+<!-- Message Thread -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar bg-[#FFFFFF]">
+<div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Yesterday</span></div>
+<div class="flex flex-col items-start max-w-[70%]">
+<div class="bg-gray-100 text-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm"><p class="text-sm">Hello! Quick question — do you happen to know which room I'll be staying in after the surgery?</p></div>
+<span class="text-[10px] text-gray-400 mt-2 self-end">3:42 PM</span>
+</div>
+<div class="flex justify-center"><span class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Today</span></div>
+<div class="flex flex-col items-end ml-auto max-w-[70%]">
+<div class="bg-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-md"><p class="text-sm">Hello, Stephany! You'll be in a private recovery room near the nurses' station. I can send a photo so you can get a feel for the space.</p></div>
+<span class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">9:48 AM <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg></span>
+</div>
+<div class="flex flex-col items-start max-w-[70%]">
+<div class="bg-gray-100 text-gray-800 p-4 rounded-2xl rounded-tl-none shadow-sm"><p class="text-sm">I've been wondering what the recovery space looks like.</p></div>
+<span class="text-[10px] text-gray-400 mt-2 self-end">9:48 AM</span>
+</div>
+</div>
+<!-- AI Suggestions & Input -->
+<div class="p-4 border-t border-gray-100"><div class="bg-[#F3F6F9]/60 border-b border-gray-100 p-6 mb-4 -mx-4 -mt-4 rounded-t-2xl" data-purpose="ai-suggestions-panel"><div class="flex justify-between items-center mb-5"><span class="text-[13px] font-bold text-gray-900">AI Suggestions</span><div class="flex gap-4 text-gray-400"><button class="hover:text-blue-600 transition-colors"><span class="material-symbols-outlined text-[20px]">refresh</span></button><button class="hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-[20px]">close</span></button></div></div><div class="grid grid-cols-2 gap-6"><button class="text-left bg-white border-2 border-blue-600 p-5 rounded-2xl transition-all shadow-sm relative group"><div class="flex items-center gap-2 mb-3"><span class="text-[12px] font-bold text-gray-900">Option 1:</span><span class="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-semibold">Warm</span></div><p class="text-[13px] text-gray-500 leading-relaxed">Hello, Stephany! You'll be in a private recovery room near the nurses' station. I can send a photo so you can get a feel for the space.</p></button><button class="text-left bg-white border-2 border-dashed border-gray-200 p-5 rounded-2xl hover:border-gray-300 transition-all"><div class="flex items-center gap-2 mb-3"><span class="text-[12px] font-bold text-gray-900">Option 2:</span><span class="text-[11px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-semibold">Descriptive</span></div><p class="text-[13px] text-gray-500 leading-relaxed">A private room with a large bed, clean setup, and window facing the city.</p></button></div></div>
+<div class="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+<div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-1 sticky top-0 z-10 bg-white"><button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all whitespace-nowrap"><span class="material-symbols-outlined text-[18px]">inventory_2</span><span class="text-xs font-medium">Select Product</span></button><button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all whitespace-nowrap"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="text-xs font-medium">Quick Replies</span></button><button class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all whitespace-nowrap"><span class="material-symbols-outlined text-[18px]">description</span><span class="text-xs font-medium">Templates</span></button></div><textarea class="w-full border-none focus:ring-0 text-sm resize-none mb-2" placeholder="Message..." rows="1"></textarea>
+<div class="flex justify-between items-center">
+<div class="flex gap-4 text-gray-400">
+<button class="hover:text-blue-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="hover:text-blue-600"></button>
+</div>
+<div class="flex items-center gap-4 text-gray-400">
+<button class="hover:text-blue-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="text-blue-500 hover:text-blue-600"></button>
+<button class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 shadow-md"><svg class="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- END: Main Chat Area -->
+<!-- BEGIN: Patient Info Panel -->
+<aside class="w-[380px] bg-white border-l border-gray-100 p-6 overflow-y-auto custom-scrollbar flex-shrink-0" data-purpose="patient-info">
+<div class="flex bg-gray-100/80 p-1 rounded-xl mb-6 shadow-inner"><button class="flex-1 bg-white text-gray-900 font-semibold py-1.5 rounded-lg shadow-sm text-xs transition-all">Customer 360</button><button class="flex-1 text-gray-500 hover:text-gray-700 font-medium py-1.5 text-xs transition-all">Activity</button></div>
+<div class="bg-gray-50 rounded-2xl p-5 mb-6 relative"><div class="flex items-start gap-6 mb-4"><img alt="Stephany Profile" class="w-32 h-40 object-cover rounded-xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKkrzow8P0L0rNPu-uUbuNJzVIq2Hrl6zOzT5ZCbRjClHRsOEjJ0i72H_xZCqmgGyGut0xgCs0rbKSJOkcEt35QElnT12ZtdTBu9hv45YLWsZLqorS4mhCVEmpXF_kwpx_S0v_xvkOP9krf3tiomLL-a_NitsnbMXD39c5k0JkfNbR18DAuONbCGo1laHUaQHXkQ6HeD56cMfKxXougvUZhkJQvheQSbmQmNzpnTEPjOv8Jf5W4MiURjMf2qaSQxVwsPzpZNJT3DUq"><div class="flex-1 space-y-3"><div><h3 class="text-xl font-bold text-gray-900">Stephany M.</h3></div><div class="flex gap-2"></div><div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gender</p><p class="text-sm font-medium text-gray-900">Male</p></div><div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Location</p><p class="text-sm font-medium text-gray-900">California, US</p></div></div></div><div class="border-t border-gray-200 pt-4 space-y-3"><div class="flex justify-between items-center"><h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Profile Details</h4><button class="text-blue-600 hover:bg-blue-50 p-1.5 rounded-full transition-all flex items-center justify-center" title="Edit Profile"><span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;wght&quot; 400;">edit</span></button></div><div class="grid grid-cols-2 gap-y-3 text-[12px]"><div><p class="text-gray-400">Lead source</p>
+<div class="relative group">
+  <button class="flex items-center gap-1 text-gray-900 font-medium hover:text-blue-600 transition-colors">
+    <span class="">WhatsApp</span>
+    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+  </button>
+  <!-- Dropdown Menu -->
+  <div class="absolute top-full left-0 mt-1 w-32 bg-white border border-gray-100 rounded-lg shadow-md py-1 z-50 hidden group-focus-within:block">
+    <button class="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">WhatsApp</button>
+    <button class="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Instagram</button>
+    <button class="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Facebook</button>
+    <button class="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Email</button>
+    <button class="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Direct</button>
+  </div>
+</div></div><div><p class="text-gray-400">Phone</p><p class="text-gray-900 font-medium">707-723-4127</p></div><div class="col-span-2"><p class="text-gray-400">Email</p><p class="text-gray-900 font-medium truncate">steph.pa@gmail.com</p></div></div><button class="w-full flex items-center justify-center gap-1 py-2 mt-4 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border-t border-outline-variant">
+  <span class="">View More</span>
+  <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button></div></div>
+<div class="space-y-6"><div class="border-b border-gray-100 pb-4"><h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Tags</h4><div class="flex flex-wrap gap-2">
+  <button class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full hover:bg-blue-100 transition-colors">Post-Op</button>
+  <button class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full hover:bg-blue-100 transition-colors">Urgent</button>
+  <button class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full hover:bg-blue-100 transition-colors">Follow-up</button>
+  <button class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full hover:bg-blue-100 transition-colors">Consultation</button>
+  <button class="flex items-center justify-center w-6 h-6 rounded-full text-blue-600 hover:bg-blue-50 transition-colors" title="Add Tag">
+    <span class="material-symbols-outlined text-[20px]">add</span>
+  </button>
+</div></div><div class="border-b border-gray-100 pb-4"><h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Customer Notes</h4><div class="space-y-3"><textarea class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-1 focus:ring-blue-100 resize-none" placeholder="Add a private note about this customer..." rows="3"></textarea><div class="flex items-center gap-2"><input class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="pinned-note" type="checkbox"><label class="text-xs text-gray-600" for="pinned-note">Pinned for all agents</label></div><button class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors h-10">Save</button></div></div><div><h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Quick Actions</h4><div class="grid grid-cols-2 gap-2"><button class="flex items-center justify-center gap-2 py-2 px-3 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors h-10"><span class="material-symbols-outlined text-sm">add</span>Add Tag</button><button class="flex items-center justify-center gap-2 py-2 px-3 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors h-10"><span class="material-symbols-outlined text-sm">inventory_2</span>Catalog</button><button class="flex items-center justify-center gap-2 py-2 px-3 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors h-10"><span class="material-symbols-outlined text-sm">calendar_today</span>Schedule</button><button class="flex items-center justify-center gap-2 py-2 px-3 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors h-10"><span class="material-symbols-outlined text-sm">account_tree</span>Pipeline</button></div></div></div>
+</aside>
+<!-- END: Patient Info Panel -->
+</div>
+<!-- END: Three-Column Content -->
+</div>
+
+
+
+
+</body></html>

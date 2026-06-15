@@ -35,6 +35,19 @@ export function formatAiProviderError(status: number, bodyText: string): string 
   }
 
   if (topMsg) {
+    if (/specified API usage limits/i.test(topMsg)) {
+      return (
+        'Anthropic API key monthly spend limit reached for this key (not your OpenWA budget). ' +
+        'In Anthropic Console → Settings → API keys: raise the key spend limit or create a new key, ' +
+        'then paste it in OpenWA and Save. Org wallet credits do not override per-key limits.'
+      );
+    }
+    if (/credit balance is too low/i.test(topMsg)) {
+      return (
+        'Anthropic account credit balance is too low for this API key. ' +
+        'Add credits in Anthropic Console → Plans & Billing, or use a different API key.'
+      );
+    }
     const trimmed = topMsg.slice(0, 240);
     return trimmed.length < topMsg.length ? `${trimmed}…` : trimmed;
   }

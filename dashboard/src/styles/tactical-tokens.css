@@ -1,0 +1,37 @@
+/* Tactical Overlay — theme-aware HUD design tokens */
+
+:root,
+[data-theme-effects='tactical'] {
+  --tac-outline: color-mix(in srgb, var(--border) 45%, transparent);
+  --tac-outline-soft: color-mix(in srgb, var(--border) 32%, transparent);
+  --tac-surface: rgba(15, 23, 42, 0.92);
+  --tac-surface-elevated: rgba(15, 23, 42, 0.98);
+  --tac-surface-muted: rgba(30, 41, 59, 0.55);
+  --tac-primary: var(--crm-primary, #22c55e);
+  --tac-primary-soft: color-mix(in srgb, var(--crm-primary, #22c55e) 14%, transparent);
+  --tac-primary-border: color-mix(in srgb, var(--crm-primary, #22c55e) 35%, transparent);
+  --tac-danger: var(--danger, #ef4444);
+  --tac-warning: var(--warning, #f59e0b);
+  --tac-info: var(--info, #38bdf8);
+  --tac-font: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  --tac-shadow: 0 0 0 1px rgba(34, 197, 94, 0.08), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --tac-radius: 0;
+}
+
+[data-theme-resolved='dark'][data-theme-effects='tactical'],
+html[data-theme-id='tactical-overlay'] {
+  --tac-surface: rgba(2, 6, 23, 0.94);
+  --tac-surface-elevated: rgba(2, 6, 23, 0.99);
+  --tac-surface-muted: rgba(15, 23, 42, 0.72);
+}
+
+[data-theme-effects='tactical'] .followups-interakt,
+[data-theme-effects='tactical'] .dashboard-interakt {
+  font-family: var(--tac-font);
+}
+
+[data-theme-effects='tactical'] .followups-interakt .fu-card,
+[data-theme-effects='tactical'] .dashboard-interakt .dashboard-section {
+  border-radius: var(--tac-radius);
+  border-color: var(--tac-outline-soft);
+}

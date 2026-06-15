@@ -319,6 +319,26 @@ curl -X POST \
 }
 ```
 
+### PATCH /api/sessions/:id/proxy
+
+Update session proxy settings. If the session engine is running, the service performs a soft restart so Puppeteer picks up the new proxy.
+
+```bash
+curl -X PATCH \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"proxyUrl":"socks5://user:pass@proxy:1080","proxyType":"socks5"}' \
+  http://localhost:2785/api/sessions/session-1/proxy
+```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| proxyUrl | string \| null | No | Proxy URL; pass `null` or empty string to clear |
+| proxyType | string | No | `http`, `https`, `socks4`, or `socks5` (default: `socks5`) |
+
+**Response:** Updated session object including `proxyUrl` and `proxyType`.
+
 ### POST /api/sessions/:id/logout
 
 Logout session (clear auth).

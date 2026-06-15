@@ -146,16 +146,40 @@ flowchart LR
 **Configuration fixes:**
 
 ```env
-# Increase reconnection attempts
-WA_RECONNECT_INTERVAL=5000
-WA_MAX_RECONNECT_ATTEMPTS=10
+# Auto-recover transient disconnects
+AUTO_START_SESSIONS=true
+SESSION_MAX_RECONNECT_ATTEMPTS=50
+SESSION_RECONNECT_INFINITE=true
+SESSION_RECONNECT_MAX_DELAY_MS=300000
+SESSION_RECONNECT_BASE_DELAY_MS=5000
+SESSION_CONNECT_RECONNECT_ATTEMPTS=30
 
-# Enable session persistence
-WA_PERSISTENT_SESSION=true
+# Background health monitor (detects ghost/stuck sessions)
+SESSION_HEALTH_MONITOR_ENABLED=true
+SESSION_HEALTH_MONITOR_INTERVAL_MS=60000
+SESSION_HEALTH_AUTO_RESTART=true
 
-# Increase timeouts
-WA_AUTH_TIMEOUT=120000
-WA_QR_TIMEOUT=60000
+# Large-account connect stability
+WA_SYNC_WINDOW_MS=300000
+WA_BACKGROUND_SYNC_DELAY_MS=60000
+PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu
+```
+
+**Manual soft restart (no QR if auth is intact):**
+
+```bash
+curl -X POST -H "X-API-Key: $API_KEY" \
+  http://localhost:2785/api/sessions/{sessionId}/restart
+```
+
+**Realistic expectations:** On proper VPS hosting with persistent storage and a sticky proxy, target 95%+ uptime for normal business messaging. You will still need to re-scan QR when WhatsApp sends a terminal disconnect or the phone has been offline for ~10+ days.
+
+**Optional weekly maintenance restart:**
+
+```env
+SESSION_SCHEDULED_RESTART_ENABLED=true
+SESSION_SCHEDULED_RESTART_DAY=0        # 0=Sunday
+SESSION_SCHEDULED_RESTART_TIME=03:00   # server local time
 ```
 
 ## 12.3 Messaging Issues

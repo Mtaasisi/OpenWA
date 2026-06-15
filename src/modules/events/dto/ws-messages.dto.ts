@@ -23,6 +23,23 @@ export const SUBSCRIBABLE_EVENTS = [
   'group.join',
   'group.leave',
   'group.update',
+  'followup.warning',
+  'followup.escalated',
+  'followup.kpi_penalty',
+  'followup.autopilot_paused',
+  'followup.autopilot_updated',
+  'ai.typing',
+  'ai.sendQueued',
+  'ai.escalated',
+  'ai.opt_out',
+  'ai.learning.pending',
+  'ai.learning.repeated',
+  'product.demand.spike',
+  'knowledge.needs_review',
+  'inbox.chat_assigned',
+  'sms.status_changed',
+  'storage.warning',
+  'sync.failed',
 ] as const;
 
 export type SubscribableEvent = (typeof SUBSCRIBABLE_EVENTS)[number] | '*';

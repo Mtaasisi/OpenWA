@@ -13,6 +13,8 @@ export enum AiUsageFeature {
   MEMORY_UPDATE = 'memory_update',
   FOLLOWUP = 'followup',
   BACKGROUND_JOB = 'background_job',
+  LEARNED_REPLY_CLASSIFIER = 'learned_reply_classifier',
+  MESSAGE_BATCH_PROCESSOR = 'message_batch_processor',
 }
 
 export enum AiUsageSource {
@@ -27,6 +29,10 @@ export enum AiUsageStatus {
   SKIPPED = 'skipped',
   BUDGET_BLOCKED = 'budget_blocked',
   RATE_LIMITED = 'rate_limited',
+  CACHE_HIT = 'cache_hit',
+  CACHE_MISS = 'cache_miss',
+  DUPLICATE_SKIPPED = 'duplicate_skipped',
+  MODEL_DOWNGRADED = 'model_downgraded',
 }
 
 export interface AiCallContext {
@@ -35,13 +41,16 @@ export interface AiCallContext {
   branchId?: string | null;
   conversationId?: string | null;
   customerId?: string | null;
+  contactId?: string | null;
   messageId?: string | null;
+  batchId?: string | null;
   requestId?: string | null;
   tier?: AiModelTier;
   maxTokens?: number;
   maxIterations?: number;
   skipBudgetCheck?: boolean;
   adminOverrideBudget?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AiFeatureLimits {

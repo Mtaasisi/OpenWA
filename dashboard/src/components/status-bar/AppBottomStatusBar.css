@@ -1,0 +1,775 @@
+:root {
+  --app-statusbar-height: 28px;
+  --wa-status-bar-offset: 0px;
+  --statusbar-bg: #fafbfc;
+  --statusbar-border: #eef0f2;
+  --statusbar-divider: #d8dde2;
+  --statusbar-muted: #8a9399;
+  --statusbar-text: #54656f;
+  --statusbar-success: #008069;
+  --statusbar-success-dot: #25d366;
+  --statusbar-success-soft: color-mix(in srgb, #25d366 14%, transparent);
+  --statusbar-warn: #b38600;
+  --statusbar-warn-soft: color-mix(in srgb, #e8a817 16%, transparent);
+  --statusbar-error: #d64545;
+  --statusbar-error-soft: color-mix(in srgb, #d64545 12%, transparent);
+  --statusbar-neutral-soft: color-mix(in srgb, #54656f 8%, transparent);
+  --statusbar-surface-hover: transparent;
+}
+
+html.shell--interakt-v2 {
+  --app-statusbar-height: 28px;
+  --statusbar-bg: #fafbfc;
+  --statusbar-border: var(--wa-outline, #eef0f2);
+  --statusbar-divider: var(--wa-divider, #d8dde2);
+  --statusbar-muted: var(--wa-on-surface-variant, #8a9399);
+  --statusbar-text: var(--wa-on-surface, #54656f);
+  --statusbar-success: var(--wa-on-primary-container, #008069);
+  --statusbar-success-dot: var(--wa-primary, #25d366);
+  --statusbar-success-soft: color-mix(in srgb, var(--wa-primary, #25d366) 14%, transparent);
+  --statusbar-warn: #b38600;
+  --statusbar-warn-soft: color-mix(in srgb, #e8a817 16%, transparent);
+  --statusbar-error: var(--wa-error, #d64545);
+  --statusbar-error-soft: color-mix(in srgb, var(--wa-error, #d64545) 12%, transparent);
+}
+
+html.shell--stitch-v1 {
+  --statusbar-bg: #fafbfc;
+  --statusbar-border: var(--stitch-outline, #eef0f2);
+  --statusbar-divider: var(--stitch-outline-soft, #d8dde2);
+  --statusbar-muted: var(--text-muted, #8a9399);
+  --statusbar-text: #54656f;
+  --statusbar-success: #008069;
+  --statusbar-success-dot: #25d366;
+  --statusbar-success-soft: color-mix(in srgb, #25d366 14%, transparent);
+}
+
+html.shell--stitch-v1 .app-bottom-status-bar {
+  left: var(--wa-app-sidebar-w, 80px);
+}
+
+[dir='rtl'] html.shell--stitch-v1 .app-bottom-status-bar {
+  left: 0;
+  right: var(--wa-app-sidebar-w, 80px);
+}
+
+[data-theme-resolved='dark'] .app-bottom-status-bar {
+  --statusbar-bg: color-mix(in srgb, var(--bg-card, #1e293b) 92%, #000 8%);
+  --statusbar-border: color-mix(in srgb, var(--border, #334155) 55%, transparent);
+  --statusbar-divider: color-mix(in srgb, var(--border, #334155) 70%, transparent);
+  --statusbar-muted: #8696a0;
+  --statusbar-text: #e9edef;
+  --statusbar-success: #53bdeb;
+  --statusbar-success-dot: #25d366;
+  --statusbar-success-soft: color-mix(in srgb, #25d366 18%, transparent);
+  --statusbar-warn: #e8a817;
+  --statusbar-warn-soft: color-mix(in srgb, #e8a817 14%, transparent);
+  --statusbar-error: #f15c6d;
+  --statusbar-error-soft: color-mix(in srgb, #f15c6d 14%, transparent);
+  --statusbar-neutral-soft: color-mix(in srgb, #e9edef 8%, transparent);
+  box-shadow: none;
+}
+
+/* Popovers portal to body — share semantic tokens in dark mode */
+[data-theme-resolved='dark'] {
+  --statusbar-success: #53bdeb;
+  --statusbar-success-dot: #25d366;
+  --statusbar-success-soft: color-mix(in srgb, #25d366 18%, transparent);
+  --statusbar-warn: #e8a817;
+  --statusbar-warn-soft: color-mix(in srgb, #e8a817 14%, transparent);
+  --statusbar-error: #f15c6d;
+  --statusbar-error-soft: color-mix(in srgb, #f15c6d 14%, transparent);
+}
+
+.app-bottom-status-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  height: var(--app-statusbar-height);
+  min-height: var(--app-statusbar-height);
+  padding: 0 0.75rem;
+  border-top: 1px solid var(--statusbar-border);
+  background: var(--statusbar-bg);
+  color: var(--statusbar-muted);
+  font-family: inherit;
+  font-size: 0.625rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  box-shadow: none;
+  -webkit-app-region: no-drag;
+  user-select: none;
+  overflow: hidden;
+}
+
+.app-bottom-status-bar__track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.app-bottom-status-bar__primary,
+.app-bottom-status-bar__secondary {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.app-bottom-status-bar__primary {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.app-bottom-status-bar__secondary {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+[dir='rtl'] .app-bottom-status-bar__secondary {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.app-bottom-status-bar--loading {
+  opacity: 0.72;
+}
+
+.app-bottom-status-bar--popover-open {
+  border-top-color: var(--statusbar-border);
+  background: var(--statusbar-bg);
+}
+
+/* Quiet hover tips — full context for short bar labels */
+.app-bottom-status-bar [data-tip] {
+  position: relative;
+}
+
+.app-bottom-status-bar [data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  z-index: 300;
+  max-width: min(18rem, 70vw);
+  padding: 0.3125rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, #3d4f57 20%, transparent);
+  background: #3d4f57;
+  color: #f7f8f9;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: normal;
+  box-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease 0.45s,
+    visibility 0.14s ease 0.45s;
+}
+
+.app-bottom-status-bar [data-tip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: color-mix(in srgb, #3d4f57 94%, #000 6%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease 0.45s,
+    visibility 0.14s ease 0.45s;
+}
+
+.app-bottom-status-bar [data-tip]:hover::after,
+.app-bottom-status-bar [data-tip]:hover::before,
+.app-bottom-status-bar [data-tip]:focus-visible::after,
+.app-bottom-status-bar [data-tip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+[data-theme-resolved='dark'] .app-bottom-status-bar [data-tip]::after {
+  background: #1a2630;
+  border-color: color-mix(in srgb, #fff 12%, transparent);
+  color: #e9edef;
+  box-shadow: none;
+}
+
+[data-theme-resolved='dark'] .app-bottom-status-bar [data-tip]::before {
+  border-top-color: color-mix(in srgb, #1a2630 92%, #fff 8%);
+}
+
+.layout--mobile-bottom-nav .app-bottom-status-bar {
+  bottom: 4rem;
+}
+
+html.shell--interakt-v2 .app-bottom-status-bar {
+  left: var(--wa-app-sidebar-w, 64px);
+}
+
+html.shell--interakt-v2:has(.layout--interakt-v2-sidebar-expanded) .app-bottom-status-bar {
+  left: var(--wa-app-sidebar-w-expanded, 300px);
+}
+
+@media (max-width: 768px) {
+  html.shell--interakt-v2 .app-bottom-status-bar {
+    left: 0;
+  }
+}
+
+.app-bottom-status-bar__left,
+.app-bottom-status-bar__right,
+.app-bottom-status-bar__pills {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.app-bottom-status-bar__meta {
+  font-size: inherit;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--statusbar-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.app-bottom-status-bar__meta--version {
+  opacity: 0.55;
+  font-size: 0.625rem;
+}
+
+.app-bottom-status-bar__sep {
+  flex-shrink: 0;
+  color: var(--statusbar-divider);
+  font-size: 0.625rem;
+  line-height: 1;
+  opacity: 0.4;
+  user-select: none;
+  padding: 0 0.0625rem;
+}
+
+/* Flat status chips — semantic color tints */
+.status-bar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  max-width: 7.5rem;
+  padding: 0.125rem 0.3125rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--statusbar-muted);
+  font: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.status-bar-chip--clickable {
+  cursor: pointer;
+}
+
+.status-bar-chip--clickable:hover,
+.status-bar-chip--active {
+  background: var(--statusbar-neutral-soft);
+  border-color: transparent;
+}
+
+.status-bar-chip--success:not(.status-bar-chip--active) {
+  color: var(--statusbar-success);
+}
+
+.status-bar-chip--success.status-bar-chip--clickable:hover,
+.status-bar-chip--success.status-bar-chip--active {
+  color: var(--statusbar-success);
+  background: var(--statusbar-success-soft);
+  border-color: transparent;
+}
+
+.status-bar-chip--warning:not(.status-bar-chip--active) {
+  color: var(--statusbar-warn);
+}
+
+.status-bar-chip--warning.status-bar-chip--clickable:hover,
+.status-bar-chip--warning.status-bar-chip--active {
+  color: var(--statusbar-warn);
+  background: var(--statusbar-warn-soft);
+  border-color: transparent;
+}
+
+.status-bar-chip--error:not(.status-bar-chip--active) {
+  color: var(--statusbar-error);
+}
+
+.status-bar-chip--error.status-bar-chip--clickable:hover,
+.status-bar-chip--error.status-bar-chip--active {
+  color: var(--statusbar-error);
+  background: var(--statusbar-error-soft);
+  border-color: transparent;
+}
+
+.status-bar-chip--clickable:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--statusbar-text) 30%, transparent);
+  outline-offset: 1px;
+}
+
+.status-bar-chip__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--statusbar-muted);
+  opacity: 0.55;
+}
+
+.status-bar-chip--success .status-bar-chip__dot {
+  background: var(--statusbar-success-dot);
+  opacity: 1;
+}
+
+.status-bar-chip--warning .status-bar-chip__dot {
+  background: var(--statusbar-warn);
+  opacity: 1;
+}
+
+.status-bar-chip--error .status-bar-chip__dot {
+  background: var(--statusbar-error);
+  opacity: 1;
+}
+
+.status-bar-chip--loading .status-bar-chip__dot {
+  background: var(--statusbar-muted);
+  animation: status-bar-chip-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes status-bar-chip-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.status-bar-chip__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-bottom-status-bar__divider {
+  display: none;
+}
+
+.app-bottom-status-bar__latency {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  flex-shrink: 0;
+}
+
+.app-bottom-status-bar__latency-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--statusbar-muted);
+  flex-shrink: 0;
+  opacity: 0.65;
+}
+
+.app-bottom-status-bar__latency-dot--good {
+  background: var(--statusbar-muted);
+  animation: none;
+}
+
+.app-bottom-status-bar__latency-dot--warn {
+  background: var(--statusbar-warn);
+  opacity: 0.85;
+  animation: none;
+}
+
+.app-bottom-status-bar__latency-dot--bad {
+  background: var(--statusbar-error);
+  opacity: 0.9;
+  animation: none;
+}
+
+.app-bottom-status-bar__latency-dot--loading {
+  background: var(--statusbar-divider);
+  animation: none;
+}
+
+.app-bottom-status-bar__work-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--statusbar-muted);
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.12s ease;
+}
+
+.app-bottom-status-bar__work-summary:hover,
+.app-bottom-status-bar__work-summary--active {
+  color: var(--statusbar-text);
+  text-decoration: none;
+}
+
+.app-bottom-status-bar__work-summary:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--statusbar-text) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.app-bottom-status-bar__work-summary-pending,
+.app-bottom-status-bar__work-summary-efficiency {
+  font-weight: 400;
+  color: inherit;
+}
+
+.app-bottom-status-bar__work-summary-sep {
+  opacity: 0.35;
+}
+
+.app-bottom-status-bar__work-summary-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.app-bottom-status-bar__branch {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  color: var(--statusbar-muted);
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.12s ease;
+}
+
+.app-bottom-status-bar__branch:hover,
+.app-bottom-status-bar__branch--active {
+  color: var(--statusbar-text);
+  text-decoration: none;
+}
+
+.app-bottom-status-bar__branch:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--statusbar-text) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.app-bottom-status-bar__user {
+  display: inline-flex;
+  align-items: center;
+  max-width: 6.5rem;
+  padding: 0.125rem 0.3125rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.app-bottom-status-bar__user:hover,
+.app-bottom-status-bar__user--active {
+  color: var(--statusbar-text);
+  background: var(--statusbar-neutral-soft);
+  border-color: transparent;
+}
+
+.app-bottom-status-bar__user:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--statusbar-text) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.app-bottom-status-bar__user-name {
+  font-size: inherit;
+  font-weight: 400;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-bottom-status-bar__pills {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+/* Flat, quiet status items — text-first, no pill chrome */
+.app-bottom-status-bar .status-semantic-pill {
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 400;
+  flex-shrink: 1;
+  overflow: hidden;
+  gap: 0.25rem;
+}
+
+.app-bottom-status-bar .status-semantic-pill__icon {
+  display: none;
+}
+
+.app-bottom-status-bar .status-semantic-pill__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 8rem;
+  font-size: inherit;
+}
+
+.app-bottom-status-bar .status-semantic-pill--clickable:hover {
+  transform: none;
+  opacity: 1;
+  color: var(--statusbar-text);
+}
+
+.app-bottom-status-bar .status-semantic-pill--clickable:active {
+  transform: none;
+  opacity: 0.85;
+}
+
+.app-bottom-status-bar .status-semantic-pill--active {
+  text-decoration: none;
+  color: var(--statusbar-text);
+}
+
+.app-bottom-status-bar .status-semantic-pill--success,
+.app-bottom-status-bar .status-semantic-pill--warning,
+.app-bottom-status-bar .status-semantic-pill--error,
+.app-bottom-status-bar .status-semantic-pill--neutral,
+.app-bottom-status-bar .status-semantic-pill--loading {
+  color: var(--statusbar-muted);
+}
+
+.app-bottom-status-bar .status-semantic-pill--warning {
+  color: color-mix(in srgb, var(--statusbar-warn) 72%, var(--statusbar-muted));
+}
+
+.app-bottom-status-bar .status-semantic-pill--error {
+  color: color-mix(in srgb, var(--statusbar-error) 78%, var(--statusbar-muted));
+}
+
+.app-bottom-status-bar .status-semantic-pill--active.status-semantic-pill--success,
+.app-bottom-status-bar .status-semantic-pill--active.status-semantic-pill--warning,
+.app-bottom-status-bar .status-semantic-pill--active.status-semantic-pill--error,
+.app-bottom-status-bar .status-semantic-pill--active.status-semantic-pill--neutral,
+.app-bottom-status-bar .status-semantic-pill--active.status-semantic-pill--loading {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--statusbar-text);
+}
+
+@media (max-width: 640px) {
+  .status-bar-chip {
+    max-width: 5rem;
+  }
+
+  .app-bottom-status-bar__user {
+    max-width: 4.5rem;
+  }
+}
+
+.app-status-hidden-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  margin-right: 0.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+.app-status-hidden-indicator:hover {
+  opacity: 0.72;
+}
+
+.app-status-hidden-indicator__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--statusbar-muted);
+  opacity: 0.55;
+}
+
+.app-status-hidden-indicator--success .app-status-hidden-indicator__dot {
+  background: var(--statusbar-success-dot);
+  opacity: 1;
+}
+
+.app-status-hidden-indicator--warning .app-status-hidden-indicator__dot {
+  background: var(--statusbar-warn);
+  opacity: 1;
+}
+
+.app-status-hidden-indicator--error .app-status-hidden-indicator__dot {
+  background: var(--statusbar-error);
+  opacity: 1;
+}
+
+.layout--with-status-bar {
+  --wa-status-bar-offset: var(--app-statusbar-height);
+  --wa-status-bar-h: var(--app-statusbar-height);
+}
+
+/* Beat full-bleed `padding: 0 !important` on inbox/settings/tactical shells */
+.layout--with-status-bar .main-content {
+  padding-bottom: var(--app-statusbar-height) !important;
+  box-sizing: border-box;
+}
+
+.layout--with-status-bar.layout--stitch-v1 .main-content--stitch-v1:not(.main-content--stitch-inbox) {
+  height: calc(100vh - var(--wa-app-header-h) - var(--app-statusbar-height)) !important;
+  max-height: calc(100vh - var(--wa-app-header-h) - var(--app-statusbar-height));
+  box-sizing: border-box;
+}
+
+.layout--with-status-bar.layout--stitch-v1.layout--stitch-inbox .main-content--stitch-inbox.main-content--stitch-v1 {
+  padding-bottom: 0 !important;
+  height: calc(100vh - var(--app-statusbar-height)) !important;
+  max-height: calc(100vh - var(--app-statusbar-height));
+}
+
+.layout--with-status-bar .main-content--interakt-inbox,
+.layout--with-status-bar .main-content--settings-workspace,
+.layout--with-status-bar .main-content--tactical-inbox {
+  padding-bottom: 0 !important;
+  height: calc(100vh - var(--app-statusbar-height)) !important;
+  max-height: calc(100vh - var(--app-statusbar-height));
+}
+
+.layout--with-status-bar .main-content:has(.inbox-page),
+.layout--with-status-bar .main-content:has(.ai-chat-page),
+.layout--with-status-bar .main-content:has(.followups-interakt),
+.layout--with-status-bar .main-content:has(.customers-interakt),
+.layout--with-status-bar .main-content:has(.dashboard-interakt),
+.layout--with-status-bar .main-content:has(.pipeline-interakt),
+.layout--with-status-bar .main-content:has(.pipeline-reports-interakt),
+.layout--with-status-bar .main-content:has(.quotes-interakt),
+.layout--with-status-bar .main-content:has(.templates-interakt),
+.layout--with-status-bar .main-content:has(.reports-interakt),
+.layout--with-status-bar .main-content:has(.products-interakt) {
+  padding-bottom: 0 !important;
+  height: calc(100vh - var(--app-statusbar-height)) !important;
+  max-height: calc(100vh - var(--app-statusbar-height));
+}
+
+.layout--with-status-bar.layout--interakt-v2 .main-content--interakt-v2,
+.layout--with-status-bar.layout--interakt-v2 .main-content--interakt-v2-expanded,
+.layout--with-status-bar.layout--interakt-v2 .main-content--interakt-inbox.main-content--interakt-v2,
+.layout--with-status-bar.layout--interakt-v2 .main-content--interakt-inbox.main-content--interakt-v2-expanded,
+.layout--with-status-bar.layout--interakt-v2 .main-content--settings-workspace.main-content--interakt-v2,
+.layout--with-status-bar.layout--interakt-v2 .main-content--settings-workspace.main-content--interakt-v2-expanded {
+  height: calc(100vh - var(--app-statusbar-height)) !important;
+  max-height: calc(100vh - var(--app-statusbar-height));
+  padding-bottom: 0 !important;
+}
+
+.layout--with-status-bar.layout--interakt-v2 .sidebar--interakt-v2 {
+  height: calc(100vh - var(--wa-app-header-h) - var(--app-statusbar-height));
+  padding-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.layout--with-status-bar.layout--stitch-v1 .sidebar--stitch-v1 {
+  height: calc(100vh - var(--app-statusbar-height));
+  box-sizing: border-box;
+}
+
+.layout--with-status-bar .settings-shell {
+  bottom: var(--app-statusbar-height);
+  height: auto;
+}
+
+.layout--with-status-bar.layout--mobile-bottom-nav .main-content {
+  padding-bottom: calc(var(--app-statusbar-height) + 4rem) !important;
+}
+
+.layout--with-status-bar.layout--mobile-bottom-nav .main-content--interakt-inbox,
+.layout--with-status-bar.layout--mobile-bottom-nav .main-content--settings-workspace {
+  height: calc(100vh - var(--app-statusbar-height) - 4rem) !important;
+  max-height: calc(100vh - var(--app-statusbar-height) - 4rem);
+}
+
+[dir='rtl'] .app-bottom-status-bar__user {
+  text-align: right;
+}
+
+[dir='rtl'] .status-details-popover__value {
+  text-align: left;
+}
+
+/* Beat global button weight (index.css) and pill defaults loaded later */
+.app-bottom-status-bar button,
+.app-bottom-status-bar .status-bar-chip,
+.app-bottom-status-bar .status-bar-chip__label,
+.app-bottom-status-bar .app-bottom-status-bar__user-name {
+  font-weight: 400 !important;
+}

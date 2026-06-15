@@ -80,18 +80,17 @@ export class AiInboxContextService {
     return thread;
   }
 
-  /** Recent thread + CRM learning fields for short-message context (ipo?, bei, etc.). */
+  /** CRM learning fields + optional recent thread for short-message context (ipo?, bei, etc.). */
   async buildContextSummary(
     sessionId: string,
     chatId: string,
     contextLimit: number,
+    options?: { includeRecentMessages?: boolean },
   ): Promise<string> {
-    const [crm, history] = await Promise.all([
-      this.inboxCrmService.getThreadCrm(sessionId, chatId),
-      this.messageService.getChatMessagesForAi(sessionId, chatId, contextLimit),
-    ]);
+    const includeRecentMessages = options?.includeRecentMessages ?? true;
+    const crm = await this.inboxCrmService.getThreadCrm(sessionId, chatId);
 
-    const lines: string[] = ['=== Conversation context (read before replying) ==='];
+    const lines: string[] = [];
     if (crm.confirmedCity) lines.push(`Confirmed city: ${crm.confirmedCity}`);
     if (crm.lastProductInterest) lines.push(`Last product interest: ${crm.lastProductInterest}`);
     if (crm.lastIntent) lines.push(`Last detected intent: ${crm.lastIntent}`);
@@ -110,15 +109,24 @@ export class AiInboxContextService {
       );
     }
 
-    const recent = history.messages
-      .filter(m => m.body?.trim())
-      .slice(-8)
-      .map(m => `${m.direction === 'incoming' ? 'Customer' : 'Staff/AI'}: ${m.body!.trim()}`);
-    if (recent.length) {
-      lines.push('Recent messages:');
-      lines.push(...recent);
+    if (includeRecentMessages) {
+      const history = await this.messageService.getChatMessagesForAi(
+        sessionId,
+        chatId,
+        contextLimit,
+      );
+      const recent = history.messages
+        .filter(m => m.body?.trim())
+        .slice(-8)
+        .map(m => `${m.direction === 'incoming' ? 'Customer' : 'Staff/AI'}: ${m.body!.trim()}`);
+      if (recent.length) {
+        lines.push('Recent messages:');
+        lines.push(...recent);
+      }
     }
 
-    return lines.join('\n');
+    if (!lines.length) return '';
+
+    return ['=== Conversation context (read before replying) ===', ...lines].join('\n');
   }
 }

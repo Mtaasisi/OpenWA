@@ -1,0 +1,1199 @@
+/* WhatsApp Desktop — sidebar + inbox filter colors (v2 shell) */
+
+.layout--interakt-v2,
+html.shell--interakt-v2 {
+  /* Daily Control Room mockup tokens */
+  --wa-outline: #e5ede5;
+  --wa-divider: #eef1ec;
+  --wa-on-surface: #111b21;
+  --wa-on-surface-variant: #667781;
+  --wa-primary: #00a884;
+  --wa-wa-green: #25d366;
+  --wa-wa-green-dark: #008069;
+  --wa-wa-green-soft: #d9fdd3;
+  --wa-wa-border: var(--wa-outline);
+  --wa-wa-icon: #54656f;
+  --wa-wa-muted: var(--wa-on-surface-variant);
+  --wa-wa-hover: #f9fafb;
+  --wa-wa-active-row: #f0f2f5;
+  --wa-wa-sidebar-active: #e5ede5;
+}
+
+/* ── Icon sidebar ── */
+.layout--interakt-v2 .sidebar--interakt-v2 {
+  background: #f7f8f6;
+  border-right-color: var(--wa-outline);
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__link {
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__link:hover {
+  color: #111b21;
+  background: var(--wa-wa-sidebar-active);
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__link.is-active {
+  color: #111b21;
+  background: var(--wa-wa-sidebar-active);
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__link.is-active .material-symbols-outlined,
+.layout--interakt-v2 .wa-sidebar-v2__link:hover .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__badge {
+  background: var(--wa-wa-green);
+  color: #ffffff;
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__expand {
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__expand:hover {
+  background: var(--wa-wa-sidebar-active);
+  color: #111b21;
+}
+
+.layout--interakt-v2 .wa-sidebar-v2__footer-divider {
+  background: var(--wa-outline);
+}
+
+/* ── Conversation list column ── */
+.layout--interakt-v2 .inbox-conversations--interakt {
+  background: #ffffff;
+  border-right: 1px solid var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header {
+  padding: 0.625rem 1rem 0.25rem;
+  background: #ffffff;
+  border-bottom: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header__row {
+  margin-bottom: 0.625rem;
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header__list-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wa-on-surface);
+  text-transform: uppercase;
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header--wa .inbox-interakt-list-header__list-count {
+  display: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header__icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .inbox-interakt-list-header__icon-btn:hover {
+  background: var(--wa-wa-hover);
+  color: #111b21;
+}
+
+/* ── Filter chips (WhatsApp: label-only pills, no count badges) ── */
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar {
+  padding: 0.125rem 1rem 0.625rem;
+  gap: 0.5rem;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-chips--swipe {
+  gap: 0.5rem;
+  padding: 0;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-chip--swipe {
+  min-height: 2rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #f0f2f5;
+  color: var(--wa-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-chip--swipe:hover:not(.is-active) {
+  background: var(--wa-wa-sidebar-active);
+  border-color: transparent;
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-chip--swipe.is-active {
+  border-color: color-mix(in srgb, var(--wa-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--wa-primary) 10%, transparent);
+  color: var(--wa-primary);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-chip--swipe__count {
+  display: none;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar__more {
+  width: 2rem;
+  height: 2rem;
+  border-color: var(--wa-wa-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wa-wa-icon);
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar__more:hover,
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar__more.is-active,
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar__more.is-open {
+  background: var(--wa-wa-hover);
+  border-color: var(--wa-wa-border);
+  color: #111b21;
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-page--interakt .inbox-interakt-filter-bar__more-dot {
+  background: var(--wa-wa-green);
+}
+
+/* ── Conversation rows (mockup: divider separators + preview colors) ── */
+.layout--interakt-v2 .inbox-interakt-conversation-item,
+.layout--interakt-v2 .inbox-conversation-item--interakt.inbox-interakt-conversation-item {
+  align-items: center;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--wa-divider) !important;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+}
+
+.layout--interakt-v2 .inbox-conversation-item--interakt .inbox-avatar,
+.layout--interakt-v2 .inbox-conversation-item--interakt .inbox-contact-avatar {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+}
+
+.layout--interakt-v2 .inbox-conversation-item--interakt .inbox-conversation-item-top {
+  align-self: center;
+  gap: 0;
+}
+
+.layout--interakt-v2 .inbox-interakt-conversation-item:hover:not(.active) {
+  background: var(--wa-wa-hover);
+}
+
+.layout--interakt-v2 .inbox-interakt-conversation-item.active {
+  background: var(--wa-wa-active-row);
+  border-left-color: var(--wa-primary) !important;
+}
+
+/* ── Chat row (name | time / preview | badge) ── */
+.inbox-conversation-wa-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.inbox-conversation-wa-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.inbox-conversation-wa-row--top {
+  align-items: baseline;
+}
+
+.inbox-conversation-wa-row--bottom {
+  align-items: center;
+}
+
+.inbox-conversation-name--wa {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  color: #111b21;
+}
+
+.inbox-conversation-time--wa {
+  flex-shrink: 0;
+  margin: 0;
+  margin-left: auto;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  color: #667781;
+  white-space: nowrap;
+}
+
+.inbox-conversation-preview-row-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-conversation-preview-row-wrap .inbox-conversation-preview-row {
+  margin-top: 0;
+  min-width: 0;
+}
+
+.inbox-conversation-preview-row-wrap .inbox-conversation-preview {
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  color: #667781;
+  margin-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inbox-conversation-preview-row-wrap .inbox-conversation-preview-row--unread .inbox-conversation-preview {
+  font-weight: 600;
+  color: #111b21;
+}
+
+.inbox-unread-badge--wa-list {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3125rem;
+  border-radius: 999px;
+  background: #25d366;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.inbox-conversation-item--unread .inbox-conversation-name--wa {
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-interakt-conversation-chips {
+  display: none;
+}
+
+.layout--interakt-v2 .inbox-unread-badge {
+  background: var(--wa-wa-green);
+  border-radius: 999px;
+}
+
+/* ── Thread pane (chat header + messages + composer) ── */
+.layout--interakt-v2 .inbox-page--interakt .inbox-thread {
+  background: #f7f8f6;
+  border-right: 1px solid var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-chat-header {
+  min-height: 3.5rem;
+  padding: 0 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid var(--wa-outline);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-chat-header__name {
+  color: var(--wa-on-surface);
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-interakt-chat-header__subtitle,
+.layout--interakt-v2 .inbox-interakt-chat-header__meta-text,
+.layout--interakt-v2 .inbox-interakt-chat-header__phone {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-chat-header__back,
+.layout--interakt-v2 .inbox-interakt-header-action {
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .inbox-interakt-chat-header__back:hover,
+.layout--interakt-v2 .inbox-interakt-header-action:hover:not(:disabled) {
+  background: var(--wa-wa-hover);
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-messages--interakt {
+  gap: 0.375rem;
+  padding: 1rem 1rem 1.5rem;
+  background-color: var(--inbox-chat-bg-color, #f7f8f6);
+  background-image: var(--inbox-chat-wallpaper-image, url('/interakt-chat-wallpaper.png'));
+  background-size: var(--inbox-chat-wallpaper-size, 480px auto);
+  background-repeat: repeat;
+  background-position: top center;
+  scrollbar-color: var(--wa-outline) transparent;
+}
+
+.layout--interakt-v2 .inbox-messages--interakt::-webkit-scrollbar-thumb {
+  background: var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-messages--interakt::-webkit-scrollbar-thumb:hover {
+  background: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-bubble-wrap--interakt {
+  gap: 0.25rem;
+}
+
+.layout--interakt-v2 .inbox-bubble.inbox-bubble--interakt {
+  padding: 0.375rem 0.625rem 0.25rem;
+  border-radius: 0.75rem;
+  box-shadow: none;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.layout--interakt-v2 .inbox-bubble.incoming.inbox-bubble--interakt {
+  background: #ffffff;
+  border: 1px solid var(--wa-outline);
+  color: var(--wa-on-surface);
+  border-top-left-radius: 0.25rem;
+}
+
+.layout--interakt-v2 .inbox-bubble.outgoing.inbox-bubble--interakt {
+  background: var(--wa-wa-green-soft);
+  border: 1px solid color-mix(in srgb, var(--wa-wa-green-soft) 75%, #c6e6b9);
+  color: var(--wa-on-surface);
+  border-top-right-radius: 0.25rem;
+}
+
+.layout--interakt-v2 .inbox-bubble.inbox-bubble--interakt .inbox-bubble-body {
+  color: var(--wa-on-surface);
+  line-height: 1.375rem;
+}
+
+.layout--interakt-v2 .inbox-bubble.inbox-bubble--interakt .inbox-bubble-meta {
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-bubble-sender {
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-system-pill {
+  background: #ffffff;
+  border-color: var(--wa-outline);
+  color: var(--wa-on-surface-variant);
+}
+
+/* ── Composer (Reply tab + input pill) ── */
+.layout--interakt-v2 .inbox-composer-wrap {
+  background: #ffffff;
+  border-top: 1px solid var(--wa-divider);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-tabs-bar--edition {
+  background: #ffffff;
+  border-bottom: 1px solid var(--wa-divider);
+  padding: 0 1rem;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-tabs-bar--edition .inbox-interakt-composer-tab {
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--wa-on-surface-variant);
+  border-bottom: 2px solid transparent;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-tabs-bar--edition .inbox-interakt-composer-tab.is-active {
+  color: var(--wa-primary);
+  border-bottom-color: var(--wa-primary);
+  font-weight: 700;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-input-row {
+  padding: 0.5rem 0.75rem 0.625rem;
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-add-btn {
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-add-btn:hover:not(:disabled) {
+  color: var(--wa-primary);
+  background: color-mix(in srgb, var(--wa-primary) 8%, transparent);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill:focus-within {
+  border: none;
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill__field {
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill__field::placeholder {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill__emoji {
+  color: var(--wa-wa-icon);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-pill__emoji:hover:not(:disabled) {
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-send-circle {
+  background: var(--wa-primary);
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-send-circle:hover:not(:disabled) {
+  background: var(--wa-wa-green-dark);
+}
+
+/* ── Empty thread (no chat selected) ── */
+.layout--interakt-v2 .inbox-interakt-thread-empty {
+  background-color: var(--inbox-chat-bg-color, #f7f8f6);
+  background-image: var(--inbox-chat-wallpaper-image, url('/interakt-chat-wallpaper.png'));
+  background-size: var(--inbox-chat-wallpaper-size, 480px auto);
+  background-repeat: repeat;
+  background-position: top center;
+}
+
+.layout--interakt-v2 .inbox-interakt-empty--thread {
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.layout--interakt-v2 .inbox-interakt-empty--thread svg {
+  color: var(--wa-outline);
+  margin-bottom: 0.75rem;
+}
+
+.layout--interakt-v2 .inbox-interakt-empty__title {
+  color: var(--wa-on-surface);
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-interakt-empty__desc {
+  color: var(--wa-on-surface-variant);
+}
+
+/* ── CRM panel (Customer 360) ── */
+.layout--interakt-v2 .inbox-crm-panel {
+  background: #ffffff;
+  border-left: 1px solid var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-empty,
+.layout--interakt-v2 .inbox-crm-empty.inbox-interakt-crm-empty {
+  background: #f7f8f6;
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-empty svg,
+.layout--interakt-v2 .inbox-crm-empty.inbox-interakt-crm-empty svg {
+  color: var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-tabs--edition {
+  background: #ffffff;
+  border-bottom: 1px solid var(--wa-divider);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-tabs--edition .inbox-interakt-crm-nav__btn {
+  color: var(--wa-on-surface-variant);
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-tabs--edition .inbox-interakt-crm-nav__btn.is-active {
+  color: var(--wa-primary);
+  border-bottom-color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-sections--edition {
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__name {
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__phone,
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__group-context {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__stage-hint {
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__status {
+  background: var(--wa-on-surface-variant, #667781);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__status.is-online {
+  background: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__avatar.inbox-avatar,
+.layout--interakt-v2 .inbox-interakt-crm-profile-hero__avatar {
+  border-color: #f0f2f5;
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-card--edition .inbox-interakt-crm-profile-card__title {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-card--edition .inbox-interakt-crm-profile-card__label {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-card--edition .inbox-interakt-crm-profile-card__value {
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-lead-source-card {
+  background: #f0f2f5;
+  border-color: var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-lead-source--edition-value .inbox-interakt-lead-source__label,
+.layout--interakt-v2 .inbox-interakt-lead-source--edition-value .inbox-interakt-lead-source__chevron {
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-catalog-link {
+  border-color: color-mix(in srgb, var(--wa-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--wa-primary) 5%, transparent);
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-catalog-link:hover {
+  background: color-mix(in srgb, var(--wa-primary) 10%, transparent);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-profile-card--edition .inbox-interakt-crm-profile-card__tag--primary {
+  background: var(--wa-wa-green-soft);
+  border-color: color-mix(in srgb, var(--wa-primary) 25%, #c6e6b9);
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-crm-panel-aside-tabs {
+  background: #ffffff;
+  border-bottom: 1px solid var(--wa-divider);
+}
+
+.layout--interakt-v2 .inbox-crm-panel-aside-tabs__btn {
+  color: var(--wa-on-surface-variant);
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-crm-panel-aside-tabs__btn.is-active {
+  color: var(--wa-primary);
+  font-weight: 700;
+}
+
+.layout--interakt-v2 .inbox-crm-panel-aside-tabs__btn.is-active::after {
+  background: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-crm-panel-aside-tabs__close:hover {
+  background: #f0f2f5;
+}
+
+.layout--interakt-v2 .inbox-crm-panel .inbox-crm-content--interakt-edition::-webkit-scrollbar-thumb {
+  background: var(--wa-outline);
+}
+
+/* ── Date pills + AI strip in thread ── */
+.layout--interakt-v2 .inbox-date-separator--interakt {
+  background: #ffffff;
+  border: 1px solid var(--wa-outline);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--wa-on-surface-variant);
+  font-weight: 600;
+}
+
+.layout--interakt-v2 .inbox-interakt-ai-strip {
+  background: #ffffff;
+  border-color: var(--wa-outline);
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-ai-strip__link {
+  color: var(--wa-primary);
+}
+
+/* ── Empty conversation list ── */
+.layout--interakt-v2 .inbox-conversation-list .inbox-interakt-empty {
+  padding: 2.5rem 1.5rem;
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-empty svg {
+  color: var(--wa-outline);
+}
+
+.layout--interakt-v2 .inbox-interakt-crm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+/* ── Quote-reply bar ── */
+.layout--interakt-v2 .inbox-quote-reply-bar {
+  margin: 0 0.75rem 0.375rem;
+  padding: 0.5rem 0.625rem;
+  border-left: 3px solid var(--wa-primary);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--wa-wa-green-soft) 55%, #ffffff);
+}
+
+.layout--interakt-v2 .inbox-quote-reply-bar__label {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-quote-reply-bar__preview {
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-quote-reply-bar__clear {
+  color: var(--wa-wa-icon);
+  border-radius: 999px;
+}
+
+.layout--interakt-v2 .inbox-quote-reply-bar__clear:hover {
+  background: var(--wa-wa-hover);
+  color: var(--wa-on-surface);
+}
+
+/* ── Composer: Notes / Follow-up / Quote tabs ── */
+.layout--interakt-v2 .inbox-interakt-composer-card {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-card--notes {
+  background: #fffbeb;
+  border-top: 1px solid color-mix(in srgb, #fbbf24 35%, var(--wa-divider));
+}
+
+.layout--interakt-v2 .inbox-interakt-notes-area {
+  color: #713f12;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-card--notes .inbox-interakt-composer-footer {
+  background: color-mix(in srgb, #fef9c3 35%, transparent);
+  border-top: 1px solid color-mix(in srgb, #fbbf24 25%, var(--wa-divider));
+}
+
+.layout--interakt-v2 .inbox-interakt-send-btn--edition {
+  background: var(--wa-primary);
+  color: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-send-btn--edition:hover:not(:disabled) {
+  background: var(--wa-wa-green-dark);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-card--notes .inbox-interakt-send-btn--edition {
+  background: #ca8a04;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-card--notes .inbox-interakt-send-btn--edition:hover:not(:disabled) {
+  background: #a16207;
+}
+
+.layout--interakt-v2 .inbox-interakt-followup-modal__form--inline {
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-followup-quick__label {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-followup-quick__select,
+.layout--interakt-v2 .inbox-followup-quick__field input[type='date'],
+.layout--interakt-v2 .inbox-followup-quick__field input[type='time'],
+.layout--interakt-v2 .inbox-followup-quick__note {
+  border-color: var(--wa-outline);
+  border-radius: 0.5rem;
+  color: var(--wa-on-surface);
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-followup-quick__combo {
+  border-color: var(--wa-outline);
+  background: #f0f2f5;
+  color: var(--wa-on-surface);
+  border-radius: 0.5rem;
+}
+
+.layout--interakt-v2 .inbox-followup-quick__combo:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--wa-primary) 35%, var(--wa-outline));
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-followup-quick__combo.inbox-followup-quick__chip--active,
+.layout--interakt-v2 .inbox-followup-quick__chip--active {
+  border-color: color-mix(in srgb, var(--wa-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--wa-primary) 10%, transparent);
+  color: var(--wa-primary);
+  box-shadow: none;
+}
+
+.layout--interakt-v2 .inbox-followup-quick__chip {
+  border-color: var(--wa-outline);
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-followup-quick__chip.inbox-followup-quick__chip--active {
+  border-color: color-mix(in srgb, var(--wa-primary) 25%, transparent);
+  background: color-mix(in srgb, var(--wa-primary) 10%, transparent);
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-interakt-picker-panel--quote {
+  width: 100%;
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-picker-panel--quote .quote-builder__action,
+.layout--interakt-v2 .inbox-interakt-picker-panel--quote .quote-builder__footer button {
+  border-color: var(--wa-outline);
+  border-radius: 0.5rem;
+}
+
+.layout--interakt-v2 .inbox-interakt-picker-panel--quote .quote-builder__primary {
+  background: var(--wa-primary) !important;
+  border-color: var(--wa-primary) !important;
+  color: #ffffff !important;
+}
+
+.layout--interakt-v2 .inbox-composer-meta {
+  border-bottom-color: var(--wa-divider);
+}
+
+.layout--interakt-v2 .inbox-send-account--interakt,
+.layout--interakt-v2 .inbox-group-composer-notice--interakt {
+  background: #ffffff;
+  border-color: var(--wa-divider);
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-send-account--interakt.inbox-send-account--ready {
+  background: color-mix(in srgb, var(--wa-primary) 6%, #ffffff);
+  border-bottom-color: var(--wa-divider);
+}
+
+.layout--interakt-v2 .inbox-send-account--interakt .inbox-send-account__name {
+  color: var(--wa-on-surface);
+}
+
+.layout--interakt-v2 .inbox-send-account--interakt .inbox-send-account__label,
+.layout--interakt-v2 .inbox-send-account--interakt .inbox-send-account__phone,
+.layout--interakt-v2 .inbox-send-account--interakt .inbox-send-account__muted {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-send-account--interakt .inbox-send-account__reconnect {
+  color: var(--wa-primary);
+}
+
+.layout--interakt-v2 .inbox-send-account__dot.is-ready {
+  background: var(--wa-wa-green);
+}
+
+/* ── Multi-account session chip (unified inbox) ── */
+.layout--interakt-v2 .inbox-session-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  margin-bottom: 0.125rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  background: #f0f2f5;
+  border: 1px solid var(--wa-outline);
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-session-badge__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--wa-wa-green);
+  flex-shrink: 0;
+}
+
+.layout--interakt-v2 .inbox-session-badge__dot--disconnected,
+.layout--interakt-v2 .inbox-session-badge__dot--failed {
+  background: #ea0038;
+}
+
+.layout--interakt-v2 .inbox-session-badge__dot--connecting,
+.layout--interakt-v2 .inbox-session-badge__dot--qr_ready,
+.layout--interakt-v2 .inbox-session-badge__dot--initializing {
+  background: #fbbf24;
+}
+
+/* ── Portaled modals (transfer, new chat, pickers) ── */
+html.shell--interakt-v2 .fu-modal-overlay,
+html.shell--interakt-v2 .inbox-interakt-picker-overlay {
+  background: rgb(17 27 33 / 0.32);
+}
+
+html.shell--interakt-v2 .fu-modal,
+html.shell--interakt-v2 .inbox-transfer-modal {
+  border: 1px solid var(--wa-outline);
+  border-radius: 0.75rem;
+  box-shadow: 0 16px 40px rgb(17 27 33 / 0.14);
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-transfer-modal__title {
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-transfer-modal__hint {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .fu-modal label,
+html.shell--interakt-v2 .inbox-transfer-modal label {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .fu-modal input,
+html.shell--interakt-v2 .fu-modal select,
+html.shell--interakt-v2 .fu-modal textarea {
+  border-color: var(--wa-outline);
+  border-radius: 0.5rem;
+  color: var(--wa-on-surface);
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .fu-modal input:focus,
+html.shell--interakt-v2 .fu-modal select:focus,
+html.shell--interakt-v2 .fu-modal textarea:focus {
+  border-color: color-mix(in srgb, var(--wa-primary) 45%, var(--wa-outline));
+  outline: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wa-primary) 20%, transparent);
+}
+
+html.shell--interakt-v2 .fu-btn--primary {
+  background: var(--wa-primary);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+html.shell--interakt-v2 .fu-btn--primary:hover:not(:disabled) {
+  background: var(--wa-wa-green-dark);
+  opacity: 1;
+}
+
+html.shell--interakt-v2 .fu-btn--ghost {
+  background: #f0f2f5;
+  border-color: var(--wa-outline);
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .fu-btn--ghost:hover:not(:disabled) {
+  background: var(--wa-wa-hover);
+}
+
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal,
+html.shell--interakt-v2 .inbox-interakt-action-modal__card,
+html.shell--interakt-v2 .inbox-interakt-followup-modal {
+  border: 1px solid var(--wa-outline);
+  border-radius: 0.75rem;
+  box-shadow: 0 16px 40px rgb(17 27 33 / 0.14);
+}
+
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal__head,
+html.shell--interakt-v2 .inbox-interakt-action-modal__head,
+html.shell--interakt-v2 .inbox-interakt-followup-modal__head {
+  border-bottom-color: var(--wa-divider);
+}
+
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal__head h2,
+html.shell--interakt-v2 .inbox-interakt-action-modal__head h3,
+html.shell--interakt-v2 .inbox-interakt-followup-modal__head h3 {
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal__body .inbox-new-chat-modal__field {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal__body .inbox-new-chat-modal__field input,
+html.shell--interakt-v2 .inbox-interakt-new-chat-modal__body .inbox-new-chat-modal__field select {
+  border-color: var(--wa-outline);
+  border-radius: 0.5rem;
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__btn--primary {
+  background: var(--wa-primary);
+  color: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__btn--primary:hover:not(:disabled) {
+  background: var(--wa-wa-green-dark);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__btn--ghost {
+  background: #f0f2f5;
+  border-color: var(--wa-outline);
+  color: var(--wa-on-surface);
+}
+
+/* ── Composer tool grid (Lists, Products, Quote, …) ── */
+.layout--interakt-v2 .inbox-interakt-composer-toolbar--edition {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--wa-divider);
+  background: #ffffff;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-toolbar--edition .inbox-interakt-tool-btn {
+  color: var(--wa-wa-icon);
+  border-radius: 0.375rem;
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-toolbar--edition .inbox-interakt-tool-btn__label {
+  color: var(--wa-on-surface-variant);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-toolbar--edition .inbox-interakt-tool-btn:hover:not(:disabled) {
+  color: var(--wa-primary);
+  background: color-mix(in srgb, var(--wa-primary) 8%, transparent);
+}
+
+.layout--interakt-v2 .inbox-interakt-composer-toolbar--edition .inbox-interakt-tool-btn:hover:not(:disabled) .inbox-interakt-tool-btn__label {
+  color: var(--wa-primary);
+}
+
+/* ── Quick reply / template picker modal ── */
+html.shell--interakt-v2 .inbox-interakt-tpl-modal {
+  border: 1px solid var(--wa-outline);
+  border-radius: 0.75rem;
+  box-shadow: 0 16px 40px rgb(17 27 33 / 0.14);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__sidebar {
+  border-right-color: var(--wa-divider);
+  background: #f7f8f6;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__search-wrap {
+  border-bottom-color: var(--wa-divider);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__search {
+  border-color: var(--wa-outline);
+  background: #ffffff;
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__search:focus {
+  border-color: color-mix(in srgb, var(--wa-primary) 45%, var(--wa-outline));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wa-primary) 20%, transparent);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__search-icon {
+  color: var(--wa-wa-icon);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__group-label {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__item:hover:not(.is-active) {
+  background: var(--wa-wa-hover);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__item.is-active {
+  background: color-mix(in srgb, var(--wa-primary) 12%, #ffffff);
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__item-snippet {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__item.is-active .inbox-interakt-tpl-modal__item-snippet {
+  color: var(--wa-on-surface-variant);
+  opacity: 1;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__preview-pane {
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__preview-head {
+  border-bottom-color: var(--wa-divider);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__preview-title {
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__canvas {
+  background-color: #f7f8f6;
+  background-image: url('/interakt-chat-wallpaper.png');
+  background-size: 480px auto;
+  background-repeat: repeat;
+  background-position: top center;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__bubble {
+  border: 1px solid color-mix(in srgb, var(--wa-wa-green-soft) 75%, #c6e6b9);
+  border-top-right-radius: 0.25rem;
+  background: var(--wa-wa-green-soft);
+  box-shadow: none;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__bubble-text {
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__var {
+  background: color-mix(in srgb, var(--wa-primary) 15%, transparent);
+  color: var(--wa-primary);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__bubble-meta {
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__customize {
+  border-color: var(--wa-outline);
+  border-radius: 0.5rem;
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__footer {
+  border-top-color: var(--wa-divider);
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__sidebar-foot {
+  border-top-color: var(--wa-divider);
+}
+
+html.shell--interakt-v2 .inbox-interakt-tpl-modal__sidebar-foot .qr-picker__manage {
+  color: var(--wa-primary);
+}
+
+/* ── Product catalog picker modal ── */
+html.shell--interakt-v2 .inbox-interakt-catalog-modal {
+  border: 1px solid var(--wa-outline);
+  border-radius: 0.75rem;
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 16px 40px rgb(17 27 33 / 0.14);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__header {
+  border-bottom-color: var(--wa-divider);
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__title {
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__search {
+  border-color: var(--wa-outline);
+  background: #f0f2f5;
+  color: var(--wa-on-surface);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__search:focus {
+  border-color: color-mix(in srgb, var(--wa-primary) 45%, var(--wa-outline));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wa-primary) 20%, transparent);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__tabs {
+  border-bottom-color: var(--wa-divider);
+  background: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__tab {
+  background: #f0f2f5;
+  color: var(--wa-on-surface-variant);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__tab.is-active {
+  background: var(--wa-primary);
+  color: #ffffff;
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__tab:hover:not(.is-active) {
+  background: var(--wa-wa-hover);
+}
+
+html.shell--interakt-v2 .inbox-products-picker__view-btn.is-active {
+  color: var(--wa-primary);
+}
+
+html.shell--interakt-v2 .inbox-interakt-catalog-modal__card.is-selected,
+html.shell--interakt-v2 .inbox-products-picker__item.is-selected {
+  border-color: color-mix(in srgb, var(--wa-primary) 35%, var(--wa-outline));
+  background: color-mix(in srgb, var(--wa-primary) 8%, #ffffff);
+}
+
+/* ── Emoji popover ── */
+html.shell--interakt-v2 .inbox-interakt-emoji-popover {
+  border: 1px solid var(--wa-outline);
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px rgb(17 27 33 / 0.12);
+  background: #ffffff;
+}

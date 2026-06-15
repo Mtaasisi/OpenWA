@@ -46,6 +46,15 @@ export class AiUsageLog {
   @Column({ type: 'varchar', nullable: true })
   requestId: string | null;
 
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  modelTier: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  contactId: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  batchId: string | null;
+
   @Column({ type: 'int', default: 0 })
   inputTokens: number;
 

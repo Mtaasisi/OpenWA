@@ -1,9 +1,13 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'node',
+    include: ['src/**/*.spec.ts'],
+  },
   appType: 'spa', // Enable SPA fallback for client-side routing
   define: {
     __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || '0.2.1'),
@@ -11,6 +15,7 @@ export default defineConfig({
   },
   server: {
     port: 2886,
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'http://localhost:2785',

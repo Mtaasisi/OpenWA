@@ -16,7 +16,7 @@ import {
 } from './ai-model-router.util';
 import { AiCostTrackerService } from './ai-cost-tracker.service';
 import { AiBudgetGuardService } from './ai-budget-guard.service';
-import { AiUsageFeature as Feature } from './ai-cost.types';
+import { AiUsageFeature as Feature, AiUsageStatus } from './ai-cost.types';
 
 function anthropicOpusConfig(): AiConfig {
   return {
@@ -25,8 +25,8 @@ function anthropicOpusConfig(): AiConfig {
     model: 'claude-opus-4-6',
     autoReplyModelTier: AiModelTier.CHEAP_FAST,
     allowPremiumModelForAutoReply: false,
-    autoReplyContextMessages: 8,
-    autoReplyContextMessagesMax: 12,
+    autoReplyContextMessages: 3,
+    autoReplyContextMessagesMax: 5,
     maxCustomerToolIterations: 2,
     maxAdminToolIterations: 5,
     maxAiCallsPerInboundMessage: 2,
@@ -95,10 +95,10 @@ describe('AI cost safety QA (automated)', () => {
   });
 
   describe('context defaults', () => {
-    it('defaults auto-reply context to 8 messages (max cap 12)', () => {
+    it('defaults auto-reply context to 3 messages (max cap 5)', () => {
       const config = anthropicOpusConfig();
-      expect(config.autoReplyContextMessages).toBe(8);
-      expect(config.autoReplyContextMessagesMax).toBe(12);
+      expect(config.autoReplyContextMessages).toBe(3);
+      expect(config.autoReplyContextMessagesMax).toBe(5);
     });
   });
 
@@ -135,6 +135,14 @@ describe('AI cost safety QA (automated)', () => {
       expect(result.allowed).toBe(false);
       expect(result.reason).toBe('daily_budget_exceeded');
       expect(config.autoReplyPaused).toBe(true);
+    });
+  });
+
+  describe('usage logging statuses', () => {
+    it('cache_hit and duplicate_skipped are zero-cost statuses', () => {
+      expect(AiUsageStatus.CACHE_HIT).toBe('cache_hit');
+      expect(AiUsageStatus.DUPLICATE_SKIPPED).toBe('duplicate_skipped');
+      expect(AiUsageStatus.MODEL_DOWNGRADED).toBe('model_downgraded');
     });
   });
 

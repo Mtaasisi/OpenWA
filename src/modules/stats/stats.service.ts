@@ -16,6 +16,7 @@ export interface OverviewStats {
     sent: number;
     received: number;
     failed: number;
+    failedBySession: Record<string, number>;
     today: { sent: number; received: number; total: number };
     last24h: { sent: number; received: number; total: number };
   };
@@ -107,6 +108,19 @@ export class StatsService {
       where: { status: MessageStatus.FAILED },
     });
 
+    const failedBySessionRaw = await this.messageRepo
+      .createQueryBuilder('m')
+      .select('m.sessionId', 'sessionId')
+      .addSelect('COUNT(*)', 'count')
+      .where('m.status = :failed', { failed: MessageStatus.FAILED })
+      .groupBy('m.sessionId')
+      .getRawMany<{ sessionId: string; count: string }>();
+
+    const failedBySession: Record<string, number> = {};
+    for (const row of failedBySessionRaw) {
+      failedBySession[row.sessionId] = parseInt(row.count || '0', 10);
+    }
+
     const apiActivity24h = await this.auditRepo.count({
       where: { createdAt: MoreThanOrEqual(since24h) },
     });
@@ -128,6 +142,7 @@ export class StatsService {
         sent,
         received,
         failed,
+        failedBySession,
         today: {
           sent: todaySent,
           received: todayReceived,

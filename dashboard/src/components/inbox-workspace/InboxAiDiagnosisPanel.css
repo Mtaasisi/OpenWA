@@ -1,0 +1,73 @@
+.inbox-workspace .inbox-ai-diagnosis {
+  padding: 12px;
+  border: 1px solid #e5ede5;
+  border-radius: 16px;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__head h4 {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111b21;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__summary {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__summary.ok {
+  color: #008069;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__summary.warn {
+  color: #b45309;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__reasons {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #667781;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 12px;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__meta dt {
+  color: #667781;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__meta dd {
+  margin: 0;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inbox-workspace .inbox-ai-diagnosis__muted {
+  margin: 0;
+  font-size: 12px;
+  color: #667781;
+}

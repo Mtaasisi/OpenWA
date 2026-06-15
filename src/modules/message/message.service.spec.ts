@@ -9,14 +9,32 @@ import { SessionService } from '../session/session.service';
 import { HookManager } from '../../core/hooks';
 import { StorageService } from '../../common/storage/storage.service';
 import { InboxCrmService } from './inbox-crm.service';
+import { FollowupConversationService } from '../followup/followup-conversation.service';
+import { AuthService } from '../auth/auth.service';
+import { SessionStatus } from '../session/entities/session.entity';
+import { ProfilePictureCacheService } from '../contact/profile-picture-cache.service';
+import { ConfigService } from '@nestjs/config';
+import { WhatsAppOutboundService } from '../whatsapp-safety/services/whatsapp-outbound.service';
+import { WhatsAppWarmupService } from '../whatsapp-safety/services/whatsapp-warmup.service';
+import { WhatsAppConsentService } from '../whatsapp-safety/services/whatsapp-consent.service';
+import { WhatsAppSendAuditService } from '../whatsapp-safety/services/whatsapp-send-audit.service';
+import { StoragePolicyService } from '../storage/storage-policy.service';
+import { InboxThreadSummaryService } from './inbox-thread-summary.service';
+
+const configServiceMock = {
+  get: jest.fn((_key: string, defaultValue?: unknown) => defaultValue),
+};
 
 const mockEngineResult = { id: 'wa-msg-1', timestamp: 1706868000 };
 
 function createMockEngine() {
   return {
     markChatRead: jest.fn().mockResolvedValue(undefined),
+    sendTyping: jest.fn().mockResolvedValue(undefined),
+    clearTyping: jest.fn().mockResolvedValue(undefined),
     sendTextMessage: jest.fn().mockResolvedValue(mockEngineResult),
     sendImageMessage: jest.fn().mockResolvedValue(mockEngineResult),
+    sendImageAlbum: jest.fn().mockResolvedValue([mockEngineResult]),
     sendVideoMessage: jest.fn().mockResolvedValue(mockEngineResult),
     sendAudioMessage: jest.fn().mockResolvedValue(mockEngineResult),
     sendDocumentMessage: jest.fn().mockResolvedValue(mockEngineResult),
@@ -65,7 +83,12 @@ describe('MessageService', () => {
 
     sessionService = {
       getEngine: jest.fn().mockReturnValue(mockEngine),
-      findOne: jest.fn().mockResolvedValue({ id: 'sess-1', phone: '628123456789', name: 'test', status: 'ready' }),
+      findOne: jest.fn().mockResolvedValue({
+        id: 'sess-1',
+        phone: '628123456789',
+        name: 'test',
+        status: SessionStatus.READY,
+      }),
     };
 
     hookManager = {
@@ -86,6 +109,54 @@ describe('MessageService', () => {
         {
           provide: InboxCrmService,
           useValue: { getCrmMapForSession: jest.fn().mockResolvedValue(new Map()) },
+        },
+        {
+          provide: FollowupConversationService,
+          useValue: {
+            getOrCreate: jest.fn(),
+            recordStaffMessage: jest.fn(),
+            getInboxEnrichmentMapForThreads: jest.fn().mockResolvedValue(new Map()),
+          },
+        },
+        { provide: AuthService, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
+        { provide: ProfilePictureCacheService, useValue: {} },
+        { provide: ConfigService, useValue: configServiceMock },
+        {
+          provide: StoragePolicyService,
+          useValue: { shouldAutoDownload: jest.fn().mockResolvedValue(true) },
+        },
+        {
+          provide: InboxThreadSummaryService,
+          useValue: {
+            touchFromMessage: jest.fn().mockResolvedValue(undefined),
+            resetUnread: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: WhatsAppOutboundService,
+          useValue: {
+            checkBeforeSend: jest.fn().mockResolvedValue({
+              proceed: true,
+              queued: false,
+              blocked: false,
+              reason: 'ok',
+            }),
+            assertCanSend: jest.fn(),
+            resolveMessageType: jest.fn(),
+            resolveSource: jest.fn(),
+          },
+        },
+        {
+          provide: WhatsAppWarmupService,
+          useValue: { recordOutbound: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: WhatsAppConsentService,
+          useValue: { recordOutbound: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: WhatsAppSendAuditService,
+          useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
       ],
     }).compile();

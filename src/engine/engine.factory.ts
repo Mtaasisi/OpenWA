@@ -4,10 +4,15 @@ import { IWhatsAppEngine } from './interfaces/whatsapp-engine.interface';
 import { WhatsAppWebJsAdapter } from './adapters/whatsapp-web-js.adapter';
 import { PluginLoaderService, PluginType, IEnginePlugin, PluginManifest } from '../core/plugins';
 import { WhatsAppWebJsPlugin } from '../plugins/engines/whatsapp-web-js';
+import { BaileysPlugin } from '../plugins/engines/baileys';
+import { BaileysAdapter } from './adapters/baileys.adapter';
+import { WHATSAPP_ENGINE_IDS } from '../common/utils/session-engine.util';
 import { createLogger } from '../common/services/logger.service';
 
 export interface EngineCreateOptions {
   sessionId: string;
+  /** Per-session engine; defaults to global ENGINE_TYPE when omitted. */
+  engineType?: string;
   proxyUrl?: string;
   proxyType?: 'http' | 'https' | 'socks4' | 'socks5';
 }
@@ -44,40 +49,118 @@ export class EngineFactory implements OnModuleInit {
     const wwjsPlugin = new WhatsAppWebJsPlugin();
     this.pluginLoader.registerBuiltInPlugin(wwjsManifest, wwjsPlugin);
 
-    // Auto-enable the configured engine
+    const baileysManifest: PluginManifest = {
+      id: 'baileys',
+      name: 'Baileys Engine',
+      version: '1.0.0',
+      type: PluginType.ENGINE,
+      description: 'WebSocket-based WhatsApp engine (no Puppeteer)',
+      main: 'index.ts',
+      provides: ['whatsapp-engine'],
+    };
+
+    const baileysPlugin = new BaileysPlugin();
+    this.pluginLoader.registerBuiltInPlugin(baileysManifest, baileysPlugin);
+
+    const sessionDataPath =
+      this.configService.get<string>('engine.sessionDataPath') ?? './data/sessions';
+    const engineConfig = {
+      sessionDataPath,
+      headless: this.configService.get<boolean>('engine.puppeteer.headless') ?? true,
+      puppeteerArgs: this.configService.get<string[]>('engine.puppeteer.args') ?? [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      syncWindowMs: this.configService.get<number>('engine.wa.syncWindowMs', 300_000),
+    };
+
+    const activeEngine = WHATSAPP_ENGINE_IDS.includes(this.engineType as (typeof WHATSAPP_ENGINE_IDS)[number])
+      ? this.engineType
+      : 'whatsapp-web.js';
+
+    for (const engineId of WHATSAPP_ENGINE_IDS) {
+      if (engineId === activeEngine) continue;
+      try {
+        if (this.pluginLoader.isPluginEnabled(engineId)) {
+          await this.pluginLoader.disablePlugin(engineId);
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to disable inactive engine plugin: ${engineId}`,
+          {
+            action: 'engine_disable_failed',
+            engineType: engineId,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    }
+
     try {
-      await this.pluginLoader.enablePlugin(this.engineType);
-      this.logger.log(`Engine plugin enabled: ${this.engineType}`, {
+      this.pluginLoader.updatePluginConfig(activeEngine, engineConfig);
+      await this.pluginLoader.enablePlugin(activeEngine);
+      this.logger.log(`Engine plugin enabled: ${activeEngine}`, {
         action: 'engine_enabled',
-        engineType: this.engineType,
+        engineType: activeEngine,
       });
     } catch (error) {
       this.logger.error(
-        `Failed to enable engine plugin: ${this.engineType}`,
+        `Failed to enable engine plugin: ${activeEngine}`,
         error instanceof Error ? error.message : String(error),
-        { action: 'engine_enable_failed' },
+        { action: 'engine_enable_failed', engineType: activeEngine },
       );
     }
+
+    this.logger.log(`Default ENGINE_TYPE: ${this.engineType}`, {
+      action: 'engine_default',
+      engineType: this.engineType,
+    });
+  }
+
+  private getEngineRuntimeConfig(): {
+    sessionDataPath: string;
+    headless: boolean;
+    puppeteerArgs: string[];
+    syncWindowMs: number;
+  } {
+    return {
+      sessionDataPath:
+        this.configService.get<string>('engine.sessionDataPath') ?? './data/sessions',
+      headless: this.configService.get<boolean>('engine.puppeteer.headless') ?? true,
+      puppeteerArgs: this.configService.get<string[]>('engine.puppeteer.args') ?? [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      syncWindowMs: this.configService.get<number>('engine.wa.syncWindowMs', 300_000),
+    };
   }
 
   create(options: EngineCreateOptions): IWhatsAppEngine {
+    const engineType = options.engineType?.trim() || this.engineType;
+    const runtimeConfig = this.getEngineRuntimeConfig();
+
     // Try to get engine from plugin system
-    const enginePlugin = this.pluginLoader.getPlugin(this.engineType);
+    const enginePlugin = this.pluginLoader.getPlugin(engineType);
 
     if (enginePlugin?.instance && this.isEnginePlugin(enginePlugin.instance)) {
       return enginePlugin.instance.createEngine({
         sessionId: options.sessionId,
+        sessionDataPath: runtimeConfig.sessionDataPath,
+        headless: runtimeConfig.headless,
+        puppeteerArgs: runtimeConfig.puppeteerArgs,
+        syncWindowMs: runtimeConfig.syncWindowMs,
         proxyUrl: options.proxyUrl,
         proxyType: options.proxyType,
       }) as IWhatsAppEngine;
     }
 
     // Fallback to direct adapter creation (legacy support)
-    this.logger.warn(`Engine plugin ${this.engineType} not available, using fallback`, {
+    this.logger.warn(`Engine plugin ${engineType} not available, using fallback`, {
       action: 'engine_fallback',
+      engineType,
     });
 
-    return this.createFallbackEngine(options);
+    return this.createFallbackEngine(options, engineType);
   }
 
   private isEnginePlugin(instance: unknown): instance is IEnginePlugin {
@@ -91,11 +174,25 @@ export class EngineFactory implements OnModuleInit {
     );
   }
 
-  private createFallbackEngine(options: EngineCreateOptions): IWhatsAppEngine {
+  private createFallbackEngine(options: EngineCreateOptions, engineType: string): IWhatsAppEngine {
+    if (engineType === 'baileys') {
+      return new BaileysAdapter({
+        sessionId: options.sessionId,
+        sessionDataPath: this.configService.get<string>('engine.sessionDataPath') ?? './data/sessions',
+        proxy: options.proxyUrl
+          ? {
+              url: options.proxyUrl,
+              type: options.proxyType ?? 'http',
+            }
+          : undefined,
+      });
+    }
+
     // Legacy direct creation (fallback)
     return new WhatsAppWebJsAdapter({
       sessionId: options.sessionId,
       sessionDataPath: this.configService.get<string>('engine.sessionDataPath') ?? './data/sessions',
+      syncWindowMs: this.configService.get<number>('engine.wa.syncWindowMs', 300_000),
       puppeteer: {
         headless: this.configService.get<boolean>('engine.puppeteer.headless') ?? true,
         args: this.configService.get<string[]>('engine.puppeteer.args') ?? ['--no-sandbox', '--disable-setuid-sandbox'],

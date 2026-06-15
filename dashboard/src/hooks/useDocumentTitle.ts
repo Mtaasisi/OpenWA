@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
+import { isDesktopApp } from '../lib/desktop-shell';
+
+const DESKTOP_APP_TITLE = 'Inauzwa CRM';
 
 /**
  * Custom hook to set document title dynamically.
- * Automatically appends " | OpenWA" suffix.
+ * Web: "{page} | OpenWA". Desktop shell: fixed app name (no page suffix in window chrome).
  */
 export function useDocumentTitle(title: string) {
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = `${title} | OpenWA`;
+    document.title = isDesktopApp() ? DESKTOP_APP_TITLE : `${title} | OpenWA`;
 
     return () => {
       document.title = previousTitle;

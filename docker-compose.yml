@@ -9,7 +9,7 @@ services:
     profiles: ['with-proxy', 'full']
     restart: unless-stopped
     ports:
-      - '127.0.0.1:${DASHBOARD_PORT:-2886}:80'
+      - '${BIND_ADDRESS:-0.0.0.0}:${DASHBOARD_PORT:-2886}:80'
       - '127.0.0.1:8080:8080' # Traefik dashboard
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
@@ -32,7 +32,9 @@ services:
     environment:
       # Core
       - NODE_ENV=${NODE_ENV:-production}
-      - PORT=2785
+      - PORT=${API_PORT:-2785}
+      - DOMAIN=${DOMAIN:-localhost}
+      - DASHBOARD_PORT=${DASHBOARD_PORT:-2886}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       # Database
       - DATABASE_TYPE=${DATABASE_TYPE:-sqlite}
@@ -42,11 +44,30 @@ services:
       - DATABASE_USERNAME=${DATABASE_USERNAME:-openwa}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD:-openwa}
       - DATABASE_SYNCHRONIZE=${DATABASE_SYNCHRONIZE:-false}
-      # Engine
-      - ENGINE_TYPE=${ENGINE_TYPE:-whatsapp-web.js}
+      - DATABASE_SSL=${DATABASE_SSL:-false}
+      - DATABASE_SSL_REJECT_UNAUTHORIZED=${DATABASE_SSL_REJECT_UNAUTHORIZED:-true}
+      - DATABASE_POOL_SIZE=${DATABASE_POOL_SIZE:-10}
+      - DATABASE_LOGGING=${DATABASE_LOGGING:-false}
+      # Engine (ENGINE_TYPE is read from data/.env.generated on boot — set via Plugins dashboard)
       - SESSION_DATA_PATH=/app/data/sessions
       - PUPPETEER_HEADLESS=${PUPPETEER_HEADLESS:-true}
       - PUPPETEER_ARGS=${PUPPETEER_ARGS:---no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu}
+      - AUTO_START_SESSIONS=${AUTO_START_SESSIONS:-true}
+      - SESSION_MAX_RECONNECT_ATTEMPTS=${SESSION_MAX_RECONNECT_ATTEMPTS:-10}
+      - SESSION_CONNECT_RECONNECT_ATTEMPTS=${SESSION_CONNECT_RECONNECT_ATTEMPTS:-20}
+      - SESSION_RECONNECT_BASE_DELAY_MS=${SESSION_RECONNECT_BASE_DELAY_MS:-5000}
+      - SESSION_RECONNECT_INFINITE=${SESSION_RECONNECT_INFINITE:-false}
+      - SESSION_RECONNECT_MAX_DELAY_MS=${SESSION_RECONNECT_MAX_DELAY_MS:-300000}
+      - SESSION_HEALTH_MONITOR_ENABLED=${SESSION_HEALTH_MONITOR_ENABLED:-true}
+      - SESSION_HEALTH_MONITOR_INTERVAL_MS=${SESSION_HEALTH_MONITOR_INTERVAL_MS:-60000}
+      - SESSION_HEALTH_AUTO_RESTART=${SESSION_HEALTH_AUTO_RESTART:-true}
+      - SESSION_SCHEDULED_RESTART_ENABLED=${SESSION_SCHEDULED_RESTART_ENABLED:-false}
+      - SESSION_SCHEDULED_RESTART_DAY=${SESSION_SCHEDULED_RESTART_DAY:-0}
+      - SESSION_SCHEDULED_RESTART_TIME=${SESSION_SCHEDULED_RESTART_TIME:-03:00}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+      - ENABLE_SWAGGER=${ENABLE_SWAGGER:-false}
+      - BASE_URL=${BASE_URL:-}
+      - DASHBOARD_URL=${DASHBOARD_URL:-}
       # Storage
       - STORAGE_TYPE=${STORAGE_TYPE:-local}
       - STORAGE_LOCAL_PATH=/app/data/media
@@ -62,16 +83,31 @@ services:
       - WEBHOOK_TIMEOUT=${WEBHOOK_TIMEOUT:-10000}
       - WEBHOOK_MAX_RETRIES=${WEBHOOK_MAX_RETRIES:-3}
       - WEBHOOK_RETRY_DELAY=${WEBHOOK_RETRY_DELAY:-5000}
-      # Rate Limit
+      # Rate Limit (dashboard loads many parallel API calls on first paint)
+      - RATE_LIMIT_SHORT_TTL=${RATE_LIMIT_SHORT_TTL:-1000}
+      - RATE_LIMIT_SHORT_LIMIT=${RATE_LIMIT_SHORT_LIMIT:-120}
+      - RATE_LIMIT_MEDIUM_TTL=${RATE_LIMIT_MEDIUM_TTL:-60000}
+      - RATE_LIMIT_MEDIUM_LIMIT=${RATE_LIMIT_MEDIUM_LIMIT:-300}
       - RATE_LIMIT_TTL=${RATE_LIMIT_TTL:-60}
-      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-100}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-300}
       # Plugins
       - PLUGINS_ENABLED=${PLUGINS_ENABLED:-true}
       - PLUGINS_DIR=/app/data/plugins
+      # Mixed wwjs + Baileys: raise memory if running Chromium + WebSocket sessions together
+      # OPENWA_API_MEMORY_LIMIT=3g  (set via mem_limit below)
       # Security
       - API_MASTER_KEY=${API_MASTER_KEY:-}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-8h}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - BOOTSTRAP_ADMIN_EMAIL=${BOOTSTRAP_ADMIN_EMAIL:-}
+      - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
+    # Chromium (whatsapp-web.js) needs shared memory; mixed-engine hosts should use >=2g RAM.
+    shm_size: ${PUPPETEER_SHM_SIZE:-512mb}
+    mem_limit: ${OPENWA_API_MEMORY_LIMIT:-2g}
     volumes:
       - openwa-data:/app/data
+      - ./.env:/app/.env:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./docker-compose.yml:/app/docker-compose.yml:ro
     depends_on:
@@ -115,7 +151,7 @@ services:
 
   # ===== OPTIONAL: Built-in PostgreSQL =====
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: openwa-postgres
     profiles: ['postgres']
     restart: unless-stopped

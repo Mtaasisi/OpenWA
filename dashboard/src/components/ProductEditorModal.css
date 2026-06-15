@@ -5,8 +5,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: stretch;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.32);
   animation: product-editor-fade 0.2s ease;
 }
 
@@ -26,13 +25,16 @@
   height: 100%;
   max-height: 100%;
   margin: 0;
-  background: var(--bg-white);
+  background: var(--interakt-surface-glass-high, var(--bg-card));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: var(--text-primary);
   border: none;
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--interakt-outline-soft, var(--border));
   border-radius: 0;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
+  box-shadow: var(--interakt-shadow, -8px 0 32px rgba(0, 0, 0, 0.18));
+  /* clip (not hidden) — hidden breaks sticky preview inside __scroll */
+  overflow: clip;
   animation: product-editor-drawer-in 0.22s ease-out;
 }
 
@@ -280,21 +282,21 @@
   flex-shrink: 0;
   border-radius: 12px;
   background: var(--primary, #22c55e);
-  color: #fff;
+  color: var(--interakt-on-primary, #fff);
 }
 
 .product-editor__header h2 {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
 .product-editor__subtitle {
   margin: 0.25rem 0 0;
   font-size: 0.8125rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
@@ -549,7 +551,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .product-editor__row {
@@ -571,7 +573,7 @@
 .product-editor__field label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-secondary, #4b5563);
+  color: var(--text-secondary);
 }
 
 .product-editor__field input,
@@ -581,7 +583,7 @@
   padding: 0.625rem 0.75rem;
   font: inherit;
   font-size: 0.9375rem;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary);
   background: var(--bg-light, #f9fafb);
   border: 1px solid var(--border, #d1d5db);
   border-radius: 10px;
@@ -594,7 +596,7 @@
 .product-editor__field select:focus {
   outline: none;
   border-color: var(--primary, #22c55e);
-  background: var(--bg-white, #fff);
+  background: var(--bg-white);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #22c55e) 18%, transparent);
 }
 
@@ -618,7 +620,7 @@
 .product-editor__image-input-icon {
   position: absolute;
   left: 0.75rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   pointer-events: none;
 }
 
@@ -629,7 +631,7 @@
 .product-editor__hint {
   margin: 0;
   font-size: 0.75rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
 }
 
 .product-editor__toggle {
@@ -638,7 +640,7 @@
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   border-radius: 12px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   background: var(--bg-light, #f9fafb);
   cursor: pointer;
 }
@@ -653,7 +655,7 @@
 .product-editor__toggle strong {
   display: block;
   font-size: 0.875rem;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary);
 }
 
 .product-editor__toggle small {
@@ -661,7 +663,7 @@
   margin-top: 0.15rem;
   font-size: 0.75rem;
   font-weight: 400;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .product-editor__aside {
@@ -684,7 +686,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
 }
 
 .product-editor__preview-visual {
@@ -695,7 +697,7 @@
   aspect-ratio: 1;
   margin-bottom: 0.75rem;
   border-radius: 10px;
-  background: var(--bg-white, #fff);
+  background: var(--bg-white);
   color: var(--text-muted, #d1d5db);
   overflow: hidden;
 }
@@ -710,14 +712,14 @@
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary);
   word-break: break-word;
 }
 
 .product-editor__preview-meta {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .product-editor__preview-price {
@@ -792,7 +794,7 @@
   gap: 0.35rem;
   padding: 0.5rem 1rem;
   background: var(--primary);
-  color: #fff;
+  color: var(--interakt-on-primary, #fff);
   border: none;
   border-radius: var(--radius, 8px);
   font: inherit;
@@ -841,8 +843,8 @@
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
-  background: var(--bg-light, #f3f4f6);
-  color: var(--text-muted, #6b7280);
+  background: var(--bg-light);
+  color: var(--text-muted);
 }
 
 .product-editor__variants-empty {
@@ -850,9 +852,9 @@
   padding: 1.25rem;
   text-align: center;
   font-size: 0.8125rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   border-radius: 10px;
-  border: 1px dashed var(--border, #e5e7eb);
+  border: 1px dashed var(--border);
 }
 
 .product-editor__variant-list {
@@ -866,7 +868,7 @@
 
 .product-editor__variant-item {
   border-radius: 10px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 
@@ -940,7 +942,7 @@
   padding: 0.4rem 0.65rem 0.4rem 1.5rem;
   font-size: 0.8125rem;
   border-top: 1px solid var(--border, #f3f4f6);
-  color: var(--text-secondary, #4b5563);
+  color: var(--text-secondary);
 }
 
 .product-editor__variant-badge {
@@ -950,18 +952,33 @@
   text-transform: uppercase;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--interakt-surface-muted-soft, var(--bg-light));
+  color: var(--text-secondary);
+  border: 1px solid var(--interakt-outline-faint, var(--border));
 }
 
 .product-editor__variant-badge--parent {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--interakt-info-surface);
+  color: var(--interakt-info);
+  border-color: var(--interakt-info-border);
 }
 
 .product-editor__variant-badge--imei_child {
-  background: #f3e8ff;
-  color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 12%, var(--bg-card));
+  color: color-mix(in srgb, #7c3aed 85%, var(--text-primary));
+  border-color: color-mix(in srgb, #7c3aed 22%, transparent);
+}
+
+.product-editor__variant-badge--installment {
+  background: var(--interakt-primary-soft);
+  color: var(--primary);
+  border-color: var(--interakt-primary-border);
+}
+
+.product-editor__variant-badge--stocking {
+  background: var(--interakt-warning-surface);
+  color: var(--warning, #c2410c);
+  border-color: color-mix(in srgb, var(--warning, #f59e0b) 22%, transparent);
 }
 
 .product-editor__variant-name {
@@ -973,7 +990,7 @@
 
 .product-editor__variant-qty {
   font-size: 0.8125rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .product-editor__variant-price {
@@ -990,20 +1007,20 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
 .product-editor__variant-remove:hover {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--interakt-danger-surface);
+  color: var(--interakt-danger);
 }
 
 .product-editor__add-variant {
   padding: 1rem;
   border-radius: 12px;
   background: var(--bg-light, #f9fafb);
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   margin-bottom: 0.75rem;
 }
 
@@ -1029,8 +1046,8 @@
   font-weight: 600;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 999px;
-  background: var(--bg-white, #fff);
-  color: var(--text-secondary, #4b5563);
+  background: var(--bg-white);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -1043,7 +1060,7 @@
 .product-editor__variant-type-btn.active {
   background: var(--primary, #22c55e);
   border-color: var(--primary, #22c55e);
-  color: #fff;
+  color: var(--interakt-on-primary, #fff);
 }
 
 .product-editor__add-variant-btn {
@@ -1066,7 +1083,7 @@
   font-family: inherit;
   white-space: pre-wrap;
   border-radius: 10px;
-  background: var(--bg-light, #f3f4f6);
+  background: var(--bg-light);
   max-height: 140px;
   overflow: auto;
 }

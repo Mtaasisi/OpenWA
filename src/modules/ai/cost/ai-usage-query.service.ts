@@ -16,6 +16,14 @@ export interface UsageSummary {
   averageCostPerReply: number;
   mostExpensiveModel: string | null;
   mostExpensiveFeature: string | null;
+  cacheHitCount: number;
+  cacheHitRate: number;
+  moneySavedByCacheUsd: number;
+  budgetBlockedCount: number;
+  duplicateSkippedCount: number;
+  promptBudgetWarningCount: number;
+  averagePromptTokens: number;
+  averageCompletionTokens: number;
 }
 
 @Injectable()
@@ -93,6 +101,33 @@ export class AiUsageQueryService {
     const modelCosts = this.groupByCost(monthLogs, 'model');
     const featureCosts = this.groupByCost(monthLogs, 'feature');
 
+    const cacheHits = todayLogs.filter(l => l.status === 'cache_hit');
+    const aiCallsToday = todayLogs.filter(
+      l => l.status === 'success' || l.status === 'failed',
+    );
+    const cacheHitRate =
+      aiCallsToday.length + cacheHits.length > 0
+        ? (cacheHits.length / (aiCallsToday.length + cacheHits.length)) * 100
+        : 0;
+    const avgReplyCost = averageCostPerReply || 0.002;
+    const moneySavedByCacheUsd = cacheHits.length * avgReplyCost;
+
+    const budgetBlockedCount = todayLogs.filter(l => l.status === 'budget_blocked').length;
+    const duplicateSkippedCount = todayLogs.filter(l => l.status === 'duplicate_skipped').length;
+    const promptBudgetWarningCount = todayLogs.filter(
+      l => (l.metadata as Record<string, unknown> | null)?.budgetWarning != null,
+    ).length;
+
+    const successWithTokens = todayLogs.filter(l => l.inputTokens > 0 || l.outputTokens > 0);
+    const averagePromptTokens =
+      successWithTokens.length > 0
+        ? successWithTokens.reduce((s, l) => s + l.inputTokens, 0) / successWithTokens.length
+        : 0;
+    const averageCompletionTokens =
+      successWithTokens.length > 0
+        ? successWithTokens.reduce((s, l) => s + l.outputTokens, 0) / successWithTokens.length
+        : 0;
+
     return {
       todayCostUsd,
       monthCostUsd,
@@ -105,6 +140,14 @@ export class AiUsageQueryService {
       averageCostPerReply,
       mostExpensiveModel: modelCosts[0]?.key ?? null,
       mostExpensiveFeature: featureCosts[0]?.key ?? null,
+      cacheHitCount: cacheHits.length,
+      cacheHitRate,
+      moneySavedByCacheUsd,
+      budgetBlockedCount,
+      duplicateSkippedCount,
+      promptBudgetWarningCount,
+      averagePromptTokens,
+      averageCompletionTokens,
     };
   }
 
@@ -177,6 +220,8 @@ export class AiUsageQueryService {
     model?: string;
     status?: string;
     branchId?: string;
+    conversationId?: string;
+    batchId?: string;
     since?: Date;
     until?: Date;
   }): Promise<{ items: AiUsageLog[]; total: number }> {
@@ -187,6 +232,12 @@ export class AiUsageQueryService {
     if (filters.model) qb.andWhere('log.model = :model', { model: filters.model });
     if (filters.status) qb.andWhere('log.status = :status', { status: filters.status });
     if (filters.branchId) qb.andWhere('log.branchId = :branchId', { branchId: filters.branchId });
+    if (filters.conversationId) {
+      qb.andWhere('log.conversationId = :conversationId', {
+        conversationId: filters.conversationId,
+      });
+    }
+    if (filters.batchId) qb.andWhere('log.batchId = :batchId', { batchId: filters.batchId });
     if (filters.since) qb.andWhere('log.createdAt >= :since', { since: filters.since });
     if (filters.until) qb.andWhere('log.createdAt < :until', { until: filters.until });
 
@@ -224,5 +275,70 @@ export class AiUsageQueryService {
       ].join(','),
     );
     return [header, ...rows].join('\n');
+  }
+
+  async getPromptContributors(since?: Date): Promise<{
+    sampleCount: number;
+    rulesTokens: number;
+    knowledgeTokens: number;
+    historyTokens: number;
+    toolsTokens: number;
+    customerMessageTokens: number;
+    crmTokens: number;
+    catalogTokens: number;
+    memoryTokens: number;
+    topOffender: string | null;
+  }> {
+    const start = since ?? this.daysAgo(7);
+    const logs = await this.usageRepo.find({
+      where: {
+        createdAt: Between(start, new Date()),
+        feature: AiUsageFeature.WHATSAPP_AUTO_REPLY,
+      },
+      take: 500,
+      order: { createdAt: 'DESC' },
+    });
+
+    const totals = {
+      rules_tokens: 0,
+      knowledge_tokens: 0,
+      history_tokens: 0,
+      tool_tokens: 0,
+      customer_message_tokens: 0,
+      crm_tokens: 0,
+      catalog_tokens: 0,
+      memory_tokens: 0,
+    };
+    let sampleCount = 0;
+
+    for (const log of logs) {
+      const breakdown = (log.metadata as Record<string, unknown> | null)?.promptBreakdown as
+        | Record<string, number>
+        | undefined;
+      if (!breakdown) continue;
+      sampleCount += 1;
+      totals.rules_tokens += breakdown.rules_tokens ?? 0;
+      totals.knowledge_tokens += breakdown.knowledge_tokens ?? 0;
+      totals.history_tokens += breakdown.history_tokens ?? 0;
+      totals.tool_tokens += breakdown.tool_tokens ?? 0;
+      totals.customer_message_tokens += breakdown.customer_message_tokens ?? 0;
+      totals.crm_tokens += breakdown.crm_tokens ?? 0;
+      totals.catalog_tokens += breakdown.catalog_tokens ?? 0;
+      totals.memory_tokens += breakdown.memory_tokens ?? 0;
+    }
+
+    const offenderEntries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    return {
+      sampleCount,
+      rulesTokens: totals.rules_tokens,
+      knowledgeTokens: totals.knowledge_tokens,
+      historyTokens: totals.history_tokens,
+      toolsTokens: totals.tool_tokens,
+      customerMessageTokens: totals.customer_message_tokens,
+      crmTokens: totals.crm_tokens,
+      catalogTokens: totals.catalog_tokens,
+      memoryTokens: totals.memory_tokens,
+      topOffender: offenderEntries[0]?.[1] ? offenderEntries[0][0] : null,
+    };
   }
 }

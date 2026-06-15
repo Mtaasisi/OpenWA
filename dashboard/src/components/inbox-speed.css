@@ -1,0 +1,103 @@
+.inbox-interakt-bubble-avatar-spacer {
+  flex-shrink: 0;
+  width: 2rem;
+}
+
+.inbox-message-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.inbox-message-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0.25rem 0;
+  font-size: 0.8125rem;
+  background: transparent;
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.inbox-message-search__input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.inbox-message-search__input::placeholder {
+  color: var(--text-secondary);
+}
+
+.inbox-message-search__count {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.inbox-message-search__nav {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.inbox-message-search__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.inbox-message-search__btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.inbox-message-search__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.inbox-message-search__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 6px;
+}
+
+.inbox-message-search__close:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.inbox-messages [data-message-search-active='true'] {
+  outline: 2px solid var(--accent, #25d366);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.inbox-virtual-messages {
+  width: 100%;
+}
+
+.inbox-virtual-messages-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  width: 100%;
+  min-height: 0;
+}

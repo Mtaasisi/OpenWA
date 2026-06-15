@@ -35,6 +35,25 @@ const CRM_INTENTS = new Set<AiCustomerIntent>([
   AiCustomerIntent.DELIVERY_REQUEST,
 ]);
 
+const COMPLEX_HISTORY_INTENTS = new Set<AiCustomerIntent>([
+  AiCustomerIntent.PRODUCT_SEARCH,
+  AiCustomerIntent.STOCK_REQUEST,
+  AiCustomerIntent.PRICE_REQUEST,
+  AiCustomerIntent.VARIANT_REQUEST,
+  AiCustomerIntent.DISCOUNT_REQUEST,
+  AiCustomerIntent.INSTALLMENT_REQUEST,
+  AiCustomerIntent.QUOTE_REQUEST,
+  AiCustomerIntent.PRODUCT_COMPATIBILITY,
+  AiCustomerIntent.DELIVERY_REQUEST,
+  AiCustomerIntent.COMPLAINT,
+  AiCustomerIntent.REPAIR_REQUEST,
+  AiCustomerIntent.UNKNOWN,
+]);
+
+export function resolveHistoryLimit(intent: AiCustomerIntent): number {
+  return COMPLEX_HISTORY_INTENTS.has(intent) ? 5 : 3;
+}
+
 const NAME_CORRECTION_RE =
   /(si\s+\w+|mimi\s+ni\s+\w+|jina\s+langu|my\s+name\s+is|call\s+me)/i;
 

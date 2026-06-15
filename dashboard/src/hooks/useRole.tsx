@@ -6,27 +6,32 @@ export type { UserRole, RoleContextType } from '../types/role';
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<UserRole | null>(() => {
-    const saved = localStorage.getItem('openwa_user_role');
-    return (saved as UserRole) || null;
-  });
+  const [role, setRoleState] = useState<UserRole | null>(null);
+  const [roleValidated, setRoleValidatedState] = useState(false);
 
   const setRole = useCallback((newRole: UserRole | null) => {
     setRoleState(newRole);
-    if (newRole) {
-      localStorage.setItem('openwa_user_role', newRole);
-    } else {
+    if (!newRole) {
+      localStorage.removeItem('openwa_user_role');
+    }
+  }, []);
+
+  const setRoleValidated = useCallback((validated: boolean) => {
+    setRoleValidatedState(validated);
+    if (!validated) {
       localStorage.removeItem('openwa_user_role');
     }
   }, []);
 
   const value: RoleContextType = {
-    role,
+    role: roleValidated ? role : null,
+    roleValidated,
     setRole,
-    isAdmin: role === 'admin',
-    isOperator: role === 'operator',
-    isViewer: role === 'viewer',
-    canWrite: role === 'admin' || role === 'operator',
+    setRoleValidated,
+    isAdmin: roleValidated && role === 'admin',
+    isOperator: roleValidated && role === 'operator',
+    isViewer: roleValidated && role === 'viewer',
+    canWrite: roleValidated && (role === 'admin' || role === 'operator'),
   };
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;

@@ -35,12 +35,24 @@ export class WhatsAppWebJsPlugin implements IEnginePlugin {
 
   createEngine(config: Record<string, unknown>): IWhatsAppEngine {
     const sessionId = config.sessionId as string;
-    const sessionDataPath = (this.context?.config.sessionDataPath as string) ?? './data/sessions';
-    const headless = (this.context?.config.headless as boolean) ?? true;
-    const puppeteerArgs = (this.context?.config.puppeteerArgs as string[]) ?? [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-    ];
+    const sessionDataPath =
+      (config.sessionDataPath as string | undefined) ??
+      (this.context?.config.sessionDataPath as string | undefined) ??
+      './data/sessions';
+    const headless =
+      (config.headless as boolean | undefined) ??
+      (this.context?.config.headless as boolean | undefined) ??
+      true;
+    const puppeteerArgs =
+      (config.puppeteerArgs as string[] | undefined) ??
+      (this.context?.config.puppeteerArgs as string[] | undefined) ?? [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ];
+    const syncWindowMs =
+      (config.syncWindowMs as number | undefined) ??
+      (this.context?.config.syncWindowMs as number | undefined) ??
+      300_000;
 
     const proxyUrl = config.proxyUrl as string | undefined;
     const proxyType = config.proxyType as 'http' | 'https' | 'socks4' | 'socks5' | undefined;
@@ -48,6 +60,7 @@ export class WhatsAppWebJsPlugin implements IEnginePlugin {
     return new WhatsAppWebJsAdapter({
       sessionId,
       sessionDataPath,
+      syncWindowMs,
       puppeteer: {
         headless,
         args: puppeteerArgs,

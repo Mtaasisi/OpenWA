@@ -1,0 +1,26 @@
+{
+  "id": "baileys",
+  "name": "Baileys Engine",
+  "version": "1.0.0",
+  "type": "engine",
+  "description": "WebSocket-based WhatsApp engine (no browser). Uses separate auth storage under baileys/{sessionId}.",
+  "author": "OpenWA Team",
+  "main": "index.ts",
+  "provides": [
+    "whatsapp-engine",
+    "text-messages",
+    "media-messages",
+    "group-management"
+  ],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "sessionDataPath": {
+        "type": "string",
+        "title": "Session Data Path",
+        "description": "Base path for session data (Baileys auth stored in baileys/{sessionId})",
+        "default": "./data/sessions"
+      }
+    }
+  }
+}

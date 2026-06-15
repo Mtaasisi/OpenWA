@@ -21,6 +21,10 @@ export class AiEmbeddingService {
 
     const config = await this.aiSettings.getActiveConfig();
     if (!config?.enabled) return null;
+    if (config.aiBudgetPaused && config.stopAutoReplyWhenBudgetExceeded) {
+      this.logger.debug('Embedding skipped: AI budget paused');
+      return null;
+    }
 
     let apiKey: string;
     try {

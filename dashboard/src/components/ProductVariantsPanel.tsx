@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
-import { Plus, Loader2, Trash2, Pencil, Smartphone, Check, Search } from 'lucide-react';
+import { Plus, Loader2, Trash2, Pencil, Smartphone, Check, Search, Grid3X3 } from 'lucide-react';
 import {
   productsApi,
   type CrmProduct,
   type CrmProductVariant,
   type ProductVariantType,
 } from '../services/api';
+import { ModalOverlay } from './ModalOverlay';
+import { ProductVariantMatrixModal } from './products/ProductVariantMatrixModal';
 
 function topLevelVariants(variants: CrmProductVariant[]): CrmProductVariant[] {
   return variants.filter((v) => !v.parentVariantId && v.variantType !== 'imei_child');
@@ -15,12 +17,6 @@ function topLevelVariants(variants: CrmProductVariant[]): CrmProductVariant[] {
 
 function childVariants(variants: CrmProductVariant[], parentId: string): CrmProductVariant[] {
   return variants.filter((v) => v.parentVariantId === parentId);
-}
-
-function variantTypeLabel(t: (k: string) => string, type: ProductVariantType): string {
-  if (type === 'parent') return t('products.variants.types.parent');
-  if (type === 'imei_child') return t('products.variants.types.imei');
-  return t('products.variants.types.standard');
 }
 
 function unitRows(v: CrmProductVariant, all: CrmProductVariant[]): CrmProductVariant[] {
@@ -33,56 +29,63 @@ function availableCount(v: CrmProductVariant, all: CrmProductVariant[]): number 
   return rows.filter((r) => r.quantity > 0).length;
 }
 
-function totalUnits(v: CrmProductVariant, all: CrmProductVariant[]): number {
-  const rows = unitRows(v, all);
-  return rows.reduce((sum, r) => sum + r.quantity, 0);
-}
-
 type VariantFormState = {
   name: string;
   sku: string;
   sellingPrice: string;
   quantity: string;
+  trackInventoryItems: boolean;
   variantType: ProductVariantType;
   parentVariantId: string;
   imei: string;
   condition: string;
 };
 
-type InlineImeiFormState = {
-  parentVariantId: string;
-  imei: string;
-  condition: string;
-  sellingPrice: string;
+type VariantInstallmentFormState = {
+  installmentEnabled: boolean;
+  installmentMinDeposit: string;
+  installmentDurationDays: string;
+  installmentScheduleType: string;
+  installmentPolicy: string;
+  installmentPenaltyPolicy: string;
+  installmentExpiryDays: string;
+  installmentRequiresApproval: boolean;
+  allowInstallmentWhenOutOfStock: boolean;
+  stockingReminderEnabled: boolean;
+  installmentNotes: string;
 };
-
-const emptyInlineImeiForm = (parentVariantId: string, sellingPrice = ''): InlineImeiFormState => ({
-  parentVariantId,
-  imei: '',
-  condition: '',
-  sellingPrice,
-});
-
-function isParentGroup(v: CrmProductVariant): boolean {
-  return v.isParent || v.variantType === 'parent';
-}
 
 type VariantEditFormState = {
   name: string;
   sellingPrice: string;
   quantity: string;
   condition: string;
-};
+} & VariantInstallmentFormState;
 
 const emptyVariantForm = (): VariantFormState => ({
   name: '',
   sku: '',
   sellingPrice: '',
   quantity: '1',
+  trackInventoryItems: false,
   variantType: 'standard',
   parentVariantId: '',
   imei: '',
   condition: '',
+});
+
+const emptyVariantInstallmentForm = (): VariantInstallmentFormState => ({
+  installmentEnabled: false,
+  installmentMinDeposit: '',
+  installmentDurationDays: '',
+  installmentScheduleType: 'monthly',
+  installmentPolicy: '',
+  installmentPenaltyPolicy: '',
+  installmentExpiryDays: '',
+  installmentRequiresApproval: false,
+  allowInstallmentWhenOutOfStock: false,
+  stockingReminderEnabled: false,
+  installmentNotes: '',
 });
 
 const emptyVariantEditForm = (): VariantEditFormState => ({
@@ -90,15 +93,36 @@ const emptyVariantEditForm = (): VariantEditFormState => ({
   sellingPrice: '',
   quantity: '0',
   condition: '',
+  ...emptyVariantInstallmentForm(),
 });
+
+function installmentFromVariant(v: CrmProductVariant): VariantInstallmentFormState {
+  return {
+    installmentEnabled: v.installmentEnabled === true,
+    installmentMinDeposit:
+      v.installmentMinDeposit != null ? String(v.installmentMinDeposit) : '',
+    installmentDurationDays:
+      v.installmentDurationDays != null ? String(v.installmentDurationDays) : '',
+    installmentScheduleType: v.installmentScheduleType ?? 'monthly',
+    installmentPolicy: v.installmentPolicy ?? '',
+    installmentPenaltyPolicy: v.installmentPenaltyPolicy ?? '',
+    installmentExpiryDays:
+      v.installmentExpiryDays != null ? String(v.installmentExpiryDays) : '',
+    installmentRequiresApproval: v.installmentRequiresApproval === true,
+    allowInstallmentWhenOutOfStock: v.allowInstallmentWhenOutOfStock === true,
+    stockingReminderEnabled: v.stockingReminderEnabled === true,
+    installmentNotes: v.installmentNotes ?? '',
+  };
+}
 
 interface Props {
   product: CrmProduct;
   canWrite: boolean;
+  onOpenInventory?: () => void;
   onUpdated: (product: CrmProduct) => void;
 }
 
-export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
+export function ProductVariantsPanel({ product, canWrite, onOpenInventory, onUpdated }: Props) {
   const { t } = useTranslation();
   const [variantSearch, setVariantSearch] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -107,11 +131,12 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
   const [variantEditForm, setVariantEditForm] = useState<VariantEditFormState>(emptyVariantEditForm);
   const [variantError, setVariantError] = useState<string | null>(null);
   const [deleteVariantId, setDeleteVariantId] = useState<string | null>(null);
-  const [inlineImeiForm, setInlineImeiForm] = useState<InlineImeiFormState | null>(null);
+  const [matrixOpen, setMatrixOpen] = useState(false);
 
-  const parents = topLevelVariants(product.variants).filter(
+  const _parents = topLevelVariants(product.variants).filter(
     (v) => v.isParent || v.variantType === 'parent',
   );
+  void _parents;
   const topLevel = topLevelVariants(product.variants);
 
   const filteredGroups = useMemo(() => {
@@ -140,22 +165,17 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
   const addVariant = useMutation({
     mutationFn: () => {
       const attrs: Record<string, string> = {};
-      if (variantForm.imei.trim()) attrs.imei = variantForm.imei.trim();
       if (variantForm.condition.trim()) attrs.condition = variantForm.condition.trim();
-      const name =
-        variantForm.variantType === 'imei_child' && variantForm.imei.trim()
-          ? variantForm.imei.trim()
-          : variantForm.name.trim();
 
       return productsApi.addVariant(product.id, {
-        name,
+        name: variantForm.name.trim(),
         sku: variantForm.sku.trim() || null,
         sellingPrice: variantForm.sellingPrice ? Number(variantForm.sellingPrice) : null,
-        quantity: Number(variantForm.quantity) || 0,
-        variantType: variantForm.variantType,
-        isParent: variantForm.variantType === 'parent',
-        parentVariantId: variantForm.parentVariantId || null,
-        attributes: Object.keys(attrs).length > 0 ? attrs : null,
+        quantity: variantForm.trackInventoryItems ? 0 : Number(variantForm.quantity) || 0,
+        trackInventoryItems: variantForm.trackInventoryItems,
+        variantType: 'standard',
+        isParent: false,
+        attributes: Object.keys(attrs).length ? attrs : null,
       });
     },
     onSuccess: (updated) => {
@@ -180,12 +200,39 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
         delete attrs.condition;
       }
 
-      return productsApi.updateVariant(product.id, variantId, {
+      const payload: Partial<CrmProductVariant> = {
         name: variantEditForm.name.trim(),
         sellingPrice: variantEditForm.sellingPrice ? Number(variantEditForm.sellingPrice) : null,
-        quantity: Number(variantEditForm.quantity) || 0,
         attributes: Object.keys(attrs).length > 0 ? attrs : null,
-      });
+      };
+
+      if (existing && !isTrackedVariant(existing)) {
+        payload.quantity = Number(variantEditForm.quantity) || 0;
+      }
+
+      if (existing && existing.variantType !== 'imei_child') {
+        Object.assign(payload, {
+          installmentEnabled: variantEditForm.installmentEnabled,
+          installmentMinDeposit: variantEditForm.installmentMinDeposit
+            ? Number(variantEditForm.installmentMinDeposit)
+            : null,
+          installmentDurationDays: variantEditForm.installmentDurationDays
+            ? Number(variantEditForm.installmentDurationDays)
+            : null,
+          installmentScheduleType: variantEditForm.installmentScheduleType || null,
+          installmentPolicy: variantEditForm.installmentPolicy.trim() || null,
+          installmentPenaltyPolicy: variantEditForm.installmentPenaltyPolicy.trim() || null,
+          installmentExpiryDays: variantEditForm.installmentExpiryDays
+            ? Number(variantEditForm.installmentExpiryDays)
+            : null,
+          installmentRequiresApproval: variantEditForm.installmentRequiresApproval,
+          allowInstallmentWhenOutOfStock: variantEditForm.allowInstallmentWhenOutOfStock,
+          stockingReminderEnabled: variantEditForm.stockingReminderEnabled,
+          installmentNotes: variantEditForm.installmentNotes.trim() || null,
+        });
+      }
+
+      return productsApi.updateVariant(product.id, variantId, payload);
     },
     onSuccess: (updated) => {
       onUpdated(updated);
@@ -210,50 +257,19 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
     },
   });
 
-  const addInlineImei = useMutation({
-    mutationFn: (form: InlineImeiFormState) => {
-      const imei = form.imei.trim();
-      const attrs: Record<string, string> = { imei };
-      if (form.condition.trim()) attrs.condition = form.condition.trim();
-      return productsApi.addVariant(product.id, {
-        name: imei,
-        sellingPrice: form.sellingPrice ? Number(form.sellingPrice) : null,
-        quantity: 1,
-        variantType: 'imei_child',
-        isParent: false,
-        parentVariantId: form.parentVariantId,
-        attributes: attrs,
-      });
-    },
-    onSuccess: (updated, form) => {
-      onUpdated(updated);
-      setVariantError(null);
-      setInlineImeiForm(emptyInlineImeiForm(form.parentVariantId, form.sellingPrice));
-    },
-    onError: (err: Error) => setVariantError(err.message),
-  });
+  const canAddVariant = !!variantForm.name.trim();
 
-  const startAddImeiToParent = (parent: CrmProductVariant) => {
-    setShowAddForm(false);
-    setVariantForm(emptyVariantForm());
-    const defaultPrice = parent.sellingPrice != null ? String(parent.sellingPrice) : '';
-    setInlineImeiForm(emptyInlineImeiForm(parent.id, defaultPrice));
-    setVariantError(null);
-  };
-
-  const canAddVariant =
-    variantForm.variantType === 'imei_child'
-      ? !!variantForm.imei.trim() && !!variantForm.parentVariantId
-      : !!variantForm.name.trim();
+  const isTrackedVariant = (v: CrmProductVariant) =>
+    !!(v.trackInventoryItems || v.isParent || v.variantType === 'parent');
 
   const startEditVariant = (v: CrmProductVariant) => {
-    setInlineImeiForm(null);
     setEditingVariantId(v.id);
     setVariantEditForm({
       name: v.name,
       sellingPrice: v.sellingPrice != null ? String(v.sellingPrice) : '',
       quantity: String(v.quantity),
       condition: String(v.attributes?.condition ?? ''),
+      ...installmentFromVariant(v),
     });
   };
 
@@ -301,8 +317,16 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
             type="number"
             min={0}
             value={variantEditForm.quantity}
+            disabled={isTrackedVariant(v)}
             onChange={(e) => setVariantEditForm({ ...variantEditForm, quantity: e.target.value })}
           />
+          {isTrackedVariant(v) ? (
+            <small className="product-editor__hint">
+              {t('products.variants.qtyFromInventory', {
+                defaultValue: 'Stock is calculated from inventory items.',
+              })}
+            </small>
+          ) : null}
         </div>
         {(isChild || v.variantType === 'imei_child') && (
           <div className="product-editor__field product-editor__field--full">
@@ -317,6 +341,153 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
           </div>
         )}
       </div>
+      {!isChild && v.variantType !== 'imei_child' && (
+        <section className="product-editor__section product-editor__variant-installment">
+          <h4 className="product-editor__section-title">{t('products.variants.installmentSection')}</h4>
+          <p className="product-editor__hint">{t('products.variants.installmentOverrideHint')}</p>
+          <label className="product-editor__toggle">
+            <input
+              type="checkbox"
+              checked={variantEditForm.installmentEnabled}
+              onChange={(e) =>
+                setVariantEditForm({ ...variantEditForm, installmentEnabled: e.target.checked })
+              }
+              disabled={!canWrite}
+            />
+            <span>
+              <strong>{t('products.installment.enabled')}</strong>
+              <small>{t('products.installment.enabledHint')}</small>
+            </span>
+          </label>
+          <div className="product-editor__row">
+            <div className="product-editor__field">
+              <label>{t('products.installment.minDeposit')}</label>
+              <input
+                type="number"
+                min={0}
+                value={variantEditForm.installmentMinDeposit}
+                onChange={(e) =>
+                  setVariantEditForm({ ...variantEditForm, installmentMinDeposit: e.target.value })
+                }
+                disabled={!canWrite}
+                placeholder={
+                  product.installmentMinDeposit != null
+                    ? String(product.installmentMinDeposit)
+                    : undefined
+                }
+              />
+            </div>
+            <div className="product-editor__field">
+              <label>{t('products.installment.durationDays')}</label>
+              <input
+                type="number"
+                min={0}
+                value={variantEditForm.installmentDurationDays}
+                onChange={(e) =>
+                  setVariantEditForm({
+                    ...variantEditForm,
+                    installmentDurationDays: e.target.value,
+                  })
+                }
+                disabled={!canWrite}
+                placeholder={
+                  product.installmentDurationDays != null
+                    ? String(product.installmentDurationDays)
+                    : undefined
+                }
+              />
+            </div>
+          </div>
+          <div className="product-editor__row">
+            <div className="product-editor__field">
+              <label>{t('products.installment.scheduleType')}</label>
+              <select
+                value={variantEditForm.installmentScheduleType}
+                onChange={(e) =>
+                  setVariantEditForm({
+                    ...variantEditForm,
+                    installmentScheduleType: e.target.value,
+                  })
+                }
+                disabled={!canWrite}
+              >
+                <option value="weekly">{t('products.installment.scheduleWeekly')}</option>
+                <option value="monthly">{t('products.installment.scheduleMonthly')}</option>
+                <option value="custom">{t('products.installment.scheduleCustom')}</option>
+              </select>
+            </div>
+            <div className="product-editor__field">
+              <label>{t('products.installment.expiryDays')}</label>
+              <input
+                type="number"
+                min={0}
+                value={variantEditForm.installmentExpiryDays}
+                onChange={(e) =>
+                  setVariantEditForm({
+                    ...variantEditForm,
+                    installmentExpiryDays: e.target.value,
+                  })
+                }
+                disabled={!canWrite}
+              />
+            </div>
+          </div>
+          <div className="product-editor__field product-editor__field--full">
+            <label>{t('products.installment.policy')}</label>
+            <textarea
+              rows={2}
+              value={variantEditForm.installmentPolicy}
+              onChange={(e) =>
+                setVariantEditForm({ ...variantEditForm, installmentPolicy: e.target.value })
+              }
+              disabled={!canWrite}
+              placeholder={product.installmentPolicy ?? undefined}
+            />
+          </div>
+          <label className="product-editor__toggle">
+            <input
+              type="checkbox"
+              checked={variantEditForm.installmentRequiresApproval}
+              onChange={(e) =>
+                setVariantEditForm({
+                  ...variantEditForm,
+                  installmentRequiresApproval: e.target.checked,
+                })
+              }
+              disabled={!canWrite}
+            />
+            <span>{t('products.installment.requiresApproval')}</span>
+          </label>
+          <label className="product-editor__toggle">
+            <input
+              type="checkbox"
+              checked={variantEditForm.allowInstallmentWhenOutOfStock}
+              onChange={(e) =>
+                setVariantEditForm({
+                  ...variantEditForm,
+                  allowInstallmentWhenOutOfStock: e.target.checked,
+                })
+              }
+              disabled={!canWrite}
+            />
+            <span>{t('products.installment.allowOutOfStock')}</span>
+          </label>
+          <label className="product-editor__toggle">
+            <input
+              type="checkbox"
+              checked={variantEditForm.stockingReminderEnabled}
+              onChange={(e) =>
+                setVariantEditForm({
+                  ...variantEditForm,
+                  stockingReminderEnabled: e.target.checked,
+                })
+              }
+              disabled={!canWrite}
+            />
+            <span>{t('products.installment.stockingReminder')}</span>
+          </label>
+        </section>
+      )}
       <div className="product-editor__variant-edit-actions">
         <button
           type="button"
@@ -340,81 +511,39 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
 
   const addVariantForm = (
     <div className="product-editor__add-variant-card">
-      <div
-        className="product-editor__variant-types"
-        role="group"
-        aria-label={t('products.variants.type')}
-      >
-        {(['standard', 'parent', 'imei_child'] as const).map((type) => (
-          <button
-            key={type}
-            type="button"
-            className={`product-editor__variant-type-btn ${variantForm.variantType === type ? 'active' : ''}`}
-            onClick={() =>
-              setVariantForm({
-                ...variantForm,
-                variantType: type,
-                quantity: type === 'imei_child' ? '1' : variantForm.quantity,
-              })
-            }
-          >
-            {variantTypeLabel(t, type)}
-          </button>
-        ))}
-      </div>
+      <label className="product-editor__toggle">
+        <input
+          type="checkbox"
+          checked={variantForm.trackInventoryItems}
+          onChange={(e) =>
+            setVariantForm({
+              ...variantForm,
+              trackInventoryItems: e.target.checked,
+              quantity: e.target.checked ? '0' : variantForm.quantity,
+            })
+          }
+        />
+        <span>
+          <strong>{t('products.variants.trackImei', { defaultValue: 'Track individual items by IMEI/Serial' })}</strong>
+          <small>{t('products.variants.trackImeiHint', { defaultValue: 'Stock is calculated from inventory items' })}</small>
+        </span>
+      </label>
       <div className="product-editor__row">
-        {variantForm.variantType !== 'imei_child' && (
-          <div className="product-editor__field">
-            <label>{t('common.name')}</label>
-            <input
-              value={variantForm.name}
-              onChange={(e) => setVariantForm({ ...variantForm, name: e.target.value })}
-              placeholder={
-                variantForm.variantType === 'parent'
-                  ? t('products.editor.parentNamePlaceholder')
-                  : t('products.editor.variantNamePlaceholder')
-              }
-            />
-          </div>
-        )}
-        {variantForm.variantType === 'imei_child' && (
-          <>
-            <div className="product-editor__field">
-              <label>{t('products.variants.parent')}</label>
-              <select
-                value={variantForm.parentVariantId}
-                onChange={(e) =>
-                  setVariantForm({ ...variantForm, parentVariantId: e.target.value })
-                }
-              >
-                <option value="">{t('products.variants.selectParent')}</option>
-                {parents.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="product-editor__field">
-              <label>IMEI</label>
-              <input
-                value={variantForm.imei}
-                onChange={(e) => setVariantForm({ ...variantForm, imei: e.target.value })}
-                placeholder="356789012345678"
-              />
-            </div>
-            <div className="product-editor__field">
-              <label>{t('products.variants.condition')}</label>
-              <input
-                value={variantForm.condition}
-                onChange={(e) =>
-                  setVariantForm({ ...variantForm, condition: e.target.value })
-                }
-                placeholder={t('products.editor.conditionPlaceholder')}
-              />
-            </div>
-          </>
-        )}
+        <div className="product-editor__field">
+          <label>{t('common.name')}</label>
+          <input
+            value={variantForm.name}
+            onChange={(e) => setVariantForm({ ...variantForm, name: e.target.value })}
+            placeholder={t('products.editor.variantNamePlaceholder')}
+          />
+        </div>
+        <div className="product-editor__field">
+          <label>{t('products.fields.sku')}</label>
+          <input
+            value={variantForm.sku}
+            onChange={(e) => setVariantForm({ ...variantForm, sku: e.target.value })}
+          />
+        </div>
         <div className="product-editor__field">
           <label>{t('products.fields.price')}</label>
           <input
@@ -426,7 +555,7 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
             }
           />
         </div>
-        {variantForm.variantType !== 'imei_child' && (
+        {!variantForm.trackInventoryItems ? (
           <div className="product-editor__field">
             <label>{t('products.variants.quantity')}</label>
             <input
@@ -436,7 +565,7 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
               onChange={(e) => setVariantForm({ ...variantForm, quantity: e.target.value })}
             />
           </div>
-        )}
+        ) : null}
       </div>
       <div className="product-editor__variant-edit-actions">
         <button
@@ -466,65 +595,15 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
     </div>
   );
 
-  const renderInlineImeiForm = (parentId: string) => {
-    if (!inlineImeiForm || inlineImeiForm.parentVariantId !== parentId) return null;
-    const form = inlineImeiForm;
-    return (
-      <div className="variant-group-card__add-imei">
-        <p className="variant-group-card__add-imei-label">{t('products.variants.addDeviceHint')}</p>
-        <div className="product-editor__row">
-          <div className="product-editor__field">
-            <label>IMEI</label>
-            <input
-              value={form.imei}
-              onChange={(e) => setInlineImeiForm({ ...form, imei: e.target.value })}
-              placeholder="356789012345678"
-              autoFocus
-            />
-          </div>
-          <div className="product-editor__field">
-            <label>{t('products.variants.condition')}</label>
-            <input
-              value={form.condition}
-              onChange={(e) => setInlineImeiForm({ ...form, condition: e.target.value })}
-              placeholder={t('products.editor.conditionPlaceholder')}
-            />
-          </div>
-          <div className="product-editor__field">
-            <label>{t('products.fields.price')}</label>
-            <input
-              type="number"
-              min={0}
-              value={form.sellingPrice}
-              onChange={(e) => setInlineImeiForm({ ...form, sellingPrice: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="product-editor__variant-edit-actions">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setInlineImeiForm(null)}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            disabled={addInlineImei.isPending || !form.imei.trim()}
-            onClick={() => addInlineImei.mutate(form)}
-          >
-            {addInlineImei.isPending ? (
-              <Loader2 className="animate-spin" size={14} />
-            ) : (
-              <Plus size={14} />
-            )}
-            {t('products.variants.addDeviceBtn')}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="variants-layout">
+    <div className="variants-layout" data-testid="product-variants-panel">
       {variantError && <p className="product-editor__variant-error">{variantError}</p>}
+      <p className="product-editor-helper">
+        {t('products.variants.sellableHelper', {
+          defaultValue:
+            'Variants are options customers choose. IMEI/Serial items are individual physical devices — manage them in the Inventory / IMEI tab.',
+        })}
+      </p>
       <div className="variants-layout__main">
         <div className="variants-toolbar">
           <div className="variants-toolbar__filters">
@@ -539,17 +618,25 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
             </div>
           </div>
           {canWrite && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => {
-                setInlineImeiForm(null);
-                setShowAddForm((open) => !open);
-              }}
-            >
-              <Plus size={16} aria-hidden />
-              {t('products.variants.add')}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                data-testid="product-generate-matrix-btn"
+                onClick={() => setMatrixOpen(true)}
+              >
+                <Grid3X3 size={16} aria-hidden />
+                {t('products.variants.generateMatrix', { defaultValue: 'Generate matrix' })}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowAddForm((open) => !open)}
+              >
+                <Plus size={16} aria-hidden />
+                {t('products.variants.add')}
+              </button>
+            </div>
           )}
         </div>
 
@@ -560,20 +647,30 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
         ) : (
           <div className="variant-groups">
             {filteredGroups.map((v) => {
-              const rows = unitRows(v, product.variants);
-              const avail = availableCount(v, product.variants);
-              const total = totalUnits(v, product.variants);
+              const rows = [v];
+              const avail = v.quantity ?? 0;
+              const total = v.quantity ?? 0;
               return (
                 <article key={v.id} className="variant-group-card">
                   <header className="variant-group-card__head">
                     <div>
                       <div className="variant-group-card__title-row">
                         <h3 className="variant-group-card__title">{v.name}</h3>
-                        <span
-                          className={`product-editor__variant-badge product-editor__variant-badge--${v.variantType}`}
-                        >
-                          {variantTypeLabel(t, v.variantType)}
+                        <span className="product-editor__variant-badge product-editor__variant-badge--standard">
+                          {isTrackedVariant(v)
+                            ? t('products.variants.imeiTracked', { defaultValue: 'IMEI tracked' })
+                            : t('products.variants.types.standard')}
                         </span>
+                        {v.installmentEnabled && (
+                          <span className="product-editor__variant-badge product-editor__variant-badge--installment">
+                            {t('products.tabs.installment')}
+                          </span>
+                        )}
+                        {v.stockingReminderEnabled && (
+                          <span className="product-editor__variant-badge product-editor__variant-badge--stocking">
+                            {t('products.variants.stockingBadge')}
+                          </span>
+                        )}
                       </div>
                       <p className="variant-group-card__stats">
                         {t('products.variants.groupStats', {
@@ -584,14 +681,14 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
                     </div>
                     {canWrite && editingVariantId !== v.id && (
                       <div className="variant-group-card__actions">
-                        {isParentGroup(v) && (
+                        {isTrackedVariant(v) && onOpenInventory && (
                           <button
                             type="button"
                             className="btn btn-primary btn-sm variant-group-card__add-device"
-                            onClick={() => startAddImeiToParent(v)}
+                            onClick={onOpenInventory}
                           >
                             <Smartphone size={14} aria-hidden />
-                            {t('products.variants.addDevice')}
+                            {t('products.variants.viewInventory', { defaultValue: 'Inventory items' })}
                           </button>
                         )}
                         <div className="product-editor__variant-actions">
@@ -687,8 +784,6 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
                       </tbody>
                     </table>
                   </div>
-
-                  {renderInlineImeiForm(v.id)}
                 </article>
               );
             })}
@@ -734,7 +829,7 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
       </aside>
 
       {deleteVariantId && (
-        <div className="products-delete-overlay" onClick={() => setDeleteVariantId(null)}>
+        <ModalOverlay onClose={() => setDeleteVariantId(null)} className="products-delete-overlay">
           <div
             className="products-delete-dialog"
             onClick={(e) => e.stopPropagation()}
@@ -761,8 +856,18 @@ export function ProductVariantsPanel({ product, canWrite, onUpdated }: Props) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
+
+      <ProductVariantMatrixModal
+        productId={product.id}
+        productSku={product.sku}
+        isOpen={matrixOpen}
+        onClose={() => setMatrixOpen(false)}
+        onGenerated={() => {
+          void productsApi.get(product.id).then(onUpdated);
+        }}
+      />
     </div>
   );
 }

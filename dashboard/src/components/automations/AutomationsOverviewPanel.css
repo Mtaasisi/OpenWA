@@ -1,0 +1,190 @@
+.automations-hub__intro {
+  margin: 0 0 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.automations-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+.automations-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--interakt-outline-soft, var(--border));
+  background: var(--interakt-surface-muted-soft, var(--bg-light));
+}
+
+.automations-hub-card--muted {
+  background: color-mix(in srgb, var(--bg-light) 70%, transparent);
+}
+
+.automations-hub-card--future {
+  border-style: dashed;
+  opacity: 0.92;
+}
+
+.automations-hub-card__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem 0.75rem;
+  align-items: start;
+}
+
+.automations-hub-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg-white, #fff));
+  color: var(--primary);
+}
+
+.automations-hub-card__titles h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.automations-hub-card__titles p {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.automations-hub-card__status {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.automations-hub-card__status--active {
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+  color: #15803d;
+}
+
+.automations-hub-card__status--partial {
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #b45309;
+}
+
+.automations-hub-card__status--off {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-secondary);
+}
+
+.automations-hub-card__status--setup {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
+.automations-hub-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin: 0;
+}
+
+.automations-hub-card__stats > div {
+  min-width: 4.5rem;
+}
+
+.automations-hub-card__stats dt {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.automations-hub-card__stats dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.automations-hub-card__issues {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #b45309;
+}
+
+.automations-hub-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
+.automations-hub-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.automations-hub-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.automations-hub-toggle__track {
+  position: relative;
+  width: 2.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 35%, var(--bg-white, #fff));
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.automations-hub-toggle__track::after {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.15);
+  transition: transform 0.15s ease;
+}
+
+.automations-hub-toggle input:checked + .automations-hub-toggle__track {
+  background: var(--primary);
+}
+
+.automations-hub-toggle input:checked + .automations-hub-toggle__track::after {
+  transform: translateX(1rem);
+}
+
+.automations-hub-toggle input:disabled + .automations-hub-toggle__track {
+  opacity: 0.55;
+}

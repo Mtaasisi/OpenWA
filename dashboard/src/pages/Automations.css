@@ -1,0 +1,49 @@
+/* Automations — Interakt workspace tab panel */
+
+.automations-interakt__chips {
+  flex-wrap: wrap;
+}
+
+.automations-interakt .automations-panel.fu-glass-card {
+  min-height: auto;
+  padding: 1.25rem 1.5rem;
+  gap: 1.25rem;
+  border-radius: 1rem;
+  border-color: var(--interakt-outline-soft, var(--border));
+  background: var(--interakt-surface-glass-high, var(--bg-card));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--interakt-shadow-sm, none);
+}
+
+.automations-interakt .automations-panel .settings-crm-stack {
+  gap: 1.5rem;
+}
+
+.automations-interakt .automations-panel .settings-integration-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  padding: 1.5rem;
+  border-radius: 0.85rem;
+  border: 1px dashed var(--interakt-outline-soft, var(--border));
+  background: var(--interakt-surface-muted-soft, var(--bg-light));
+  color: var(--text-secondary);
+}
+
+.automations-interakt .automations-panel--overview.fu-glass-card {
+  padding: 1.25rem 1.35rem 1.5rem;
+}
+
+.automations-interakt .automations-panel.fu-glass-card:has(.auto-reply-health) {
+  gap: 1.25rem;
+}
+
+.automations-future__list {
+  margin: 1rem 0 0;
+  padding-inline-start: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

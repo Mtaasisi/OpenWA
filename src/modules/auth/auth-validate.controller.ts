@@ -16,7 +16,9 @@ export class AuthValidateController {
   @ApiHeader({ name: 'X-API-Key', description: 'API key to validate' })
   @ApiResponse({ status: 200, description: 'API key is valid' })
   @ApiResponse({ status: 401, description: 'Invalid or missing API key' })
-  async validate(@Headers('x-api-key') apiKey?: string): Promise<{ valid: boolean; role?: string }> {
+  async validate(
+    @Headers('x-api-key') apiKey?: string,
+  ): Promise<{ valid: boolean; role?: string; keyId?: string; name?: string }> {
     if (!apiKey) {
       return { valid: false };
     }
@@ -24,7 +26,12 @@ export class AuthValidateController {
     try {
       const keyEntity = await this.authService.validateApiKey(apiKey);
       if (keyEntity && keyEntity.isActive) {
-        return { valid: true, role: keyEntity.role };
+        return {
+          valid: true,
+          role: keyEntity.role,
+          keyId: keyEntity.id,
+          name: keyEntity.name,
+        };
       }
       return { valid: false };
     } catch (error) {

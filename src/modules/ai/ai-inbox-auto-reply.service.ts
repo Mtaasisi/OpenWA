@@ -53,7 +53,12 @@ import type { AiConfig } from './entities/ai-config.entity';
 import { isAiUnrestricted } from './utils/ai-unrestricted.util';
 import { AiProcessedMessageService } from './cost/ai-processed-message.service';
 import { AiBudgetGuardService } from './cost/ai-budget-guard.service';
-import { AiUsageFeature } from './cost/ai-cost.types';
+import { AiCostTrackerService } from './cost/ai-cost-tracker.service';
+import { AiLearnedIntentService } from './learning/ai-learned-intent.service';
+import { AiMessageBufferService } from './cost/ai-message-buffer.service';
+import { AiIntentLearningService } from './learning/ai-intent-learning.service';
+import { AiConfigCacheService } from './cost/ai-config-cache.service';
+import { AiUsageFeature, AiUsageSource, AiUsageStatus } from './cost/ai-cost.types';
 import { analyzeMessageContent } from '../whatsapp-safety/utils/whatsapp-content-safety.util';
 import { randomUUID } from 'crypto';
 
@@ -113,9 +118,75 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
     private readonly productNotFound: AiProductNotFoundService,
     private readonly processedMessages: AiProcessedMessageService,
     private readonly budgetGuard: AiBudgetGuardService,
+    private readonly costTracker: AiCostTrackerService,
+    private readonly learnedIntent: AiLearnedIntentService,
+    private readonly messageBuffer: AiMessageBufferService,
+    private readonly intentLearning: AiIntentLearningService,
+    private readonly configCache: AiConfigCacheService,
   ) {}
 
   onModuleInit(): void {
+    this.messageBuffer.registerProcessor(async payload => {
+      const key = this.chatKey(payload.sessionId, payload.chatId);
+      const generation = this.bumpReplyGeneration(key);
+      const config = await this.aiSettings.getActiveConfig();
+      const timingConfig = humanTimingConfigFromAiConfig(config ?? ({} as AiConfig));
+
+      let waitMs = 0;
+      try {
+        const recent = await this.messageService.getChatMessagesForAi(
+          payload.sessionId,
+          payload.chatId,
+          8,
+        );
+        const decision = this.humanTiming.decideProcessingWait({
+          config: timingConfig,
+          messages: recent.messages,
+          burst: {
+            firstMessageAt: Date.now() - 5000,
+            lastMessageAt: Date.now(),
+            messageCount: payload.messageIds.length,
+          },
+          incomingText: payload.combinedText,
+        });
+        waitMs = Math.min(decision.waitBeforeProcessingMs, 18_000);
+      } catch {
+        waitMs = 0;
+      }
+      if (waitMs > 0) await this.sleep(waitMs);
+      if (this.isStaleReply(key, generation)) return;
+
+      const texts = payload.combinedText.split('\n').filter(Boolean);
+      const syntheticMessages: IncomingMessage[] = (payload.messageIds ?? []).map((id, i) => ({
+        id,
+        chatId: payload.chatId,
+        body: texts[i] ?? texts[texts.length - 1] ?? '',
+        fromMe: false,
+        type: 'text',
+      })) as IncomingMessage[];
+      const latest =
+        syntheticMessages[syntheticMessages.length - 1] ??
+        ({
+          id: payload.messageIds?.[payload.messageIds.length - 1],
+          chatId: payload.chatId,
+          body: payload.combinedText,
+          fromMe: false,
+          type: 'text',
+        } as IncomingMessage);
+      const burst: PendingAutoReply = {
+        timer: setTimeout(() => undefined, 0),
+        firstMessageAt: Date.now(),
+        lastMessageAt: Date.now(),
+        messages: syntheticMessages.length ? syntheticMessages : [latest],
+        incomingTexts: texts.length ? texts : [payload.combinedText],
+        latestMsg: latest,
+        firstMsg: syntheticMessages[0] ?? latest,
+        generation,
+        waitReason: 'message_buffer',
+      };
+      await this.processAutoReply(payload.sessionId, payload.chatId, burst, generation, payload.batchId);
+    });
+
     void this.inboxCrmService.healAllStaleAutoReplyStates().catch(err => {
       this.logger.warn(
         `Stale AI handling heal skipped: ${err instanceof Error ? err.message : String(err)}`,
@@ -254,6 +325,32 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
     const generation = this.bumpReplyGeneration(key);
     this.stopTypingIndicator(sessionId, chatId);
     this.eventsGateway.emitAiTyping(sessionId, { chatId, active: false });
+
+    const config = await this.configCache.getActiveConfig();
+    if (config?.messageBufferEnabled !== false) {
+      try {
+        await this.messageBuffer.enqueue({
+          sessionId,
+          chatId,
+          messageId: msg.id ?? randomUUID(),
+          text: incomingText,
+          contactId: chatId,
+        });
+        if (msg.id && config?.ignoreDuplicateMessageIds !== false) {
+          await this.processedMessages.markProcessed(
+            sessionId,
+            msg.id,
+            AiUsageFeature.WHATSAPP_AUTO_REPLY,
+            'buffered',
+          );
+        }
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Message buffer enqueue failed: ${errMsg}`);
+      }
+      return;
+    }
+
     const now = Date.now();
     const existing = this.pendingReplies.get(key);
 
@@ -278,7 +375,6 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
     }
 
     const pending = this.pendingReplies.get(key)!;
-    const config = await this.aiSettings.getActiveConfig();
     const timingConfig = humanTimingConfigFromAiConfig(config ?? ({} as AiConfig));
 
     const burst = {
@@ -361,6 +457,40 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
     const chatId = parts.slice(1).join(':');
     const masked = chatId.replace(/\d{4,}/g, m => `${m.slice(0, 2)}***${m.slice(-2)}`);
     return `${parts[0]}:${masked}`;
+  }
+
+  private async finalizeZeroCostReply(
+    key: string,
+    sessionId: string,
+    burst: PendingAutoReply,
+    latestMessageId?: string,
+    config?: AiConfig | null,
+  ): Promise<void> {
+    await this.markBurstProcessed(sessionId, burst.messages, latestMessageId);
+    const cooldownSeconds = config?.autoReplyCooldownSeconds ?? 60;
+    if (cooldownSeconds > 0) {
+      this.cooldownMap.set(key, Date.now());
+    } else {
+      const cooldownMinutes = config?.autoReplyCooldownMinutes ?? 0;
+      if (cooldownMinutes > 0) {
+        this.cooldownMap.set(key, Date.now());
+      }
+    }
+  }
+
+  private async markBurstProcessed(
+    sessionId: string,
+    messages: IncomingMessage[],
+    latestMessageId?: string,
+  ): Promise<void> {
+    const ids = new Set<string>();
+    for (const m of messages) {
+      if (m.id) ids.add(m.id);
+    }
+    if (latestMessageId) ids.add(latestMessageId);
+    for (const id of ids) {
+      await this.processedMessages.markProcessed(sessionId, id, AiUsageFeature.WHATSAPP_AUTO_REPLY);
+    }
   }
 
   private async sendOptOutAcknowledgment(
@@ -705,6 +835,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
     chatId: string,
     burst: PendingAutoReply,
     generation: number,
+    batchId?: string,
   ): Promise<void> {
     const key = this.chatKey(sessionId, chatId);
     const processStartedAt = Date.now();
@@ -722,7 +853,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         this.logSkip(key, 'superseded by newer customer message');
         return;
       }
-      const config = await this.aiSettings.getActiveConfig();
+      const config = await this.configCache.getActiveConfig();
       const quotedMessageId = pickBurstQuotedMessageId(
         burst.messages,
         config?.replyToBurstLatestMessage !== false,
@@ -837,6 +968,19 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         );
         if (already) {
           this.logSkip(key, 'duplicate message id already processed');
+          void this.costTracker.recordUsage({
+            context: {
+              feature: AiUsageFeature.WHATSAPP_AUTO_REPLY,
+              source: AiUsageSource.CUSTOMER_MESSAGE,
+              conversationId: chatId,
+              messageId: msg.id,
+            },
+            provider: 'none',
+            model: 'none',
+            inputTokens: 0,
+            outputTokens: 0,
+            status: AiUsageStatus.DUPLICATE_SKIPPED,
+          });
           return;
         }
       }
@@ -856,6 +1000,14 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         (await this.inboxCrmService.getPreferredBranchId(sessionId, chatId)) ??
         prefs.branchId?.trim() ??
         null;
+
+      void this.intentLearning.extractAndPersistFacts({
+        conversationId: `${sessionId}:${chatId}`,
+        text: incomingText,
+        branchId,
+        contactId: chatId,
+        messageId: msg.id,
+      });
 
       const recentForCompat = await this.messageService.getChatMessagesForAi(sessionId, chatId, 12);
       const lastAssistantMessage = [...recentForCompat.messages]
@@ -911,6 +1063,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
             );
           }
         }
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
         await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
         return;
       }
@@ -956,6 +1109,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
             detectedIntent: signal.intent,
           });
         }
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
         await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
         return;
       }
@@ -988,6 +1142,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
             detectedIntent: AiCustomerIntent.PRESENCE,
           });
         }
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
         await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
         return;
       }
@@ -1025,7 +1180,16 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
             branchId,
             detectedIntent: AiCustomerIntent.GREETING,
           });
+          void this.intentLearning.maybeLearnFromPhrase({
+            phrase: latestCustomerText,
+            suggestedReply: greetingReply,
+            branchId,
+            conversationId: `${sessionId}:${chatId}`,
+            messageId: msg.id,
+            intentOverride: 'greeting',
+          });
         }
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
         await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
         return;
       }
@@ -1079,6 +1243,135 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         return;
       }
 
+      const learnedHit = await this.learnedIntent.tryReply({
+        text: incomingText,
+        branchId,
+        contactId: chatId,
+        conversationId: `${sessionId}:${chatId}`,
+      });
+
+      if (learnedHit.hit) {
+        const cached: CustomerAgentRunResult = {
+          content: learnedHit.reply,
+          escalated: false,
+          actions: [],
+        };
+        if (!this.staffPausedChats.has(key) && !this.isStaleReply(key, generation)) {
+          await this.sendCustomerAiReply(sessionId, chatId, learnedHit.reply, cached, {
+            ...sendCtx,
+            generationMs: Date.now() - processStartedAt,
+            delayReason: 'learned_intent_cache',
+          });
+          void this.signalService.recordReply({
+            sessionId,
+            chatId,
+            incomingText,
+            replyText: learnedHit.reply,
+            escalated: false,
+            branchId,
+            detectedIntent: learnedHit.intent as AiCustomerIntent,
+          });
+        }
+        void this.costTracker.recordUsage({
+          context: {
+            feature: AiUsageFeature.WHATSAPP_AUTO_REPLY,
+            source: AiUsageSource.CUSTOMER_MESSAGE,
+            branchId,
+            conversationId: chatId,
+            messageId: msg.id,
+          },
+          provider: 'cache',
+          model: 'learned_intent',
+          inputTokens: 0,
+          outputTokens: 0,
+          status: AiUsageStatus.CACHE_HIT,
+          metadata: {
+            intentId: learnedHit.intentId,
+            intent: learnedHit.intent,
+            matchType: learnedHit.matchType,
+          },
+        });
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
+        await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
+        return;
+      }
+
+      void this.costTracker.recordUsage({
+        context: {
+          feature: AiUsageFeature.WHATSAPP_AUTO_REPLY,
+          source: AiUsageSource.CUSTOMER_MESSAGE,
+          branchId,
+          conversationId: chatId,
+          messageId: msg.id,
+          batchId: batchId ?? undefined,
+        },
+        provider: 'cache',
+        model: 'learned_intent',
+        inputTokens: 0,
+        outputTokens: 0,
+        status: AiUsageStatus.CACHE_MISS,
+      });
+
+      if (
+        signal.intent === AiCustomerIntent.UNKNOWN &&
+        incomingText.length < 120 &&
+        config.learnedReplyCacheEnabled !== false
+      ) {
+        const classifierHit = await this.intentLearning.tryClassifierBeforeAgent({
+          text: incomingText,
+          branchId: signal.branchId ?? branchId,
+          conversationId: `${sessionId}:${chatId}`,
+          contactId: chatId,
+          messageId: msg.id,
+        });
+        if (classifierHit.hit) {
+          const classified: CustomerAgentRunResult = {
+            content: classifierHit.reply,
+            escalated: false,
+            actions: [],
+          };
+          if (!this.staffPausedChats.has(key) && !this.isStaleReply(key, generation)) {
+            await this.sendCustomerAiReply(sessionId, chatId, classifierHit.reply, classified, {
+              ...sendCtx,
+              generationMs: Date.now() - processStartedAt,
+              delayReason: 'classifier_fast_path',
+            });
+            void this.signalService.recordReply({
+              sessionId,
+              chatId,
+              incomingText,
+              replyText: classifierHit.reply,
+              escalated: false,
+              branchId,
+              detectedIntent: classifierHit.intent as AiCustomerIntent,
+            });
+          }
+          void this.costTracker.recordUsage({
+            context: {
+              feature: AiUsageFeature.WHATSAPP_AUTO_REPLY,
+              source: AiUsageSource.CUSTOMER_MESSAGE,
+              branchId,
+              conversationId: chatId,
+              messageId: msg.id,
+              batchId: batchId ?? undefined,
+            },
+            provider: 'cache',
+            model: 'learned_intent_classifier',
+            inputTokens: 0,
+            outputTokens: 0,
+            status: AiUsageStatus.CACHE_HIT,
+            metadata: {
+              intent: classifierHit.intent,
+              confidence: classifierHit.confidence,
+              source: 'classifier_fast_path',
+            },
+          });
+          await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
+          await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
+          return;
+        }
+      }
+
       const learningDecision = await this.learningInbox.decideBeforeAgent(
         sessionId,
         chatId,
@@ -1124,6 +1417,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
             detectedIntent: signal.intent,
           });
         }
+        await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
         await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
         return;
       }
@@ -1175,6 +1469,7 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         branchId: signal.branchId ?? branchId,
         messageId: msg.id,
         requestId,
+        batchId: batchId ?? undefined,
         injectPromptBlock: [signal.injectPromptBlock, burstPrompt].filter(Boolean).join('\n\n') || undefined,
         profileQuestionHint,
         onEscalate: async reason => {
@@ -1188,15 +1483,6 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
           sessionId,
           chatId,
           'needs_human_review — complex request exceeded AI call limit',
-        );
-      }
-
-      if (msg.id && config.ignoreDuplicateMessageIds !== false) {
-        await this.processedMessages.markProcessed(
-          sessionId,
-          msg.id,
-          AiUsageFeature.WHATSAPP_AUTO_REPLY,
-          requestId,
         );
       }
 
@@ -1262,15 +1548,19 @@ export class AiInboxAutoReplyService implements OnModuleInit, OnModuleDestroy {
         signalType: signal.signalType,
         detectedIntent: signal.intent,
       });
+      if (signal.intent === AiCustomerIntent.UNKNOWN && incomingText.length >= 120) {
+        void this.intentLearning.classifyAndQueueUnknown({
+          text: incomingText,
+          branchId: signal.branchId ?? branchId,
+          conversationId: `${sessionId}:${chatId}`,
+          contactId: chatId,
+          messageId: msg.id,
+        });
+      }
       this.circuitBreaker.recordSuccess(sessionId);
       await this.inboxCrmService.resetAiFailures(sessionId, chatId);
       await this.inboxCrmService.setAiHandlingState(sessionId, chatId, InboxAiHandlingState.IDLE);
-      if (
-        (config.autoReplyCooldownSeconds ?? 0) > 0 ||
-        (config.autoReplyCooldownMinutes ?? 0) > 0
-      ) {
-        this.cooldownMap.set(key, Date.now());
-      }
+      await this.finalizeZeroCostReply(key, sessionId, burst, msg.id, config);
       this.logger.log(
         sendOutcome === 'queued'
           ? `AI auto-reply queued for safe delivery for ${key}`

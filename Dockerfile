@@ -68,9 +68,10 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/seed ./seed
 
 # Create data directories with proper permissions
-RUN mkdir -p ./data/sessions ./data/media && \
+RUN mkdir -p ./data/sessions ./data/media ./data/ai-knowledge && \
     chown -R openwa:openwa /app
 
 # Note: Running as root to allow Docker socket access for orchestration

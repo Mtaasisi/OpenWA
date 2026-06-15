@@ -3,9 +3,10 @@ import type { DashboardTheme } from '../lib/theme-types';
 export function ThemePreview({ theme, mode }: { theme: DashboardTheme; mode: 'light' | 'dark' }) {
   const p = mode === 'dark' ? theme.dark : theme.light;
   const isTactical = theme.effects === 'tactical';
+  const isInterakt = theme.effects === 'interakt';
   return (
     <div
-      className={`theme-preview ${isTactical ? 'theme-preview--tactical' : ''}`}
+      className={`theme-preview ${isTactical ? 'theme-preview--tactical' : ''} ${isInterakt ? 'theme-preview--interakt' : ''}`}
       style={{
         background: p.bgLight,
         borderColor: isTactical ? 'rgba(34, 211, 238, 0.25)' : p.border,

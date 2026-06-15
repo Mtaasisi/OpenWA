@@ -15,6 +15,7 @@ import {
   GroupParticipant,
   LocationInput,
   ContactCard,
+  ContactPresence,
   MessageReaction,
   Label,
   Channel,
@@ -28,6 +29,7 @@ import {
   PaginatedProducts,
 } from '../interfaces/whatsapp-engine.interface';
 import { createLogger } from '../../common/services/logger.service';
+import { isWhatsAppBrowserDetachedError } from '../../common/utils/whatsapp-send-error.util';
 import {
   GroupChat,
   MessageWithReactions,
@@ -36,7 +38,8 @@ import {
   GroupCreateResult,
 } from '../types/whatsapp-web-js.types';
 import type { ChatSummary } from '../interfaces/whatsapp-engine.interface';
-import { isInboxChat } from '../../common/utils/inbox-chat.util';
+import { isInboxChat, shouldPersistMessage } from '../../common/utils/inbox-chat.util';
+import { isUsableWhatsAppChatTitle } from '../../common/utils/inbox-display.util';
 
 export interface WhatsAppWebJsConfig {
   sessionId: string;
@@ -45,6 +48,8 @@ export interface WhatsAppWebJsConfig {
     headless?: boolean;
     args?: string[];
   };
+  /** Skip heavy getChat/getContact during bulk history sync after scan */
+  syncWindowMs?: number;
   // Phase 3: Proxy per session
   proxy?: {
     url: string;
@@ -59,7 +64,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
   private phoneNumber: string | null = null;
   private pushName: string | null = null;
   private callbacks: EngineEventCallbacks = {};
-
+  private syncWindowUntil = 0;
   constructor(private readonly config: WhatsAppWebJsConfig) {
     super();
   }
@@ -80,7 +85,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
         '--no-first-run',
         '--no-zygote',
         '--disable-gpu',
-      ];
+      ]
 
       // Add proxy configuration if provided
       if (this.config.proxy) {
@@ -124,8 +129,18 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     });
 
     this.client.on('authenticated', () => {
+      const syncWindowMs = this.config.syncWindowMs ?? 300_000;
+      this.syncWindowUntil = Date.now() + syncWindowMs;
       this.setStatus(EngineStatus.AUTHENTICATING);
       this.qrCode = null;
+    });
+
+    this.client.on('loading_screen', (percent: string | number, message: string) => {
+      if (this.status !== EngineStatus.LOADING_CHATS && this.status !== EngineStatus.READY) {
+        this.setStatus(EngineStatus.LOADING_CHATS);
+      }
+      const numeric = typeof percent === 'string' ? parseFloat(percent) : percent;
+      this.callbacks.onLoadingProgress?.(Number.isFinite(numeric) ? numeric : 0, message ?? '');
     });
 
     this.client.on('ready', () => {
@@ -133,35 +148,54 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
         const info = this.client?.info;
         this.phoneNumber = info?.wid?.user || null;
         this.pushName = info?.pushname || null;
-        this.setStatus(EngineStatus.READY);
         this.callbacks.onReady?.(this.phoneNumber || '', this.pushName || '');
+        this.setStatus(EngineStatus.READY);
       } catch (error) {
         this.logger.error('Error getting client info', String(error));
-        this.setStatus(EngineStatus.READY);
         this.callbacks.onReady?.('', '');
+        this.setStatus(EngineStatus.READY);
       }
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.client.on('message', async msg => {
       try {
-        const chat = await msg.getChat();
-        const chatId = chat.id._serialized;
+        const inSyncWindow = Date.now() < this.syncWindowUntil;
+        let chatId: string;
+        let isGroup: boolean;
+        let chatName: string | undefined;
+
+        if (inSyncWindow) {
+          chatId = msg.from.includes('@g.us') ? msg.from : msg.fromMe ? msg.to : msg.from;
+          isGroup = chatId.includes('@g.us');
+        } else {
+          const chat = await msg.getChat();
+          chatId = chat.id._serialized;
+          isGroup = chat.isGroup;
+          chatName = chat.name;
+        }
 
         if (!isInboxChat(chatId)) {
           return;
         }
 
+        const groupAuthor =
+          isGroup && !msg.fromMe && msg.author ? String(msg.author) : undefined;
+
         const incomingMessage: IncomingMessage = {
           id: msg.id._serialized,
-          from: msg.from,
+          from: groupAuthor ?? msg.from,
           to: msg.to,
           chatId,
           body: msg.body,
           type: msg.type,
           timestamp: msg.timestamp,
           fromMe: msg.fromMe,
-          isGroup: chat.isGroup,
+          isGroup,
+          author: groupAuthor,
+          chatName,
+          broadcast: Boolean(msg.broadcast),
+          isStatus: Boolean(msg.isStatus),
         };
 
         // Media bytes are fetched on demand via downloadMessageMedia (avoids blocking receive path)
@@ -174,7 +208,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
         }
 
         // Handle quoted message
-        if (msg.hasQuotedMsg) {
+        if (!inSyncWindow && msg.hasQuotedMsg) {
           try {
             const quoted = await msg.getQuotedMessage();
             incomingMessage.quotedMessage = {
@@ -186,7 +220,15 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
           }
         }
 
-        (incomingMessage as IncomingMessage & { chatName?: string }).chatName = chat.name;
+        if (!inSyncWindow && !msg.fromMe) {
+          try {
+            const contact = await msg.getContact();
+            const push = (contact?.pushname || contact?.name || '')?.trim();
+            if (push) incomingMessage.notifyName = push;
+          } catch {
+            /* contact not in store yet */
+          }
+        }
 
         this.callbacks.onMessage?.(incomingMessage);
       } catch (error) {
@@ -216,7 +258,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
     this.client.on('auth_failure', () => {
       this.setStatus(EngineStatus.FAILED);
-      this.callbacks.onDisconnected?.('Authentication failed');
+      this.callbacks.onAuthFailure?.('Authentication failed');
     });
   }
 
@@ -286,7 +328,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
   async sendTextMessage(chatId: string, text: string): Promise<MessageResult> {
     this.ensureReady();
-    const msg = await this.client!.sendMessage(chatId, text);
+    const msg = await this.withBrowserSend(() => this.client!.sendMessage(chatId, text));
     return {
       id: msg.id._serialized,
       timestamp: msg.timestamp,
@@ -295,6 +337,29 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
   async sendImageMessage(chatId: string, media: MediaInput): Promise<MessageResult> {
     return this.sendMediaMessage(chatId, media);
+  }
+
+  async sendImageAlbum(chatId: string, imageUrls: string[], caption?: string): Promise<MessageResult[]> {
+    this.ensureReady();
+    const urls = imageUrls.map((url) => url?.trim()).filter(Boolean);
+    if (urls.length === 0) {
+      throw new Error('At least one image URL is required');
+    }
+
+    const results: MessageResult[] = [];
+    for (let index = 0; index < urls.length; index++) {
+      const isLast = index === urls.length - 1;
+      const messageMedia = await MessageMedia.fromUrl(urls[index]);
+      const msg = await this.client!.sendMessage(chatId, messageMedia, {
+        caption: isLast ? caption : undefined,
+        sendSeen: isLast,
+      });
+      results.push({
+        id: msg.id._serialized,
+        timestamp: msg.timestamp,
+      });
+    }
+    return results;
   }
 
   async sendVideoMessage(chatId: string, media: MediaInput): Promise<MessageResult> {
@@ -327,14 +392,31 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
       messageMedia = new MessageMedia(media.mimetype, media.data.toString('base64'), media.filename);
     }
 
-    const msg = await this.client!.sendMessage(chatId, messageMedia, {
-      caption: media.caption,
-    });
+    const quotedMsg = await this.resolveQuotedMessage(chatId, media.quotedMessageId);
+    const msg = await this.withBrowserSend(() =>
+      this.client!.sendMessage(chatId, messageMedia, {
+        caption: media.caption,
+        ...(quotedMsg ? { quotedMessageId: quotedMsg.id._serialized } : {}),
+      }),
+    );
 
     return {
       id: msg.id._serialized,
       timestamp: msg.timestamp,
     };
+  }
+
+  private async resolveQuotedMessage(chatId: string, quotedMsgId?: string) {
+    if (!quotedMsgId?.trim()) return undefined;
+    try {
+      const byId = await this.client!.getMessageById(quotedMsgId);
+      if (byId) return byId;
+    } catch {
+      // fall through to chat history lookup
+    }
+    const chat = await this.client!.getChatById(chatId);
+    const messages = await chat.fetchMessages({ limit: 100 });
+    return messages.find(m => m.id._serialized === quotedMsgId);
   }
 
   async getContacts(): Promise<Contact[]> {
@@ -369,6 +451,85 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     }
   }
 
+  async getContactPresence(contactId: string): Promise<ContactPresence> {
+    this.ensureReady();
+    if (!this.client?.pupPage) {
+      return { chatId: contactId, state: 'unknown' };
+    }
+
+    try {
+      const result = await this.client.pupPage.evaluate(async (id: string) => {
+        type PresencePayload = {
+          type?: string | null;
+          lastSeen?: number | null;
+          error?: string;
+        };
+
+        const readPresence = async (): Promise<PresencePayload> => {
+          const widFactory = (window as unknown as { require: (name: string) => any }).require(
+            'WAWebWidFactory',
+          );
+          const wid = widFactory.createWid(id);
+
+          const collectionModule = (window as unknown as { require: (name: string) => any }).require(
+            'WAWebPresenceCollection',
+          );
+          const collection = collectionModule?.PresenceCollection ?? collectionModule;
+          if (collection?.findImpl || collection?.get || collection?.find) {
+            if (typeof collection.subscribe === 'function') {
+              await collection.subscribe(wid);
+            } else if (typeof collection.subscribePresence === 'function') {
+              await collection.subscribePresence(wid);
+            }
+            const model =
+              (typeof collection.get === 'function' ? collection.get(wid) : null) ??
+              (typeof collection.find === 'function' ? collection.find(wid) : null);
+            const chatstate = model?.chatstate ?? model?.__x_chatstate;
+            const type = chatstate?.type ?? model?.presence?.type ?? model?.state ?? null;
+            const lastSeenRaw = model?.lastSeen ?? chatstate?.lastSeen ?? null;
+            const lastSeen =
+              lastSeenRaw == null ? null : Number(lastSeenRaw) > 1_000_000_000_000
+                ? Math.floor(Number(lastSeenRaw) / 1000)
+                : Number(lastSeenRaw);
+            return { type, lastSeen };
+          }
+
+          return { type: null, lastSeen: null };
+        };
+
+        try {
+          return await readPresence();
+        } catch (err) {
+          return { error: String(err) };
+        }
+      }, contactId);
+
+      if (!result || result.error || !result.type) {
+        return { chatId: contactId, state: 'unknown' };
+      }
+
+      const type = String(result.type).toLowerCase();
+      let state: ContactPresence['state'] = 'unknown';
+      if (type === 'available' || type === 'composing' || type === 'recording') {
+        state = 'online';
+      } else if (type === 'unavailable' || type === 'paused') {
+        state = 'offline';
+      }
+
+      return {
+        chatId: contactId,
+        state,
+        lastSeenAt:
+          result.lastSeen != null && Number.isFinite(result.lastSeen)
+            ? new Date(result.lastSeen * 1000).toISOString()
+            : null,
+      };
+    } catch (error) {
+      this.logger.warn(`Failed to read presence: ${contactId}`, String(error));
+      return { chatId: contactId, state: 'unknown' };
+    }
+  }
+
   async checkNumberExists(number: string): Promise<boolean> {
     this.ensureReady();
     const numberId = await this.client!.getNumberId(number);
@@ -381,13 +542,65 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
     return chats
       .filter(chat => isInboxChat(chat.id._serialized))
-      .map(chat => ({
-        chatId: chat.id._serialized,
-        name: chat.name || chat.id.user || chat.id._serialized,
-        isGroup: chat.isGroup,
-        unreadCount: chat.unreadCount,
-        lastMessageAt: chat.timestamp,
-      }));
+      .map(chat => {
+        const chatId = chat.id._serialized;
+        const rawName = chat.name?.trim() ?? '';
+        const name = isUsableWhatsAppChatTitle(rawName, chatId) ? rawName : '';
+        return {
+          chatId,
+          name,
+          isGroup: chat.isGroup,
+          unreadCount: chat.unreadCount,
+          lastMessageAt: chat.timestamp,
+        };
+      });
+  }
+
+  async fetchChatMessages(chatId: string, limit = 50): Promise<IncomingMessage[]> {
+    this.ensureReady();
+    if (!isInboxChat(chatId) || !this.client) {
+      return [];
+    }
+
+    try {
+      const chat = await this.client.getChatById(chatId);
+      const raw = await chat.fetchMessages({ limit: Math.min(Math.max(limit, 1), 100) });
+      const isGroup = chat.isGroup;
+      const chatName = chat.name;
+
+      return raw
+        .map(msg => {
+          const groupAuthor =
+            isGroup && !msg.fromMe && msg.author ? String(msg.author) : undefined;
+          const incoming: IncomingMessage = {
+            id: msg.id._serialized,
+            from: groupAuthor ?? msg.from,
+            to: msg.to,
+            chatId,
+            body: msg.body,
+            type: msg.type,
+            timestamp: msg.timestamp,
+            fromMe: msg.fromMe,
+            isGroup,
+            author: groupAuthor,
+            chatName,
+            broadcast: Boolean(msg.broadcast),
+            isStatus: Boolean(msg.isStatus),
+          };
+          if (msg.hasMedia) {
+            incoming.media = {
+              mimetype: this.guessMimetypeFromMessage(msg),
+              filename: undefined,
+              data: undefined,
+            };
+          }
+          return incoming;
+        })
+        .filter(msg => isInboxChat(msg.chatId) && shouldPersistMessage(msg));
+    } catch (error) {
+      this.logger.debug(`fetchChatMessages failed for ${chatId}`, { error: String(error) });
+      return [];
+    }
   }
 
   async markChatRead(chatId: string): Promise<void> {
@@ -399,10 +612,31 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     await chat.sendSeen();
   }
 
+  async sendTyping(chatId: string): Promise<void> {
+    this.ensureReady();
+    if (!isInboxChat(chatId)) return;
+    const chat = await this.client!.getChatById(chatId);
+    await chat.sendStateTyping();
+  }
+
+  async clearTyping(chatId: string): Promise<void> {
+    if ((this.status !== EngineStatus.READY && this.status !== EngineStatus.LOADING_CHATS) || !this.client) return;
+    if (!isInboxChat(chatId)) return;
+    try {
+      const chat = await this.client.getChatById(chatId);
+      await chat.clearState();
+    } catch {
+      // Chat may have been deleted or client disconnected
+    }
+  }
+
   async downloadMessageMedia(
     waMessageId: string,
   ): Promise<{ mimetype: string; data: Buffer; filename?: string } | null> {
-    if (this.status !== EngineStatus.READY || !this.client) {
+    if (
+      (this.status !== EngineStatus.READY && this.status !== EngineStatus.LOADING_CHATS) ||
+      !this.client
+    ) {
       return null;
     }
     try {
@@ -434,7 +668,6 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
     this.ensureReady();
     const chats = await this.client!.getChats();
 
-    // Filter only group chats
     const groups = chats.filter(chat => chat.isGroup);
 
     return groups.map(g => {
@@ -521,7 +754,7 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
       throw new Error(`Message ${quotedMsgId} not found`);
     }
 
-    const msg = await quotedMsg.reply(text);
+    const msg = await this.withBrowserSend(() => quotedMsg.reply(text));
     return {
       id: msg.id._serialized,
       timestamp: msg.timestamp,
@@ -859,14 +1092,119 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
   // Get Profile Picture
   async getProfilePicture(contactId: string): Promise<string | null> {
-    this.ensureReady();
-    try {
-      const url = await this.client!.getProfilePicUrl(contactId);
-      return url || null;
-    } catch (error) {
-      this.logger.warn(`Failed to get profile picture for ${contactId}: ${String(error)}`);
+    if (
+      (this.status !== EngineStatus.READY && this.status !== EngineStatus.LOADING_CHATS) ||
+      !this.client
+    ) {
       return null;
     }
+    const candidates = await this.buildProfilePictureCandidates(contactId);
+
+    for (const id of candidates) {
+      try {
+        const url = await this.client!.getProfilePicUrl(id);
+        if (url) return url;
+      } catch (error) {
+        this.logger.debug(`Profile picture unavailable for ${id}: ${String(error)}`);
+      }
+    }
+
+    return null;
+  }
+
+  async downloadProfilePicture(
+    contactId: string,
+  ): Promise<{ buffer: Buffer; contentType: string } | null> {
+    if (
+      (this.status !== EngineStatus.READY && this.status !== EngineStatus.LOADING_CHATS) ||
+      !this.client?.pupPage
+    ) {
+      return null;
+    }
+    const candidates = await this.buildProfilePictureCandidates(contactId);
+    const page = this.client.pupPage;
+
+    for (const id of candidates) {
+      try {
+        const result = await page.evaluate(async (chatId: string) => {
+          try {
+            const wweb = (window as unknown as { WWebJS?: { getChat: (id: string) => Promise<unknown> } })
+              .WWebJS;
+            if (!wweb) return null;
+            const chat = await wweb.getChat(chatId);
+            const profilePic = await (window as unknown as { require: (name: string) => any })
+              .require('WAWebContactProfilePicThumbBridge')
+              .requestProfilePicFromServer(chat);
+            const url = profilePic?.eurl as string | undefined;
+            if (!url) return null;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const blob = await response.blob();
+            if (!blob.size) return null;
+            const arrayBuffer = await blob.arrayBuffer();
+            return {
+              bytes: Array.from(new Uint8Array(arrayBuffer)),
+              contentType: blob.type || 'image/jpeg',
+            };
+          } catch {
+            return null;
+          }
+        }, id);
+
+        if (result?.bytes?.length) {
+          return {
+            buffer: Buffer.from(result.bytes),
+            contentType: result.contentType || 'image/jpeg',
+          };
+        }
+      } catch (error) {
+        this.logger.debug(`Profile picture download unavailable for ${id}: ${String(error)}`);
+      }
+    }
+
+    return null;
+  }
+
+  private async buildProfilePictureCandidates(contactId: string): Promise<string[]> {
+    const candidates: string[] = [];
+    const seen = new Set<string>();
+    const add = (id?: string | null) => {
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      candidates.push(id);
+    };
+
+    add(contactId);
+
+    try {
+      const contact = await this.client!.getContactById(contactId);
+      add(contact.id._serialized);
+      if (contact.number) {
+        const digits = contact.number.replace(/\D/g, '');
+        if (digits) add(`${digits}@c.us`);
+      }
+    } catch {
+      // Chat/contact may not exist in WA store yet
+    }
+
+    if (contactId.endsWith('@g.us') || contactId.endsWith('@lid')) {
+      try {
+        const chat = await this.client!.getChatById(contactId);
+        add(chat.id._serialized);
+        if (contactId.endsWith('@lid')) {
+          const chatContact = await chat.getContact();
+          add(chatContact.id._serialized);
+          if (chatContact.number) {
+            const digits = chatContact.number.replace(/\D/g, '');
+            if (digits) add(`${digits}@c.us`);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return candidates;
   }
 
   // Block Contact
@@ -986,8 +1324,23 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
   /* eslint-enable @typescript-eslint/require-await, @typescript-eslint/no-unused-vars */
 
   private ensureReady(): void {
-    if (this.status !== EngineStatus.READY || !this.client) {
+    const operational =
+      this.status === EngineStatus.READY || this.status === EngineStatus.LOADING_CHATS;
+    if (!operational || !this.client) {
       throw new Error('WhatsApp client is not ready');
+    }
+  }
+
+  private async withBrowserSend<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (isWhatsAppBrowserDetachedError(error)) {
+        this.logger.warn('WhatsApp browser detached — marking session disconnected');
+        this.client = null;
+        this.setStatus(EngineStatus.DISCONNECTED);
+      }
+      throw error;
     }
   }
 }

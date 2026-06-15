@@ -1,0 +1,75 @@
+.inbox-ai-handling {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.inbox-ai-handling__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.inbox-ai-handling__badge--idle {
+  background: var(--interakt-surface-muted-soft, var(--bg-light));
+  color: var(--text-muted);
+}
+
+.inbox-ai-handling__badge--ai_handling {
+  background: color-mix(in srgb, var(--inakt-status-ai, var(--interakt-info)) 15%, var(--bg-card));
+  color: var(--inakt-status-ai, var(--interakt-info));
+}
+
+.inbox-ai-handling__badge--waiting_human {
+  background: var(--interakt-warning-surface);
+  color: var(--warning, var(--text-secondary));
+}
+
+.inbox-ai-handling__badge--human_handling {
+  background: color-mix(in srgb, var(--interakt-primary, var(--primary)) 12%, var(--bg-card));
+  color: var(--interakt-primary, var(--primary));
+}
+
+.inbox-ai-handling__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inbox-ai-handling__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--interakt-outline-soft, var(--border));
+  background: var(--bg-white);
+  cursor: pointer;
+}
+
+.inbox-ai-handling__btn:hover:not(:disabled) {
+  background: var(--interakt-primary-hover-bg, var(--bg-light));
+}
+
+.inbox-ai-handling__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inbox-ai-handling__btn--primary {
+  border-color: var(--interakt-primary-border, color-mix(in srgb, var(--primary) 30%, transparent));
+  color: var(--interakt-primary, var(--primary));
+}
+
+.inbox-ai-handling__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SessionService } from '../session/session.service';
+import { WhatsAppStatusSafetyService } from '../whatsapp-safety/services/whatsapp-status-safety.service';
 import type { Status, StatusResult, TextStatusOptions } from '../../engine/interfaces/whatsapp-engine.interface';
 
 @Injectable()
 export class StatusService {
-  constructor(private readonly sessionService: SessionService) {}
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly statusSafety: WhatsAppStatusSafetyService,
+  ) {}
 
   async getStatuses(sessionId: string): Promise<Status[]> {
     const engine = this.sessionService.getEngine(sessionId);
@@ -23,6 +27,7 @@ export class StatusService {
   }
 
   async postTextStatus(sessionId: string, text: string, options?: TextStatusOptions): Promise<StatusResult> {
+    await this.statusSafety.assertStatusPostAllowed(sessionId);
     const engine = this.sessionService.getEngine(sessionId);
     if (!engine) {
       throw new NotFoundException(`Session ${sessionId} not found or not connected`);
@@ -35,6 +40,7 @@ export class StatusService {
     media: { url?: string; base64?: string },
     caption?: string,
   ): Promise<StatusResult> {
+    await this.statusSafety.assertStatusPostAllowed(sessionId);
     const engine = this.sessionService.getEngine(sessionId);
     if (!engine) {
       throw new NotFoundException(`Session ${sessionId} not found or not connected`);
@@ -53,6 +59,7 @@ export class StatusService {
     media: { url?: string; base64?: string },
     caption?: string,
   ): Promise<StatusResult> {
+    await this.statusSafety.assertStatusPostAllowed(sessionId);
     const engine = this.sessionService.getEngine(sessionId);
     if (!engine) {
       throw new NotFoundException(`Session ${sessionId} not found or not connected`);

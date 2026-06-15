@@ -147,13 +147,31 @@ curl -s -H "X-API-Key: $API_KEY" \
 # Session connected
 curl -H "X-API-Key: $API_KEY" \
   http://localhost:2785/api/sessions/{sessionId} | jq '.status'
-# Expected: "CONNECTED"
+# Expected: "ready"
 
-# Test message
-curl -X POST http://localhost:2785/api/sessions/{sessionId}/messages \
+# Per-session health (engine presence, reconnect state)
+curl -H "X-API-Key: $API_KEY" \
+  http://localhost:2785/api/sessions/health/overview
+```
+
+**Expectations:** Soft restart and auto-reconnect recover most transient drops without a new QR scan. Terminal WhatsApp reasons (`LOGOUT`, `CONFLICT`, `auth_failure`) still require scanning QR again — same as Green API / WaSender.
+
+**Infrastructure prerequisites for stable sessions:**
+
+1. Linux VPS with Docker `restart: unless-stopped`
+2. Persistent volume for `SESSION_DATA_PATH` (auth survives restarts)
+3. 4 GB+ RAM per large WhatsApp account
+4. Sticky SOCKS5 proxy in the same country as the phone number
+5. Open WhatsApp on the phone at least once every ~10 days
+
+**Update proxy on an existing session (restarts if running):**
+
+```bash
+curl -X PATCH \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"phone": "628xxx@c.us", "type": "text", "body": "Session reconnected"}'
+  -d '{"proxyUrl":"socks5://user:pass@proxy:1080","proxyType":"socks5"}' \
+  http://localhost:2785/api/sessions/{sessionId}/proxy
 ```
 
 ---
@@ -734,6 +752,127 @@ truncate -s 0 ./logs/openwa.log
 # 4. Verify
 df -h
 ```
+
+---
+
+## 11.4 WhatsApp Safety Operations
+
+### Runbook: High blocked-send rate
+
+**Trigger:** Dashboard **Needs Attention** shows blocked sends, or **Settings → WhatsApp Safety → Audit Logs** has many `blocked` decisions today.
+
+**Impact:** Outbound messages (AI, follow-ups, campaigns, staff sends) are being rejected by the policy guard.
+
+**Prerequisites:** Admin dashboard access; **Settings → Integrations → WhatsApp Safety**.
+
+**Steps:**
+
+1. Open **WhatsApp Safety → Audit Logs** and note `reason` / `riskLevel` on recent blocked rows.
+2. Common causes:
+   - **Opt-out** — customer sent STOP; restore only with explicit consent on **Consent** tab.
+   - **Outside 24h window** — use an approved template (Campaign Safety / Templates tab).
+   - **Warm-up limit** — new session; wait for warm-up day plan or pause campaigns.
+   - **Rate limit** — reduce volume; check queue backlog on **Send Queue** tab.
+3. Use **Policy Guard → Test send guard** to dry-run a message before retrying.
+4. If automation is stuck, pause session automation on **Session Health** tab.
+
+**Verification:** `GET /api/whatsapp-safety/overview` shows `blockedToday` trending down; test send returns `allowed: true`.
+
+**Rollback:** Re-enable only the specific toggle that was changed (e.g. `campaignsEnabled`); do not disable `globalEnabled` unless stopping all outbound.
+
+---
+
+### Runbook: Send queue approval backlog
+
+**Trigger:** Dashboard alert **WhatsApp sends need approval**, or queue tab shows `approval_required` rows.
+
+**Impact:** High-risk AI / campaign messages wait for admin approval; customers may not receive replies.
+
+**Steps:**
+
+1. Go to **Settings → WhatsApp Safety → Send Queue** (or deep link `?panel=whatsapp-safety&waTab=queue`).
+2. Review each row: `source`, `riskLevel`, `chatId`, message preview.
+3. **Approve** legitimate sends; **Cancel** mistaken or risky sends.
+4. For recurring AI approvals, tune **AI Reply Safety** limits or enable `riskyIntentRequiresApproval`.
+
+**Verification:** `pendingQueue` in overview returns to 0; customers receive approved messages within worker poll interval (`WHATSAPP_QUEUE_POLL_MS`, default 5s).
+
+---
+
+### Runbook: Launch product-demand WhatsApp campaign
+
+**Trigger:** Operator wants to send a campaign from **Campaigns** or AI Learning recommendations.
+
+**Impact:** Bulk WhatsApp outreach — high ban risk if consent / templates / warm-up are ignored.
+
+**Prerequisites:**
+
+- `campaignsEnabled = true` in WhatsApp Safety (admin only).
+- Session connected and past early warm-up days.
+- Recipients have marketing consent where required.
+
+**Steps:**
+
+1. Create or open campaign on **Campaigns** page; set channel **WhatsApp** and target session.
+2. Click **Approve launch** — complete preflight modal (risk score, opt-in counts, template if outside 24h).
+3. After status is **approved**, click **Send** (second preflight for send path).
+4. Monitor **Send Queue** and **Audit Logs** during send.
+
+**Verification:** Campaign status `sent`; no spike in `blockedToday`; recipients report delivery.
+
+**Rollback:** Cancel pending queue rows; do not re-send until root cause is fixed.
+
+---
+
+### Runbook: Send outside 24h via WhatsApp Cloud API
+
+**Trigger:** Customer is outside the 24-hour service window and staff need a compliant proactive message (utility / approved template).
+
+**Impact:** Message goes through Meta Cloud API, not the linked-device session — different billing and delivery path.
+
+**Steps:**
+
+1. Set server env: `WHATSAPP_CLOUD_ACCESS_TOKEN`, `WHATSAPP_CLOUD_PHONE_NUMBER_ID`, and WABA ID in **Settings → WhatsApp Safety → Templates**.
+2. Enable cloud sync and run **Sync from Meta Cloud** so local templates show `approved`.
+3. **Test Cloud connection** — confirm WABA and template count; optional phone display when `WHATSAPP_CLOUD_PHONE_NUMBER_ID` is set.
+4. Use **Send via Cloud API** (admin): pick session (for policy/audit context), chat id, approved template. Add comma-separated body parameters if the Meta template has variables.
+5. If blocked or queued, check **Consent** tab and **Audit Logs** — same policy guard applies.
+
+**Verification:** UI shows message id; audit log `sent`; customer receives template on WhatsApp.
+
+**Rollback:** No automatic recall — send a corrective in-window reply after customer messages, or use another approved utility template.
+
+---
+
+### Runbook: Migration rename / API won't start (SQLite)
+
+**Trigger:** API logs `duplicate column name` for `groupManagementEnabled` or similar after pulling new code.
+
+**Impact:** Backend fails to boot; dashboard shows API unreachable.
+
+**Steps:**
+
+1. Ensure you are on latest code (includes `repairRenamedMigrations` on SQLite boot).
+2. If still failing, inspect `migrations` table in the SQLite data file (`DATABASE_NAME`, often `./openwa` or `./data/openwa.sqlite`).
+3. Confirm renamed rows exist, e.g. `AddWhatsAppGroupManagementSetting1780811000000` (not `1780810000000`).
+4. Restart API: `npm run start:dev` or rebuild Docker image.
+
+**Verification:** API health `GET /api/health` returns 200; no migration errors in startup log.
+
+---
+
+### Runbook: Local dev CORS / login failure
+
+**Trigger:** Login shows **Internal server error** or browser console **Not allowed by CORS** when using `http://127.0.0.1:2886`.
+
+**Steps:**
+
+1. Use Vite dev server: `cd dashboard && npm run dev -- --port 2886 --host 127.0.0.1`.
+2. Ensure API runs locally on port 2785 (not stale Docker bundle).
+3. `CORS_ORIGINS` should include `http://localhost:2886` — `127.0.0.1` is auto-mirrored in code.
+4. Prefer `http://127.0.0.1:2886` over `http://localhost:2886` if Docker Traefik still binds port 2886.
+
+**Verification:** Login succeeds; **Settings → WhatsApp Safety** loads overview metrics.
 
 ---
 

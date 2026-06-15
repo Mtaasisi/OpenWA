@@ -21,8 +21,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: var(--primary);
-  color: white;
+  background: var(--interakt-primary, var(--primary));
+  color: var(--interakt-on-primary, #fff);
   border: none;
   border-radius: var(--radius);
   font-size: 0.9375rem;
@@ -408,50 +408,12 @@
   color: var(--text-primary);
 }
 
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 48px;
-  height: 26px;
-}
+/* toggle-switch — polished in form-sliders.css */
 
 .toggle-switch input {
   opacity: 0;
   width: 0;
   height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #cbd5e1;
-  transition: 0.3s;
-  border-radius: 26px;
-}
-
-.toggle-slider::before {
-  position: absolute;
-  content: '';
-  height: 20px;
-  width: 20px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  background-color: var(--primary);
-}
-
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(22px);
 }
 
 .toggle-status {
@@ -465,4 +427,22 @@
 
 .toggle-status.inactive {
   color: var(--text-muted);
+}
+
+/* Settings embed */
+.webhooks-page--embed {
+  padding: 0;
+}
+
+.webhooks-page--embed .webhooks-table-container {
+  border: 1px solid var(--interakt-outline-soft, var(--border));
+  border-radius: 1rem;
+  background: var(--interakt-surface-glass-high, var(--bg-white));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--interakt-shadow-sm, var(--shadow-sm));
+}
+
+.webhooks-page--embed .webhooks-table .table-row.header {
+  background: var(--interakt-surface-muted-soft, var(--bg-light));
 }

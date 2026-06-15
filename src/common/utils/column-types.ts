@@ -20,3 +20,10 @@ export const jsonColumnType = (): 'jsonb' | 'simple-json' => (isPostgres() ? 'js
  * Use with DateTransformer for SQLite compatibility.
  */
 export const dateColumnType = (): 'timestamp' | 'text' => (isPostgres() ? 'timestamp' : 'text');
+
+/**
+ * Returns 'timestamp' for PostgreSQL, 'datetime' for SQLite.
+ * Use only on entities in the pluggable **data** database — not on main SQLite (auth/audit).
+ */
+export const dateTimeColumnType = (): 'timestamp' | 'datetime' =>
+  isPostgres() ? 'timestamp' : 'datetime';

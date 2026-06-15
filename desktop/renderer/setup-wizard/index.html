@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inauzwa CRM Setup</title>
+  <link rel="stylesheet" href="wizard.css" />
+</head>
+<body>
+  <div class="wizard">
+    <header>
+      <h1>Inauzwa CRM</h1>
+      <p class="subtitle">First-run setup wizard</p>
+      <div class="steps" id="step-indicator"></div>
+    </header>
+    <main id="wizard-content"></main>
+    <footer>
+      <button type="button" id="btn-back" class="secondary" hidden>Back</button>
+      <button type="button" id="btn-next" class="primary">Next</button>
+    </footer>
+    <p class="notice">Database connection is required. Check internet or Neon database settings.</p>
+  </div>
+  <script src="wizard.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ export enum MessageStatus {
 
 @Entity('messages')
 @Index(['sessionId', 'createdAt'])
+@Index(['sessionId', 'chatId', 'createdAt'])
 @Index(['chatId'])
 @Index(['sessionId', 'waMessageId'], { unique: true, where: '"waMessageId" IS NOT NULL' })
 export class Message {
@@ -62,6 +63,21 @@ export class Message {
   })
   @Index()
   status: MessageStatus;
+
+  @Column({ default: false })
+  isAiGenerated: boolean;
+
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  aiProvider: string | null;
+
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  aiModel: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  aiTokensUsed: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  aiLatencyMs: number | null;
 
   @CreateDateColumn()
   createdAt: Date;

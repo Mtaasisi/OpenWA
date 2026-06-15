@@ -57,6 +57,8 @@ export class AiUsageAdminController {
     @Query('model') model?: string,
     @Query('status') status?: string,
     @Query('branchId') branchId?: string,
+    @Query('conversationId') conversationId?: string,
+    @Query('batchId') batchId?: string,
     @Query('since') since?: string,
     @Query('until') until?: string,
   ) {
@@ -68,9 +70,18 @@ export class AiUsageAdminController {
       model,
       status,
       branchId,
+      conversationId,
+      batchId,
       since: since ? new Date(since) : undefined,
       until: until ? new Date(until) : undefined,
     });
+  }
+
+  @Get('prompt-contributors')
+  @RequireAiCostPermission(AiCostPermission.VIEW)
+  async promptContributors(@Query('since') since?: string) {
+    const sinceDate = since ? new Date(since) : undefined;
+    return this.usageQuery.getPromptContributors(sinceDate);
   }
 
   @Get('export.csv')

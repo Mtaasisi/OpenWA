@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, MaxLength, MinLength, Matches, IsIn } from 'class-validator';
+import { IsString, IsOptional, MaxLength, MinLength, Matches, IsIn, ValidateIf } from 'class-validator';
+import { WHATSAPP_ENGINE_IDS } from '../../../common/utils/session-engine.util';
 
 export class CreateSessionDto {
   @ApiProperty({
@@ -41,4 +42,13 @@ export class CreateSessionDto {
   @IsOptional()
   @IsIn(['http', 'https', 'socks4', 'socks5'])
   proxyType?: 'http' | 'https' | 'socks4' | 'socks5';
+
+  @ApiPropertyOptional({
+    description: 'Pin this session to a specific engine (omit to use global ENGINE_TYPE)',
+    enum: [...WHATSAPP_ENGINE_IDS],
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsIn([...WHATSAPP_ENGINE_IDS])
+  engineType?: string;
 }

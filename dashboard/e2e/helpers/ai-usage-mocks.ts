@@ -6,6 +6,14 @@ export const AI_USAGE_SUMMARY = {
     monthCostUsd: 1.2345,
     last7DaysCostUsd: 0.89,
     autoReplyTodayCostUsd: 0.031,
+    cacheHitRate: 42.5,
+    cacheHitCount: 8,
+    moneySavedByCacheUsd: 0.016,
+    budgetBlockedCount: 1,
+    duplicateSkippedCount: 3,
+    averagePromptTokens: 612,
+    averageCompletionTokens: 94,
+    promptBudgetWarningCount: 2,
     mostExpensiveModel: 'gpt-4o-mini',
     mostExpensiveFeature: 'whatsapp_auto_reply',
     averageCostPerReply: 0.0082,
@@ -55,6 +63,17 @@ export const AI_USAGE_RECENT = {
       status: 'success',
       createdAt: new Date().toISOString(),
     },
+    {
+      id: 'log-2',
+      feature: 'whatsapp_auto_reply',
+      model: 'claude-haiku-4-5-20251001',
+      inputTokens: 0,
+      outputTokens: 0,
+      actualCostUsd: 0,
+      status: 'failed',
+      errorMessage: 'You have reached your specified API usage limits.',
+      createdAt: new Date().toISOString(),
+    },
   ],
   total: 1,
 };
@@ -67,8 +86,8 @@ export const AI_COST_CONFIG = {
   aiDailyBudgetUsd: 1,
   aiMonthlyBudgetUsd: 20,
   autoReplyDailyBudgetUsd: 0.5,
-  autoReplyContextMessages: 8,
-  autoReplyContextMessagesMax: 12,
+  autoReplyContextMessages: 3,
+  autoReplyContextMessagesMax: 5,
   maxCustomerToolIterations: 2,
   maxAdminToolIterations: 5,
   maxAiCallsPerInboundMessage: 2,
@@ -132,10 +151,78 @@ export async function installAiUsageMocks(page: Page, options: InstallOptions = 
   });
 
   await page.route('**/api/admin/ai-usage/recent**', async route => {
+    const url = new URL(route.request().url());
+    const status = url.searchParams.get('status');
+    const items =
+      status === 'cache_hit'
+        ? [
+            {
+              id: 'log-cache',
+              feature: 'whatsapp_auto_reply',
+              model: 'learned_intent',
+              inputTokens: 0,
+              outputTokens: 0,
+              actualCostUsd: 0,
+              status: 'cache_hit',
+              createdAt: new Date().toISOString(),
+            },
+          ]
+        : AI_USAGE_RECENT.items;
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(AI_USAGE_RECENT),
+      body: JSON.stringify({ items, total: items.length }),
+    });
+  });
+
+  await page.route('**/api/admin/ai-usage/prompt-contributors**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        sampleCount: 18,
+        rulesTokens: 4200,
+        knowledgeTokens: 2800,
+        historyTokens: 1900,
+        toolsTokens: 0,
+        customerMessageTokens: 640,
+        crmTokens: 900,
+        catalogTokens: 1200,
+        memoryTokens: 300,
+        topOffender: 'knowledge_tokens',
+      }),
+    });
+  });
+
+  await page.route('**/api/admin/ai-message-buffers/stats', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ processedToday: 4, pendingNow: 1, failedToday: 0 }),
+    });
+  });
+
+  await page.route('**/api/admin/ai-message-buffers/recent**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            id: 'buf-1',
+            conversationId: 'sess-1:255700@c.us',
+            batchId: 'batch-abc',
+            status: 'processed',
+            messageIds: ['m1', 'm2', 'm3'],
+            combinedText: 'Hi\nBei ya simu?',
+            firstMessageAt: new Date().toISOString(),
+            lastMessageAt: new Date().toISOString(),
+            processedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }),
     });
   });
 

@@ -1,0 +1,658 @@
+/* Settings form pages — Business & Location mockup layout */
+
+.settings-form-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+.settings-form-page--wide {
+  max-width: none;
+}
+
+.settings-form-page__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-form-intro {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--settings-wa-text-secondary, var(--text-secondary));
+}
+
+.settings-form-intro--page {
+  margin-bottom: 0.5rem;
+}
+
+.settings-form-intro--header {
+  margin: 0.35rem 0 0;
+}
+
+.settings-form-page__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.settings-form-page__header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--settings-wa-primary, #006b53) 10%, var(--settings-wa-card, #fff));
+  color: var(--settings-wa-primary, #006b53);
+}
+
+.settings-form-page__header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-form-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--settings-wa-text, var(--text-primary));
+}
+
+.settings-form-page__stack > .settings-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.settings-form-card,
+.settings-int-card.settings-form-card {
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 12px;
+  background: var(--settings-wa-card, #fff);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-form-card__head,
+.settings-int-card.settings-form-card .settings-int-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 1.5rem;
+  margin: 0;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+  background: transparent;
+}
+
+.settings-form-card__head .settings-int-card__title,
+.settings-form-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--settings-wa-text, var(--text-primary));
+}
+
+.settings-form-card__head .inakt-mat-icon,
+.settings-form-card__head .material-symbols-outlined {
+  color: var(--settings-wa-primary, var(--primary));
+}
+
+.settings-form-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.settings-form-card__head-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--settings-wa-primary, var(--primary));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-form-card__head-btn:hover {
+  background: color-mix(in srgb, var(--settings-wa-primary-container, #00a884) 12%, transparent);
+}
+
+.settings-form-card__body,
+.settings-int-card.settings-form-card .settings-int-card__body {
+  padding: 1.5rem;
+}
+
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .settings-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-form-grid--1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.settings-form-section__title {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--settings-wa-primary, var(--primary));
+}
+
+.settings-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-form-field__label {
+  margin: 0 0 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--settings-wa-text-secondary, var(--text-secondary));
+}
+
+.settings-form-field__value {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--settings-wa-text, var(--text-primary));
+  word-break: break-word;
+}
+
+.settings-form-field__value--body {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.settings-form-field__value--pill {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: var(--settings-wa-surface-container, #e5eff8);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.settings-form-field__value--empty {
+  font-style: italic;
+  color: var(--settings-wa-text-muted, var(--text-muted));
+  font-weight: 400;
+}
+
+.settings-form-field__control .settings-int-field,
+.settings-form-field__control.settings-int-field {
+  margin: 0;
+}
+
+.settings-form-field__control input,
+.settings-form-field__control select,
+.settings-form-field__control textarea,
+.settings-form-card .settings-int-field input,
+.settings-form-card .settings-int-field select,
+.settings-form-card .settings-int-field textarea {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--settings-wa-border, #bccac2);
+  border-radius: 8px;
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+  color: var(--settings-wa-text, var(--text-primary));
+  font-size: 0.875rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.settings-form-card .settings-int-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+  min-height: 4.5rem;
+}
+
+.settings-form-field__control input:focus,
+.settings-form-field__control select:focus,
+.settings-form-field__control textarea:focus,
+.settings-form-card .settings-int-field input:focus,
+.settings-form-card .settings-int-field select:focus,
+.settings-form-card .settings-int-field textarea:focus {
+  outline: none;
+  border-color: var(--settings-wa-primary-container, #00a884);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--settings-wa-primary, #006b53) 18%, transparent);
+}
+
+.settings-form-card .settings-main-toggle {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-card .settings-main-toggle:last-child {
+  border-bottom: none;
+}
+
+.settings-form-card .settings-main-field {
+  margin-bottom: 1rem;
+}
+
+.settings-form-card .settings-main-field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-form-table-wrap {
+  overflow: hidden;
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 8px;
+}
+
+.settings-form-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.settings-form-table thead {
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-table th {
+  padding: 0.5rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--settings-wa-text-secondary, var(--text-secondary));
+}
+
+.settings-form-table th:last-child {
+  text-align: right;
+}
+
+.settings-form-table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--settings-wa-text, var(--text-primary));
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+  vertical-align: middle;
+}
+
+.settings-form-table tr:last-child td {
+  border-bottom: none;
+}
+
+.settings-form-table tbody tr:hover {
+  background: color-mix(in srgb, var(--settings-wa-surface-container-low, #eaf5fe) 55%, transparent);
+}
+
+.settings-form-table__empty {
+  font-style: italic;
+  color: var(--settings-wa-text-muted, var(--text-muted));
+}
+
+.settings-form-table__link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--settings-wa-primary, var(--primary));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-form-table__link:hover {
+  text-decoration: underline;
+}
+
+.settings-form-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.settings-form-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--settings-wa-border, #bccac2);
+  border-radius: 8px;
+  background: var(--settings-wa-surface-container, #e5eff8);
+  color: var(--settings-wa-text, var(--text-primary));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-form-btn-outline:hover:not(:disabled) {
+  background: var(--settings-wa-surface-container-high, #dfeaf2);
+}
+
+.settings-form-btn-outline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.settings-form-payment-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-payment-row:last-child {
+  border-bottom: none;
+}
+
+.settings-form-add-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+@media (min-width: 640px) {
+  .settings-form-add-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.settings-form-page .settings-wa__detail-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.settings-embed-scroll > .settings-form-page,
+.settings-integration-detail > .settings-form-page {
+  max-width: none;
+}
+
+.settings-wa__detail-inner .settings-form-page:not(.settings-form-page--wide) {
+  max-width: 56rem;
+}
+
+/* AI integration cards — match form card chrome inside settings */
+.settings-form-page .ai-settings-body,
+.settings-wa__detail-inner--wide .ai-settings-body {
+  gap: 1rem;
+}
+
+.settings-form-page .ai-settings-grid,
+.settings-wa__detail-inner--wide .ai-settings-grid {
+  gap: 1rem;
+}
+
+.settings-form-page .ai-settings-card,
+.settings-wa__detail-inner--wide .ai-settings-card {
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 12px;
+  background: var(--settings-wa-card, #fff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+.settings-form-page .ai-settings-card--elevated,
+.settings-wa__detail-inner--wide .ai-settings-card--elevated {
+  background: var(--settings-wa-card, #fff);
+}
+
+.settings-form-page .ai-settings-card__head,
+.settings-wa__detail-inner--wide .ai-settings-card__head {
+  margin: 0;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-page .ai-settings-card__title,
+.settings-wa__detail-inner--wide .ai-settings-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.settings-form-page .ai-settings-card > :not(.ai-settings-card__head),
+.settings-wa__detail-inner--wide .ai-settings-card > :not(.ai-settings-card__head) {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.settings-form-page .ai-settings-card > .ai-settings-card__head + *,
+.settings-wa__detail-inner--wide .ai-settings-card > .ai-settings-card__head + * {
+  padding-top: 1.25rem;
+}
+
+.settings-form-page .ai-settings-card > :last-child,
+.settings-wa__detail-inner--wide .ai-settings-card > :last-child {
+  padding-bottom: 1.5rem;
+}
+
+.settings-form-page .ai-settings-card__foot,
+.settings-wa__detail-inner--wide .ai-settings-card__foot {
+  margin-top: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-page .ai-settings-label,
+.settings-wa__detail-inner--wide .ai-settings-label {
+  color: var(--settings-wa-text-secondary, var(--text-secondary));
+}
+
+.settings-form-page .ai-settings-field input,
+.settings-form-page .ai-settings-field select,
+.settings-form-page .ai-settings-field textarea,
+.settings-wa__detail-inner--wide .ai-settings-field input,
+.settings-wa__detail-inner--wide .ai-settings-field select,
+.settings-wa__detail-inner--wide .ai-settings-field textarea {
+  border: 1px solid var(--settings-wa-border, #bccac2);
+  border-radius: 8px;
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+}
+
+.settings-form-page .ai-settings-field input:focus,
+.settings-form-page .ai-settings-field select:focus,
+.settings-form-page .ai-settings-field textarea:focus,
+.settings-wa__detail-inner--wide .ai-settings-field input:focus,
+.settings-wa__detail-inner--wide .ai-settings-field select:focus,
+.settings-wa__detail-inner--wide .ai-settings-field textarea:focus {
+  border-color: var(--settings-wa-primary-container, #00a884);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--settings-wa-primary, #006b53) 18%, transparent);
+}
+
+.settings-form-page .ai-settings-status-card,
+.settings-wa__detail-inner--wide .ai-settings-status-card {
+  border-radius: 12px;
+  border-color: color-mix(in srgb, var(--settings-wa-primary, #006b53) 22%, transparent);
+  background: color-mix(in srgb, var(--settings-wa-primary, #006b53) 5%, var(--settings-wa-card, #fff));
+}
+
+/* Interakt / wide integration cards inside form layout */
+.settings-form-page .interakt-wide-card,
+.settings-wa__detail-inner--wide .interakt-wide-card {
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 12px;
+  background: var(--settings-wa-card, #fff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.settings-form-page .interakt-wide-card__head,
+.settings-wa__detail-inner--wide .interakt-wide-card__head {
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-page .interakt-panel,
+.settings-wa__detail-inner--wide .interakt-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Embedded channel / session panels inside form cards */
+.settings-form-card .sessions-embedded,
+.settings-form-card .sms-channel-panel,
+.settings-form-card .whatsapp-channel-panel {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-form-card .settings-main-field__input,
+.settings-form-card .settings-main-field select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--settings-wa-border, #bccac2);
+  border-radius: 8px;
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+  font-size: 0.875rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.settings-form-card .settings-main-field__input:focus,
+.settings-form-card .settings-main-field select:focus {
+  outline: none;
+  border-color: var(--settings-wa-primary-container, #00a884);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--settings-wa-primary, #006b53) 18%, transparent);
+}
+
+/* KPI + sync cards — MD3 form chrome inside settings form layout */
+.settings-form-page .settings-inauzwa-panel,
+.settings-form-page .settings-users-panel,
+.settings-form-page .desktop-app-settings,
+.settings-form-page .ail-panel {
+  gap: 1rem;
+}
+
+.settings-form-page .settings-inauzwa-kpi,
+.settings-form-page .settings-users-kpi,
+.settings-form-page .desktop-app-kpi,
+.settings-form-page .ail-kpi,
+.settings-form-page .wa-safety-kpi {
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 12px;
+  background: var(--settings-wa-card, #fff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.settings-form-page .products-sync-card,
+.settings-form-page .settings-users-card,
+.settings-form-page .settings-int-embed {
+  min-width: 0;
+}
+
+.settings-form-page .settings-int-embed .page-header {
+  margin-top: 0;
+}
+
+.settings-form-page .settings-plugins-embed .plugins-interakt-section {
+  gap: 1rem;
+}
+
+.settings-form-page .settings-inauzwa-sync .products-sync-fetch-toggles {
+  border-color: var(--settings-wa-divider, #eef1ec);
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+}
+
+.settings-form-page .interakt-product-cta {
+  border: 1px solid var(--settings-wa-divider, #eef1ec);
+  border-radius: 12px;
+  background: var(--settings-wa-card, #fff);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.settings-form-page .products-form-row input,
+.settings-form-page .products-form-row select,
+.settings-form-page .products-form-row textarea,
+.settings-form-page .products-sync-connection input,
+.settings-form-page .products-sync-connection select,
+.settings-form-page .products-sync-connection textarea,
+.settings-form-page .products-sync-setup__body > label input,
+.settings-form-page .products-sync-setup__body > label select,
+.settings-form-page .products-sync-setup__body > label textarea {
+  border: 1px solid var(--settings-wa-border, #bccac2);
+  border-radius: 8px;
+  background: var(--settings-wa-surface-container-low, #eaf5fe);
+}
+
+.settings-form-page .products-form-row input:focus,
+.settings-form-page .products-form-row select:focus,
+.settings-form-page .products-form-row textarea:focus,
+.settings-form-page .products-sync-connection input:focus,
+.settings-form-page .products-sync-connection select:focus,
+.settings-form-page .products-sync-connection textarea:focus {
+  outline: none;
+  border-color: var(--settings-wa-primary-container, #00a884);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--settings-wa-primary, #006b53) 18%, transparent);
+}
+
+.settings-form-page .settings-inauzwa-panel--embed .settings-inauzwa-card__head {
+  border-bottom-color: var(--settings-wa-divider, #eef1ec);
+}
+
+.settings-form-page .settings-inauzwa-card__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}

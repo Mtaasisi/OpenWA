@@ -70,6 +70,11 @@ const AiUsageCostPanel = lazy(
     import('./AiUsageCostPanel').then(m => ({ default: m.AiUsageCostPanel })),
   ),
 );
+const AiLearningCenterPanel = lazy(
+  lazyWithRetry(() =>
+    import('./AiLearningCenterPanel').then(m => ({ default: m.AiLearningCenterPanel })),
+  ),
+);
 
 const Webhooks = lazy(
   lazyWithRetry(() => import('../../pages/Webhooks').then(m => ({ default: m.Webhooks }))),
@@ -164,6 +169,10 @@ export function SettingsPanelsRouter({ panelId, onBack, isAdmin, pluginSearch }:
         {panelId === 'ai-usage' && aiCostPermsLoading && embedFallback}
         {panelId === 'ai-usage' && !aiCostPermsLoading && canViewAiCost && (
           <AiUsageCostPanel onBack={onBack} />
+        )}
+        {panelId === 'ai-learning-cache' && aiCostPermsLoading && embedFallback}
+        {panelId === 'ai-learning-cache' && !aiCostPermsLoading && canViewAiCost && isAdmin && (
+          <AiLearningCenterPanel onBack={onBack} />
         )}
         {panelId === 'products' && (
           <SettingsIntegrationShell

@@ -1,0 +1,28 @@
+.inbox-ai-auto-reply-toggle {
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-light);
+}
+
+.inbox-ai-auto-reply-toggle__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.inbox-ai-auto-reply-toggle__label input {
+  margin-left: auto;
+  accent-color: var(--primary);
+}
+
+.inbox-ai-auto-reply-toggle__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}

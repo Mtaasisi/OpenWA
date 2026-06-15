@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 const MOVED_KEYS: Record<string, string> = {
-  'message-tester': 'settings.moved.messageTester',
   logs: 'settings.moved.logs',
   webhooks: 'settings.moved.webhooks',
   infrastructure: 'settings.moved.infrastructure',

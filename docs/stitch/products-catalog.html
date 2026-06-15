@@ -1,0 +1,542 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ClinicalConnect | Products Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary-fixed-dim": "#e8b3ff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#310048",
+                        "surface-dim": "#dad9df",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf9fe",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-high": "#e9e7ed",
+                        "surface-bright": "#faf9fe",
+                        "primary-container": "#0070eb",
+                        "tertiary": "#8a2bb9",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#c2c1ff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-highest": "#e3e2e7",
+                        "surface-tint": "#005bc1",
+                        "on-secondary-fixed": "#0c006a",
+                        "on-primary-fixed": "#001a41",
+                        "primary": "#0058bc",
+                        "surface-container": "#eeedf3",
+                        "on-primary-fixed-variant": "#004493",
+                        "error": "#ba1a1a",
+                        "secondary": "#4c4aca",
+                        "inverse-surface": "#2f3034",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#414755",
+                        "on-secondary-fixed-variant": "#3631b4",
+                        "on-secondary-container": "#fffbff",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f1f0f5",
+                        "on-surface": "#1a1b1f",
+                        "secondary-container": "#6664e4",
+                        "secondary-fixed": "#e2dfff",
+                        "on-background": "#1a1b1f",
+                        "tertiary-container": "#a649d5",
+                        "surface-container-low": "#f4f3f8",
+                        "on-tertiary-fixed-variant": "#7201a2",
+                        "tertiary-fixed": "#f6d9ff",
+                        "outline": "#717786",
+                        "on-primary-container": "#fefcff",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#faf9fe",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "inspector-width": "320px",
+                        "stack-gap": "12px",
+                        "sidebar-width": "280px",
+                        "gutter": "16px",
+                        "margin-page": "20px",
+                        "component-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-lg": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "headline-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F2F2F7;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E5E5EA;
+            border-radius: 10px;
+        }
+        .glass-header {
+            background: rgba(250, 249, 254, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Top Navigation (Mobile Only) -->
+<header class="md:hidden glass-header fixed top-0 w-full z-50 flex justify-between items-center px-4 py-3 border-b border-outline-variant/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">medical_services</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">ClinicalConnect</h1>
+</div>
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="Provider Profile" data-alt="A professional headshot of a healthcare provider with a clean, approachable look, wearing a white clinical coat in a softly lit medical office setting with a minimal blue and white color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_E4JqJNUJRawwEC7RYBpisaB6AHkQYpCx7uOXc6LSaNvpdtGCImo9EjsOuoRwuGktddRka2yegjLOvW8upjPt-dDHOqPeMqeLXsdnr8aIdDbT6Rcid55nMxSXw346cuhSnYzj4kFKW1KrBgQFBYNgDN4BQ5OsxjefH72B1hC6zhJiBWiJMrH8vW3Oss6JdmOspoSXxxs8jkkNpLdbJVgG_8-CHA8b4SonCd9dLtcYerP5JDS5k62PkVyijD9h2WlK6FlYyW1KQV54">
+</div>
+</div>
+</header>
+<!-- Side Navigation (Desktop) -->
+<aside class="hidden md:flex flex-col h-full fixed left-0 top-0 w-sidebar-width bg-surface-container-low border-r border-outline-variant/20 py-6 px-4 z-40">
+<div class="flex items-center gap-3 px-2 mb-8">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface leading-tight">Mercy General</h2>
+<p class="text-label-sm font-label-sm text-outline">Provider Portal</p>
+</div>
+</div>
+<button class="mb-6 w-full py-3 bg-primary text-on-primary rounded-xl font-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Patient
+        </button>
+<nav class="flex-1 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span class="font-label-md">Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">mail</span>
+<span class="font-label-md">Inbox</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">group</span>
+<span class="font-label-md">Patients</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary bg-primary/10 font-semibold border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-label-md">Catalog</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">analytics</span>
+<span class="font-label-md">Analytics</span>
+</a>
+</nav>
+<div class="pt-4 border-t border-outline-variant/10 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">help_outline</span>
+<span class="font-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-sidebar-width min-h-screen p-gutter md:p-margin-page pb-24 md:pb-gutter">
+<!-- Desktop Header Section -->
+<div class="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-16 md:pt-0">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-1">Products</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your stock catalog and send product details to customers on WhatsApp</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-highest text-primary font-label-md border border-primary/20 hover:bg-primary-fixed/30 transition-colors">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+                    Ask AI
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    Add product
+                </button>
+<div class="flex border border-outline-variant/40 rounded-lg overflow-hidden bg-surface-container-lowest">
+<button class="px-3 py-2 border-r border-outline-variant/40 hover:bg-surface-container transition-colors text-label-md">Import</button>
+<button class="px-3 py-2 border-r border-outline-variant/40 hover:bg-surface-container transition-colors text-label-md">Export</button>
+<button class="px-3 py-2 hover:bg-surface-container transition-colors text-label-md">Sync</button>
+</div>
+<button class="p-2 rounded-lg border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 rounded-lg border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Total products</span>
+<span class="font-headline-lg text-headline-lg">274</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Active products</span>
+<span class="font-headline-lg text-headline-lg text-primary">274</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Low stock</span>
+<span class="font-headline-lg text-headline-lg text-secondary">124</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Out of stock</span>
+<span class="font-headline-lg text-headline-lg text-error">54</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Missing images</span>
+<span class="font-headline-lg text-headline-lg">166</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 flex flex-col">
+<span class="text-label-sm font-label-sm text-outline mb-1 uppercase tracking-wider">Import issues</span>
+<span class="font-headline-lg text-headline-lg">0</span>
+</div>
+</div>
+<!-- Layout Wrapper -->
+<div class="flex flex-col lg:flex-row gap-gutter">
+<!-- Category Sidebar -->
+<aside class="w-full lg:w-64 flex-shrink-0">
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden">
+<div class="p-4 bg-surface-container-low border-b border-outline-variant/30">
+<h3 class="font-label-md text-label-md text-on-surface">Categories</h3>
+</div>
+<nav class="p-2 space-y-1">
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-primary-fixed/40 text-primary font-semibold transition-all" href="#">
+<span class="text-body-md">All Items</span>
+<span class="text-label-sm bg-primary/10 px-1.5 rounded-md">274</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Accessories</span>
+<span class="text-label-sm text-outline">42</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Bluetooth Speakers</span>
+<span class="text-label-sm text-outline">18</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Computers</span>
+<span class="text-label-sm text-outline">12</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">iPhones</span>
+<span class="text-label-sm text-outline">35</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Laptop</span>
+<span class="text-label-sm text-outline">24</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Monitors</span>
+<span class="text-label-sm text-outline">15</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="text-body-md">Smartphones</span>
+<span class="text-label-sm text-outline">56</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Product Workspace -->
+<div class="flex-1 space-y-6">
+<!-- Filters Bar -->
+<div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/30 flex flex-col md:flex-row gap-4 items-center">
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant/30 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md transition-all" placeholder="Search products..." type="text">
+</div>
+<div class="flex bg-surface-container p-1 rounded-xl w-full md:w-auto">
+<button class="flex-1 md:px-6 py-1.5 rounded-lg bg-surface-container-lowest shadow-sm text-label-md text-primary font-bold">Active</button>
+<button class="flex-1 md:px-6 py-1.5 rounded-lg text-label-md text-outline hover:text-on-surface transition-colors">All</button>
+<button class="flex-1 md:px-6 py-1.5 rounded-lg text-label-md text-outline hover:text-on-surface transition-colors">Inactive</button>
+</div>
+<div class="flex gap-2 w-full md:w-auto">
+<select class="flex-1 md:flex-none border border-outline-variant/30 rounded-xl px-3 py-2.5 text-label-md bg-surface-container-lowest outline-none">
+<option>All categories</option>
+</select>
+<select class="flex-1 md:flex-none border border-outline-variant/30 rounded-xl px-3 py-2.5 text-label-md bg-surface-container-lowest outline-none">
+<option>All brands</option>
+</select>
+<select class="flex-1 md:flex-none border border-outline-variant/30 rounded-xl px-3 py-2.5 text-label-md bg-surface-container-lowest outline-none">
+<option>All stock</option>
+</select>
+</div>
+</div>
+<!-- Product List -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/30">
+<th class="px-6 py-4 font-label-md text-label-md text-outline uppercase tracking-wider">Product Name</th>
+<th class="px-6 py-4 font-label-md text-label-md text-outline uppercase tracking-wider">SKU / Category</th>
+<th class="px-6 py-4 font-label-md text-label-md text-outline uppercase tracking-wider">Stock Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-outline uppercase tracking-wider">Price</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Item 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/20 flex-shrink-0">
+<img alt="Laptop" data-alt="A professional studio product shot of a sleek, futuristic high-performance gaming laptop. The device features a metallic silver finish with subtle RGB lighting elements. The lighting is soft and sophisticated, set against a clean, minimalist studio background in a light clinical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqMXh1d4oZAdeDiOmbS3dpD11npcBFOpi12QEbV_2UG9_Q5LMj3ozAmxhIC_4WCX7l5uSGMmGkKnvEw2NFtv1eSRccDQ1co8A3KHNEacEk3UmkMWpfsz-GN9V6rD1wsBCcuVHBVznO_l5sNe-7cyFba9x-jkZ0eG6vCXJjEtc_tQKlZ9oN3q1soiMGvgqpuVSyzs-nOz1fWqt3Iao-BmfOfADYJPfL4Y4qPRQ2a_BWcMobxyw6YSmEfn7HqE69XVd7ITrbm5JDk31u">
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">ALIENWIRE</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium text-on-surface">2MZBAW21QHCQ</span>
+<span class="text-label-sm text-outline">Laptop</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed/30 text-on-secondary-fixed-variant text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Low Stock
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-on-surface">TZS 2,550,000</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-full hover:bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/20 flex-shrink-0">
+<img alt="Laptop" data-alt="A detailed commercial product image of a modern executive laptop in a brushed aluminum finish. The laptop is positioned at an angle on a pristine white surface, bathed in bright, soft, natural light coming from a large window, creating a clean and professional corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiMBcqlSMUo_SexwOLkHnQmEPsz0kvJMqG2Y6OBQTpxVU7wuJNLKOpabqe-dmRMBueS18JhC4J7DzGGrdJkrSgSyN9zUITrTZyRLoc33Z0YsGMAVNuAv93NnijMp6szs7ldp3wH_ja0t7OB-FoQEB-ODLgmRqEhb0s5jGd8766HYhRLjU6eShRIQ00IpDroixERNS5fAl7YOH-ZDVSjgc8FUqKJ32hW452Ypk4ur2TBxRMM8UXK99tgN4hGGwwAXV2DHl_uS5GxKFb">
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Accer Aspire</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium text-on-surface">1QBJCXGJKAHJ</span>
+<span class="text-label-sm text-outline">Laptop</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-fixed/30 text-on-primary-fixed-variant text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            In Stock
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-on-surface">TZS 150,000</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-full hover:bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/20 flex-shrink-0">
+<img alt="Accessories" data-alt="Minimalist product photography of premium white wireless earbuds and their charging case. The composition is clean and centered on a light gray background, using soft diffused lighting to emphasize the smooth, glossy finish and elegant curves of the tech accessory." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-rY33iNa1Rl9JJZtoD8RgPn07hlouL29Zs3gpHUMeWUn-BCY1WtafdG3vBlV8SMM8kU7U1fWOnY6iTovRsq5hAQT1LOgLKfi_0p-8MN69pqYsfFp99LjZEP2dLYmsSCeIlkx9zJj9J3Mp7xJAd0SqxwK_9irmpJ-AR9b2GrP7rTvH57S10Uf12HtnT-QiYgeJcp7igxni4lrVW8ReVdLmNdGtWNdJvCtUXbLiAQwoDUyGQEO3LQb0FfBMwnhLhAhA1VDJD_-pXI7g">
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Air Pods</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium text-on-surface">PODS-8451</span>
+<span class="text-label-sm text-outline">Accessories</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                            Out of Stock
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-on-surface">TZS 1</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-full hover:bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</td>
+</tr>
+<!-- Item 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/20 flex-shrink-0">
+<img alt="Accessories" data-alt="A clean, high-resolution product image of a braided black USB-C cable neatly coiled on a light marble surface. The lighting is bright and even, highlighting the textured weave of the cable and the polished metal connectors, conveying a sense of durability and premium quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy4LPmf6k1VNmnybh_gf27Vwykre0FfNaVE8cNKDfL8xm8D1I8LqB9aM0QMESt3KA-ubS_bfj4D0CpfLKGPeUo22TumxQrHmm16jXTcfI5puwObiOcV7LLKpgG_iutvCoBxjRZ44irq3v-ZDvNojgIG0PCF_Cmia6BbUJtGmAvInPQJXfyOi5_Q82z-uAEyYKFNJ0CP4SMGJYVfdl71gba0urvz7qtKtMUl91o-6TwMSaJs3raBKJaRwxx2WnOS3ot2R2iWdDklGbx">
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Anker USB-C to USB-C Cable</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium text-on-surface">10EVPBK8SJDW</span>
+<span class="text-label-sm text-outline">Accessories</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                            Out of Stock
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-on-surface">TZS 30,000</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-full hover:bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</td>
+</tr>
+<!-- Item 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-outline-variant/20 flex-shrink-0">
+<img alt="Accessories" data-alt="A crisp product shot of a small, minimalist white wall charger adapter. The device is captured in sharp focus against a soft-blue gradient background, with high-key lighting that emphasizes its compact design and matte finish, creating an empathetic and organized clinical feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgKLCfhaiUyLxcQFztRMhtZmXglf-zQ0d90kyHcl6A979PSv9jVil2_xAxfcXlxxmYbReXciqV-Jp4imGnzCiwdHRKGfGuiNJKDYwIlOSwDvO5o56fYorbApoBYJJTTLU5EyWIC5hgpYNKUmv8V80vdmNlcz_VkJ-JXS-6m66mAtD9FfmceiKaeOkzo5ulAZPF4BqCEyEZv28gAU8Nb2WRJCLNJZbZ3-w6nFo_cHYCq4PxJkTe008t6Gzb-L1-Z3YC_40VxaBmWhd-">
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Anker Zolo Charger 20W</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-body-sm font-medium text-on-surface">2C8KM6KXPEP3</span>
+<span class="text-label-sm text-outline">Accessories</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                            Out of Stock
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-on-surface">TZS 38,000</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-full hover:bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer -->
+<div class="p-4 bg-surface-container-low border-t border-outline-variant/30 flex justify-between items-center">
+<span class="text-label-sm text-outline">Showing 1 to 5 of 274 products</span>
+<div class="flex gap-1">
+<button class="p-2 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-on-primary font-label-md">1</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md">2</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md">3</button>
+<button class="p-2 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface/80 backdrop-blur-xl border-t border-outline-variant/30 flex justify-around items-center px-4 pb-safe pt-2 z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-secondary-fixed/20 rounded-xl px-4 py-1.5" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<span class="text-label-sm mt-1 font-bold">Catalog</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span class="text-label-sm mt-1">Patients</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions and interactions
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Subtle feedback for row interaction
+                row.classList.add('bg-primary/5');
+                setTimeout(() => row.classList.remove('bg-primary/5'), 200);
+            });
+        });
+
+        // Search highlight effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.01]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+</body></html>

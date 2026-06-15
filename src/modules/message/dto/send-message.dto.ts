@@ -73,6 +73,11 @@ export class SendMediaMessageDto {
   @IsString()
   @MaxLength(1024)
   caption?: string;
+
+  @ApiPropertyOptional({ description: 'WhatsApp message id to quote in reply' })
+  @IsOptional()
+  @IsString()
+  quotedMessageId?: string;
 }
 
 export class MessageResponseDto {

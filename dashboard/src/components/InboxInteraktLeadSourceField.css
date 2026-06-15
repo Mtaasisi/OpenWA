@@ -1,0 +1,91 @@
+.inbox-interakt-lead-source {
+  width: 100%;
+}
+
+.inbox-interakt-lead-source__pill {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--lead-source-color, var(--primary)) 18%, var(--border));
+  background: color-mix(in srgb, var(--lead-source-color, var(--primary)) 5%, var(--bg-card));
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.inbox-interakt-lead-source__face {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.5rem;
+  pointer-events: none;
+}
+
+.inbox-interakt-lead-source--editable .inbox-interakt-lead-source__pill {
+  cursor: pointer;
+}
+
+.inbox-interakt-lead-source--editable:not(.inbox-interakt-lead-source--disabled) .inbox-interakt-lead-source__pill:hover {
+  border-color: color-mix(in srgb, var(--lead-source-color, var(--primary)) 34%, var(--border));
+  background: color-mix(in srgb, var(--lead-source-color, var(--primary)) 9%, var(--bg-card));
+  box-shadow: var(--interakt-shadow-sm, 0 1px 2px rgb(15 23 42 / 0.05));
+}
+
+.inbox-interakt-lead-source--editable:not(.inbox-interakt-lead-source--disabled) .inbox-interakt-lead-source__pill:active {
+  transform: scale(0.995);
+}
+
+.inbox-interakt-lead-source__icon {
+  flex-shrink: 0;
+  color: var(--lead-source-color, var(--primary));
+}
+
+.inbox-interakt-lead-source__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.inbox-interakt-lead-source__chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--text-muted);
+}
+
+.inbox-interakt-lead-source__spinner {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--lead-source-color, var(--primary));
+}
+
+.inbox-interakt-lead-source__select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  border-radius: inherit;
+  background: transparent;
+  opacity: 0;
+  appearance: none;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.inbox-interakt-lead-source__select:disabled {
+  cursor: wait;
+}
+
+.inbox-interakt-lead-source--disabled .inbox-interakt-lead-source__pill {
+  opacity: 0.72;
+}

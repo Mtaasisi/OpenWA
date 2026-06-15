@@ -1,0 +1,41 @@
+/**
+ * Tactical inbox bridge — Interakt component markup inside .tactical-inbox
+ * gets the same layout rules as Interakt inbox (data-theme-effects='interakt').
+ * Scoped so other pages with tactical theme are unaffected.
+ */
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-list-header,
+[data-theme-effects='tactical'] .tac-crm-wrap .inbox-crm-panel--interakt,
+[data-theme-effects='tactical'] .tac-crm-drawer .inbox-crm-panel--interakt {
+  background: #03070d;
+  color: var(--text-primary);
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-chat-header {
+  background: #03070d;
+  border-bottom: 1px solid var(--tac-border, rgba(34, 211, 238, 0.15));
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-composer {
+  background: #050b14;
+  border-color: var(--tac-border, rgba(34, 211, 238, 0.15));
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-bar__trigger,
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-dropdown__trigger {
+  border-radius: 0;
+  background: #050b14;
+  border-color: var(--tac-border, rgba(34, 211, 238, 0.15));
+  color: var(--text-secondary);
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-bar__trigger.is-active,
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-dropdown__trigger.is-active {
+  background: color-mix(in srgb, var(--primary) 12%, #050b14);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+[data-theme-effects='tactical'] .tac-crm-wrap .inbox-crm-content--interakt,
+[data-theme-effects='tactical'] .tac-crm-drawer .inbox-crm-content--interakt {
+  background: #03070d;
+}

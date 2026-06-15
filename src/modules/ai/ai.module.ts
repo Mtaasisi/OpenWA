@@ -94,6 +94,11 @@ import { AiTrainingModule } from '../ai-training/ai-training.module';
 import { AiUsageLog } from './entities/ai-usage-log.entity';
 import { AiModelPricing } from './entities/ai-model-pricing.entity';
 import { AiProcessedInboundMessage } from './entities/ai-processed-inbound-message.entity';
+import { AiLearnedIntent } from './entities/ai-learned-intent.entity';
+import { AiReplyTemplate } from './entities/ai-reply-template.entity';
+import { AiUnknownMessage } from './entities/ai-unknown-message.entity';
+import { AiMessageBuffer } from './entities/ai-message-buffer.entity';
+import { AiConversationFact } from './entities/ai-conversation-fact.entity';
 import { AiCostTrackerService } from './cost/ai-cost-tracker.service';
 import { AiBudgetGuardService } from './cost/ai-budget-guard.service';
 import { AiModelRouterService } from './cost/ai-model-router.service';
@@ -103,6 +108,18 @@ import { AiUsageAdminController } from './ai-usage-admin.controller';
 import { AiBudgetAdminController, AiControlAdminController } from './ai-budget-admin.controller';
 import { AiCostPermissionsController } from './cost/ai-cost-permissions.controller';
 import { AiCostPermissionGuard } from './cost/guards/ai-cost-permission.guard';
+import { AiLearnedIntentService } from './learning/ai-learned-intent.service';
+import { AiUnknownMessageService } from './learning/ai-unknown-message.service';
+import { AiConversationFactsService } from './learning/ai-conversation-facts.service';
+import { AiMessageBufferService } from './cost/ai-message-buffer.service';
+import { AiPromptAssemblerService } from './prompt/ai-prompt-assembler.service';
+import { AiLearningCacheAdminController } from './learning/ai-learning-cache-admin.controller';
+import { AiLearnedIntentSeedService } from './learning/ai-learned-intent-seed.service';
+import { AiIntentLearningService } from './learning/ai-intent-learning.service';
+import { AiReplyTemplateService } from './learning/ai-reply-template.service';
+import { AiTrainingAnalyticsService } from './learning/ai-training-analytics.service';
+import { AiMessageBufferAdminController } from './cost/ai-message-buffer-admin.controller';
+import { AiConfigCacheService } from './cost/ai-config-cache.service';
 
 @Module({
   imports: [
@@ -141,6 +158,11 @@ import { AiCostPermissionGuard } from './cost/guards/ai-cost-permission.guard';
         AiUsageLog,
         AiModelPricing,
         AiProcessedInboundMessage,
+        AiLearnedIntent,
+        AiReplyTemplate,
+        AiUnknownMessage,
+        AiMessageBuffer,
+        AiConversationFact,
       ],
       'data',
     ),
@@ -179,6 +201,8 @@ import { AiCostPermissionGuard } from './cost/guards/ai-cost-permission.guard';
     AiBudgetAdminController,
     AiControlAdminController,
     AiCostPermissionsController,
+    AiLearningCacheAdminController,
+    AiMessageBufferAdminController,
   ],
   providers: [
     AiCostPermissionGuard,
@@ -220,6 +244,16 @@ import { AiCostPermissionGuard } from './cost/guards/ai-cost-permission.guard';
     AiModelRouterService,
     AiProcessedMessageService,
     AiUsageQueryService,
+    AiLearnedIntentService,
+    AiUnknownMessageService,
+    AiConversationFactsService,
+    AiMessageBufferService,
+    AiPromptAssemblerService,
+    AiLearnedIntentSeedService,
+    AiIntentLearningService,
+    AiReplyTemplateService,
+    AiTrainingAnalyticsService,
+    AiConfigCacheService,
   ],
   exports: [
     AiSettingsService,
@@ -245,6 +279,11 @@ import { AiCostPermissionGuard } from './cost/guards/ai-cost-permission.guard';
     AiCostTrackerService,
     AiBudgetGuardService,
     AiModelRouterService,
+    AiLearnedIntentService,
+    AiUnknownMessageService,
+    AiConversationFactsService,
+    AiMessageBufferService,
+    AiPromptAssemblerService,
     AiTrainingModule,
   ],
 })

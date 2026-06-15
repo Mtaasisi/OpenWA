@@ -1,5 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import './styles/stitch-tokens.css';
+@import './styles/stitch-workspace.css';
+@import './styles/stitch-inbox.css';
+@import './styles/stitch-workspace-pages.css';
+@import './styles/stitch-followups.css';
 @import './styles/tactical-overlay.css';
+@import './styles/tactical-tokens.css';
+@import './styles/tactical-workspace.css';
+@import './styles/interakt-inbox.css';
+@import './styles/tactical-inbox-bridge.css';
+@import './components/InboxInteraktSwipeFilters.css';
+@import './components/workspace/workspace.css';
 
 :root {
   --primary: #25d366;
@@ -85,6 +95,85 @@ button {
   font-family: inherit;
 }
 
+/* App-wide: no browser/Vite focus rings on click (components style their own states) */
+button:focus,
+button:focus-visible,
+button:active,
+[role='button']:focus,
+[role='button']:focus-visible,
+[role='button']:active,
+.btn:focus,
+.btn:focus-visible,
+.btn:active,
+.btn-primary:focus,
+.btn-primary:focus-visible,
+.btn-primary:active,
+.btn-secondary:focus,
+.btn-secondary:focus-visible,
+.btn-secondary:active,
+.btn-icon:focus,
+.btn-icon:focus-visible,
+.btn-icon:active,
+.btn-danger:focus,
+.btn-danger:focus-visible,
+.btn-danger:active,
+.btn-ghost:focus,
+.btn-ghost:focus-visible,
+.btn-ghost:active,
+.btn-close:focus,
+.btn-close:focus-visible,
+.btn-close:active,
+.fu-btn:focus,
+.fu-btn:focus-visible,
+.fu-btn:active,
+.sessions-btn:focus,
+.sessions-btn:focus-visible,
+.sessions-btn:active,
+.inbox-interakt-tool-btn:focus,
+.inbox-interakt-tool-btn:focus-visible,
+.inbox-interakt-tool-btn:active,
+.inbox-interakt-composer-add-btn:focus,
+.inbox-interakt-composer-add-btn:focus-visible,
+.inbox-interakt-composer-add-btn:active,
+.inbox-composer-tool-btn:focus,
+.inbox-composer-tool-btn:focus-visible,
+.inbox-composer-tool-btn:active,
+.inbox-attach-btn:focus,
+.inbox-attach-btn:focus-visible,
+.inbox-attach-btn:active,
+.tac-composer-tool-btn:focus,
+.tac-composer-tool-btn:focus-visible,
+.tac-composer-tool-btn:active,
+.inbox-interakt-chip:focus,
+.inbox-interakt-chip:focus-visible,
+.inbox-interakt-chip:active,
+.inbox-interakt-list-header__icon-btn:focus,
+.inbox-interakt-list-header__icon-btn:focus-visible,
+.inbox-interakt-list-header__icon-btn:active,
+.inbox-interakt-send-btn:focus,
+.inbox-interakt-send-btn:focus-visible,
+.inbox-interakt-send-btn:active,
+.inbox-interakt-composer-send-circle:focus,
+.inbox-interakt-composer-send-circle:focus-visible,
+.inbox-interakt-composer-send-circle:active,
+.inbox-sort-toggle:focus,
+.inbox-sort-toggle:focus-visible,
+.inbox-sort-toggle:active,
+.themes-btn:focus,
+.themes-btn:focus-visible,
+.themes-btn:active,
+.dash-ai-fab__btn:focus,
+.dash-ai-fab__btn:focus-visible,
+.dash-ai-fab__btn:active,
+select:focus,
+select:focus-visible,
+select:active,
+.inbox-interakt-lead-source__pill:has(.inbox-interakt-lead-source__select:focus),
+.inbox-interakt-lead-source__pill:has(.inbox-interakt-lead-source__select:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
 input,
 select,
 textarea {
@@ -136,4 +225,24 @@ a:hover {
 
 .scroll-minimal-x-hidden::-webkit-scrollbar {
   display: none;
+}
+
+/* No outer glow / outline ring when clicking buttons or selects anywhere */
+button:focus,
+button:focus-visible,
+button:active,
+[role='button']:focus,
+[role='button']:focus-visible,
+[role='button']:active,
+select:focus,
+select:focus-visible,
+select:active,
+input[type='button']:focus,
+input[type='button']:focus-visible,
+input[type='submit']:focus,
+input[type='submit']:focus-visible,
+input[type='reset']:focus,
+input[type='reset']:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }

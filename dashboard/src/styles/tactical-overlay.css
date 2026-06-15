@@ -375,14 +375,6 @@
   letter-spacing: 0.15em;
 }
 
-[data-theme-id='tactical-overlay'] .inbox-disconnected-banner {
-  border-radius: 0;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.06);
-  text-transform: uppercase;
-  font-size: 0.6875rem;
-}
-
 [data-theme-id='tactical-overlay'] .inbox-crm-details dt {
   color: var(--primary);
   letter-spacing: 0.2em;
@@ -595,7 +587,8 @@ html[data-theme-id='tactical-overlay'] *::after {
 }
 
 /* Settings active nav — match inbox/products filter chips */
-[data-theme-id='tactical-overlay'] .settings-nav__btn.active {
+[data-theme-id='tactical-overlay'] .settings-nav__btn.active,
+[data-theme-id='tactical-overlay'] .settings-shell__nav-item.is-active {
   background: var(--primary);
   color: #000;
   border: 1px solid var(--primary);
@@ -605,6 +598,19 @@ html[data-theme-id='tactical-overlay'] *::after {
   font-weight: 700;
 }
 
+[data-theme-id='tactical-overlay'] .settings-shell__nav-category {
+  font-family: var(--font-data);
+  color: var(--primary);
+  opacity: 0.75;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__nav-search-input,
+[data-theme-id='tactical-overlay'] .settings-shell__topbar-search-input {
+  border-color: var(--tactical-border-strong);
+  background: transparent;
+  border-radius: 0;
+}
+
 [data-theme-id='tactical-overlay'] .settings-badge,
 [data-theme-id='tactical-overlay'] .status-badge {
   text-transform: uppercase;
@@ -612,6 +618,110 @@ html[data-theme-id='tactical-overlay'] *::after {
   font-size: 0.625rem;
   font-weight: 700;
   border: 1px solid var(--tactical-border);
+}
+
+/* Settings — Interakt glass panels in HUD mode */
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-wide-card,
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-glass-card,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-int-card,
+[data-theme-id='tactical-overlay'] .settings-shell .ai-settings-card,
+[data-theme-id='tactical-overlay'] .settings-shell .wa-safety-bento,
+[data-theme-id='tactical-overlay'] .settings-shell .storage-section--card,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-users-card,
+[data-theme-id='tactical-overlay'] .settings-shell .plugins-interakt-card,
+[data-theme-id='tactical-overlay'] .settings-shell .plugins-interakt-engine,
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-about-tile,
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-danger-card,
+[data-theme-id='tactical-overlay'] .settings-shell .ai-setup-interakt__card {
+  background: color-mix(in srgb, var(--bg-card) 92%, #000);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: var(--tactical-border);
+  box-shadow: none;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .wa-safety-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-users-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .api-keys-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-inauzwa-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .desktop-app-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .ail-kpi,
+[data-theme-id='tactical-overlay'] .settings-shell .storage-metric-card {
+  background: color-mix(in srgb, var(--bg-card) 88%, #000);
+  border-color: var(--tactical-border);
+  backdrop-filter: none;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-wide-card__head h3,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-int-card__title,
+[data-theme-id='tactical-overlay'] .settings-shell .ai-settings-card__title,
+[data-theme-id='tactical-overlay'] .settings-shell .wa-safety-kpi__label,
+[data-theme-id='tactical-overlay'] .settings-shell .storage-section-label {
+  font-family: var(--font-data);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.6875rem;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-btn--primary,
+[data-theme-id='tactical-overlay'] .settings-shell .fu-btn--primary,
+[data-theme-id='tactical-overlay'] .settings-shell .desktop-app-btn--primary,
+[data-theme-id='tactical-overlay'] .settings-shell .settings-shell__save-btn {
+  background: var(--primary);
+  color: #000;
+  border: 1px solid var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .interakt-btn--ghost,
+[data-theme-id='tactical-overlay'] .settings-shell .fu-btn--ghost,
+[data-theme-id='tactical-overlay'] .settings-shell .desktop-app-btn:not(.desktop-app-btn--primary) {
+  border-color: var(--tactical-border-strong);
+  background: transparent;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .settings-tab.active,
+[data-theme-id='tactical-overlay'] .settings-shell .wa-safety-panel .settings-tab--active,
+[data-theme-id='tactical-overlay'] .settings-shell .ail-tab.active {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell .settings-integration-loading {
+  border-color: var(--tactical-border);
+  background: var(--tactical-glow);
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__sidebar,
+[data-theme-id='tactical-overlay'] .settings-shell__topbar {
+  border-color: var(--tactical-border);
+  background: color-mix(in srgb, var(--bg-card) 95%, #000);
+  backdrop-filter: none;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell,
+[data-theme-id='tactical-overlay'] .settings-shell__main,
+[data-theme-id='tactical-overlay'] .settings-shell__canvas {
+  background: var(--bg-light);
+  color: var(--text-primary);
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__content {
+  background: transparent;
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__page-header h3,
+[data-theme-id='tactical-overlay'] .settings-shell__topbar-title {
+  font-family: var(--font-data);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* Page shells — square borders + HUD typography */

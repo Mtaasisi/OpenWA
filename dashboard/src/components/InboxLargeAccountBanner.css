@@ -1,0 +1,74 @@
+.inbox-large-account-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.5rem 0.75rem 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent, #25d366) 28%, transparent);
+  background: color-mix(in srgb, var(--accent, #25d366) 8%, var(--surface, #fff));
+  color: var(--text-primary);
+}
+
+.inbox-large-account-banner__icon {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  color: var(--accent, #25d366);
+}
+
+.inbox-large-account-banner__copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.inbox-large-account-banner__title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.inbox-large-account-banner__desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.inbox-large-account-banner__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.inbox-large-account-banner__btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface, #fff);
+  color: var(--accent, #25d366);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #25d366) 35%, transparent);
+}
+
+.inbox-large-account-banner__btn:hover {
+  background: color-mix(in srgb, var(--accent, #25d366) 10%, var(--surface, #fff));
+}
+
+.inbox-large-account-banner__btn--primary {
+  background: var(--accent, #25d366);
+  color: #fff;
+  box-shadow: none;
+}
+
+.inbox-large-account-banner__btn--primary:hover {
+  background: color-mix(in srgb, var(--accent, #25d366) 88%, #000);
+  color: #fff;
+}
+
+.inbox-list-header--tactical .inbox-large-account-banner {
+  margin-inline: 0;
+}

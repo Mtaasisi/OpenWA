@@ -11,6 +11,8 @@ import {
   Trash2,
   ExternalLink,
   ChevronDown,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { aiApi, type AiProviderId, type AiFallbackEntry } from '../../services/api';
 import { formatAiErrorMessage } from '../../lib/ai-format';
@@ -26,6 +28,17 @@ import { useRole } from '../../hooks/useRole';
 import { useAiCostPermissions } from '../../hooks/useAiCostPermissions';
 import { settingsPanelHref } from './settings-nav-registry';
 import { InteraktCheckOption } from './SettingsInteraktPrimitives';
+
+const AUTO_REPLY_CONTEXT_MESSAGES_DEFAULT = 3;
+const AUTO_REPLY_CONTEXT_MESSAGES_MIN = 3;
+const AUTO_REPLY_CONTEXT_MESSAGES_MAX = 5;
+
+function clampAutoReplyContextMessages(value: number): number {
+  return Math.min(
+    AUTO_REPLY_CONTEXT_MESSAGES_MAX,
+    Math.max(AUTO_REPLY_CONTEXT_MESSAGES_MIN, value || AUTO_REPLY_CONTEXT_MESSAGES_DEFAULT),
+  );
+}
 import { SettingsFormPage } from './shell/SettingsFormPrimitives';
 import './AiIntegrationPanel.css';
 import './AiSetupChecklist.css';
@@ -219,6 +232,8 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
   const [provider, setProvider] = useState<AiProviderId>('OPENAI');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [showStoredApiKey, setShowStoredApiKey] = useState(false);
+  const [revealApiKeyLoading, setRevealApiKeyLoading] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [temperature, setTemperature] = useState(0.7);
@@ -227,7 +242,9 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
   const [autoReplyEnabled, setAutoReplyEnabled] = useState(false);
   const [autoReplyPrivateOnly, setAutoReplyPrivateOnly] = useState(true);
   const [autoReplyCooldownMinutes, setAutoReplyCooldownMinutes] = useState(0);
-  const [autoReplyContextMessages, setAutoReplyContextMessages] = useState(12);
+  const [autoReplyContextMessages, setAutoReplyContextMessages] = useState(
+    AUTO_REPLY_CONTEXT_MESSAGES_DEFAULT,
+  );
   const [autoReplyPrompt, setAutoReplyPrompt] = useState('');
   const [autoReplyPreset, setAutoReplyPreset] = useState('custom');
   const [autoReplyTone, setAutoReplyTone] = useState('');
@@ -366,7 +383,9 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
     setAutoReplyEnabled(config.autoReplyEnabled === true);
     setAutoReplyPrivateOnly(config.autoReplyPrivateOnly !== false);
     setAutoReplyCooldownMinutes(config.autoReplyCooldownMinutes ?? 0);
-    setAutoReplyContextMessages(config.autoReplyContextMessages ?? 12);
+    setAutoReplyContextMessages(
+      clampAutoReplyContextMessages(config.autoReplyContextMessages ?? AUTO_REPLY_CONTEXT_MESSAGES_DEFAULT),
+    );
     setAutoReplyPrompt(config.autoReplyPrompt ?? '');
     setAutoReplyPreset(config.autoReplyPreset ?? 'custom');
     setAutoReplyTone(config.autoReplyTone ?? '');
@@ -432,7 +451,7 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
         autoReplyEnabled: config.autoReplyEnabled === true,
         autoReplyPrivateOnly: config.autoReplyPrivateOnly !== false,
         autoReplyCooldownMinutes: config.autoReplyCooldownMinutes ?? 0,
-        autoReplyContextMessages: config.autoReplyContextMessages ?? 12,
+        autoReplyContextMessages: config.autoReplyContextMessages ?? AUTO_REPLY_CONTEXT_MESSAGES_DEFAULT,
         autoReplyPrompt: config.autoReplyPrompt ?? '',
         autoReplyPreset: config.autoReplyPreset ?? 'custom',
         autoReplyTone: config.autoReplyTone ?? '',
@@ -504,11 +523,12 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
   }, [fbModels, fbModel]);
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      aiApi.saveConfig({
+    mutationFn: async () => {
+      const keyToSave = apiKey.trim();
+      await aiApi.saveConfig({
         provider,
         model,
-        ...(apiKey ? { apiKey } : {}),
+        ...(keyToSave ? { apiKey: keyToSave } : {}),
         ...(baseUrl ? { baseUrl } : {}),
         systemPrompt,
         temperature,
@@ -519,7 +539,7 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
           : { autoReplyEnabled }),
         autoReplyPrivateOnly,
         autoReplyCooldownMinutes,
-        autoReplyContextMessages,
+        autoReplyContextMessages: clampAutoReplyContextMessages(autoReplyContextMessages),
         autoReplyPrompt,
         autoReplyPreset,
         autoReplyTone,
@@ -563,10 +583,15 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
         maxBurstWaitMs,
         typingMinMs,
         typingMaxMs,
-      }),
-    onSuccess: () => {
+      });
+      return { keyToSave };
+    },
+    onSuccess: ({ keyToSave }) => {
       toast.success(t('ai.settings.saved'));
-      setApiKey('');
+      if (keyToSave) {
+        setApiKey(keyToSave);
+        setShowStoredApiKey(true);
+      }
       setTestResult(null);
       setSavedSnapshot(
         buildFormSnapshot({
@@ -580,7 +605,7 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
           autoReplyEnabled,
           autoReplyPrivateOnly,
           autoReplyCooldownMinutes,
-          autoReplyContextMessages,
+          autoReplyContextMessages: clampAutoReplyContextMessages(autoReplyContextMessages),
           autoReplyPrompt,
           autoReplyPreset,
           autoReplyTone,
@@ -653,6 +678,7 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
     onSuccess: () => {
       toast.success(t('ai.settings.keyCleared'));
       setApiKey('');
+      setShowStoredApiKey(false);
       setTestResult(null);
       void qc.invalidateQueries({ queryKey: ['ai-config'] });
     },
@@ -740,6 +766,32 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
   const unsavedKey = apiKey.trim().length > 0;
   const canTest = !!config?.apiKeySet && !unsavedKey;
 
+  const toggleStoredApiKeyVisibility = async () => {
+    if (showStoredApiKey) {
+      setShowStoredApiKey(false);
+      return;
+    }
+    if (config?.apiKeySet && !apiKey.trim()) {
+      setRevealApiKeyLoading(true);
+      try {
+        const { apiKey: revealed } = await aiApi.revealApiKey();
+        if (revealed) {
+          setApiKey(revealed);
+        } else {
+          toast.error(t('ai.settings.revealApiKeyFailed'));
+          setRevealApiKeyLoading(false);
+          return;
+        }
+      } catch {
+        toast.error(t('ai.settings.revealApiKeyFailed'));
+        setRevealApiKeyLoading(false);
+        return;
+      }
+      setRevealApiKeyLoading(false);
+    }
+    setShowStoredApiKey(true);
+  };
+
   const currentSnapshot = useMemo(
     () =>
       buildFormSnapshot({
@@ -753,7 +805,7 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
         autoReplyEnabled,
         autoReplyPrivateOnly,
         autoReplyCooldownMinutes,
-        autoReplyContextMessages,
+        autoReplyContextMessages: clampAutoReplyContextMessages(autoReplyContextMessages),
         autoReplyPrompt,
         autoReplyPreset,
         autoReplyTone,
@@ -1047,17 +1099,40 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
               </Link>
             </div>
             <div className="ai-settings-key-row">
-              <input
-                type="password"
-                value={apiKey}
-                onChange={e => setApiKey(e.target.value)}
-                placeholder={
-                  config?.apiKeySet
-                    ? t('ai.settings.apiKeyPlaceholderSet')
-                    : t('ai.settings.apiKeyPlaceholder')
-                }
-                autoComplete="off"
-              />
+              <div className="ai-settings-key-input-wrap">
+                <input
+                  type={showStoredApiKey ? 'text' : 'password'}
+                  value={apiKey}
+                  onChange={e => setApiKey(e.target.value)}
+                  placeholder={
+                    config?.apiKeySet
+                      ? t('ai.settings.apiKeyPlaceholderSet')
+                      : t('ai.settings.apiKeyPlaceholder')
+                  }
+                  autoComplete="off"
+                />
+                {(config?.apiKeySet || apiKey.trim()) && (
+                  <button
+                    type="button"
+                    className="ai-settings-key-toggle"
+                    disabled={revealApiKeyLoading}
+                    onClick={() => void toggleStoredApiKeyVisibility()}
+                    aria-label={
+                      showStoredApiKey
+                        ? t('ai.settings.hideApiKey')
+                        : t('ai.settings.showApiKey')
+                    }
+                  >
+                    {revealApiKeyLoading ? (
+                      <Loader2 className="animate-spin" size={16} />
+                    ) : showStoredApiKey ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </button>
+                )}
+              </div>
               {config?.apiKeySet && (
                 <button
                   type="button"
@@ -1069,6 +1144,11 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
                 </button>
               )}
             </div>
+            {config?.apiKeySource === 'environment' && (
+              <p className="ai-settings-card__hint" style={{ marginTop: '0.35rem' }}>
+                {t('ai.settings.apiKeyFromEnvironment')}
+              </p>
+            )}
             {providerKeyUrl && (
               <a
                 href={providerKeyUrl}
@@ -1367,14 +1447,19 @@ export function AiIntegrationPanel({ onBack, scope: scopeProp }: AiIntegrationPa
                 <label className="ai-settings-label">{t('ai.settings.autoReplyContextMessages')}</label>
                 <input
                   type="number"
-                  min={1}
-                  max={50}
+                  min={AUTO_REPLY_CONTEXT_MESSAGES_MIN}
+                  max={AUTO_REPLY_CONTEXT_MESSAGES_MAX}
                   value={autoReplyContextMessages}
                   disabled={autoReplyFieldsDisabled}
                   onChange={e =>
-                    setAutoReplyContextMessages(Math.max(1, Number(e.target.value) || 1))
+                    setAutoReplyContextMessages(
+                      clampAutoReplyContextMessages(Number(e.target.value)),
+                    )
                   }
                 />
+                <p className="ai-settings-field-hint">
+                  {t('ai.settings.autoReplyContextMessagesHint')}
+                </p>
               </div>
             </div>
 

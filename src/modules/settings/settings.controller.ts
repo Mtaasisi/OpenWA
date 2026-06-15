@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { RequireRole } from '../auth/decorators/auth.decorators';
 import { ApiKeyRole } from '../auth/entities/api-key.entity';
+import { isSwaggerEnabled } from '../../common/utils/production-security.util';
 
 interface Settings {
   general: {
@@ -42,7 +43,7 @@ export class SettingsController {
       api: {
         rateLimit: this.configService.get<number>('api.rateLimit.mediumLimit', 100),
         rateLimitWindow: this.configService.get<number>('api.rateLimit.mediumTtl', 60000),
-        enableDocs: true, // Swagger docs always enabled
+        enableDocs: isSwaggerEnabled(),
       },
       notifications: {
         emailEnabled: false,

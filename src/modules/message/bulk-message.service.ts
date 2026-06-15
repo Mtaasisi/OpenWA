@@ -11,9 +11,9 @@ import {
 } from './entities/message-batch.entity';
 import { SendBulkMessageDto } from './dto/bulk-message.dto';
 import { SessionService } from '../session/session.service';
-import { IWhatsAppEngine } from '../../engine/interfaces/whatsapp-engine.interface';
+import { MessageService } from './message.service';
+import { WhatsAppSafetySettingsService } from '../whatsapp-safety/services/whatsapp-safety-settings.service';
 
-// Type definitions for bulk message content
 interface BulkMessageContent {
   text?: string;
   caption?: string;
@@ -32,9 +32,18 @@ export class BulkMessageService {
     @InjectRepository(MessageBatch, 'data')
     private readonly batchRepository: Repository<MessageBatch>,
     private readonly sessionService: SessionService,
+    private readonly messageService: MessageService,
+    private readonly safetySettings: WhatsAppSafetySettingsService,
   ) {}
 
   async createBatch(sessionId: string, dto: SendBulkMessageDto): Promise<MessageBatch> {
+    const settings = await this.safetySettings.getForSession(sessionId);
+    if (!settings.productBulkSendEnabled) {
+      throw new BadRequestException(
+        'Bulk WhatsApp sends are disabled. Enable "Bulk / product batch sends" in Settings → WhatsApp Safety.',
+      );
+    }
+
     // Validate session exists
     const engine = this.sessionService.getEngine(sessionId);
     if (!engine) {
@@ -136,14 +145,6 @@ export class BulkMessageService {
     batch.startedAt = new Date();
     await this.batchRepository.save(batch);
 
-    const engine = this.sessionService.getEngine(batch.sessionId);
-    if (!engine) {
-      batch.status = BatchStatus.FAILED;
-      batch.completedAt = new Date();
-      await this.batchRepository.save(batch);
-      return;
-    }
-
     const results: BatchMessageResult[] = batch.results || [];
 
     for (let i = batch.currentIndex; i < batch.messages.length; i++) {
@@ -163,8 +164,71 @@ export class BulkMessageService {
         // Apply template variables
         const content: BulkMessageContent = this.applyVariables(msg.content as BulkMessageContent, msg.variables);
 
-        // Send message based on type
-        const messageResult = await this.sendMessage(engine, msg.chatId, msg.type, content);
+        let messageResult: { id: string };
+        if (msg.type === 'text') {
+          const sent = await this.messageService.sendTextInternal(
+            batch.sessionId,
+            { chatId: msg.chatId, text: content.text || '' },
+            { source: 'bulk' },
+          );
+          messageResult = { id: sent.messageId };
+        } else {
+          const mediaOpts = { source: 'bulk' as const };
+          let sentMedia: { messageId: string };
+          switch (msg.type) {
+            case 'image':
+              sentMedia = await this.messageService.sendImage(
+                batch.sessionId,
+                {
+                  chatId: msg.chatId,
+                  url: content.image?.url || content.image?.base64 || '',
+                  caption: content.caption,
+                  mimetype: content.image?.mimetype,
+                },
+                mediaOpts,
+              );
+              break;
+            case 'video':
+              sentMedia = await this.messageService.sendVideo(
+                batch.sessionId,
+                {
+                  chatId: msg.chatId,
+                  url: content.video?.url || content.video?.base64 || '',
+                  caption: content.caption,
+                  mimetype: content.video?.mimetype,
+                },
+                mediaOpts,
+              );
+              break;
+            case 'audio':
+              sentMedia = await this.messageService.sendAudio(
+                batch.sessionId,
+                {
+                  chatId: msg.chatId,
+                  url: content.audio?.url || content.audio?.base64 || '',
+                  mimetype: content.audio?.mimetype,
+                },
+                mediaOpts,
+              );
+              break;
+            case 'document':
+              sentMedia = await this.messageService.sendDocument(
+                batch.sessionId,
+                {
+                  chatId: msg.chatId,
+                  url: content.document?.url || content.document?.base64 || '',
+                  filename: content.document?.filename,
+                  caption: content.caption,
+                  mimetype: content.document?.mimetype,
+                },
+                mediaOpts,
+              );
+              break;
+            default:
+              throw new Error(`Unsupported message type: ${msg.type}`);
+          }
+          messageResult = { id: sentMedia.messageId };
+        }
 
         result.status = BatchMessageStatus.SENT;
         result.messageId = messageResult.id;
@@ -245,44 +309,6 @@ export class BulkMessageService {
     };
 
     return processValue(content) as BulkMessageContent;
-  }
-
-  private sendMessage(
-    engine: IWhatsAppEngine,
-    chatId: string,
-    type: string,
-    content: BulkMessageContent,
-  ): Promise<{ id: string }> {
-    switch (type) {
-      case 'text':
-        return engine.sendTextMessage(chatId, content.text || '');
-      case 'image':
-        return engine.sendImageMessage(chatId, {
-          mimetype: content.image?.mimetype || 'image/jpeg',
-          data: content.image?.url || content.image?.base64 || '',
-          caption: content.caption,
-        });
-      case 'video':
-        return engine.sendVideoMessage(chatId, {
-          mimetype: content.video?.mimetype || 'video/mp4',
-          data: content.video?.url || content.video?.base64 || '',
-          caption: content.caption,
-        });
-      case 'audio':
-        return engine.sendAudioMessage(chatId, {
-          mimetype: content.audio?.mimetype || 'audio/mpeg',
-          data: content.audio?.url || content.audio?.base64 || '',
-        });
-      case 'document':
-        return engine.sendDocumentMessage(chatId, {
-          mimetype: content.document?.mimetype || 'application/octet-stream',
-          data: content.document?.url || content.document?.base64 || '',
-          filename: content.document?.filename,
-          caption: content.caption,
-        });
-      default:
-        return Promise.reject(new Error(`Unsupported message type: ${type}`));
-    }
   }
 
   private calculateDelay(options: { delayBetweenMessages: number; randomizeDelay: boolean }): number {

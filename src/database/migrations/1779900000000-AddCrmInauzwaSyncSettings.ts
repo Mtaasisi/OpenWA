@@ -1,3 +1,4 @@
+import { migDateTime, migNowDefault } from '../migration-utils';
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 export class AddCrmInauzwaSyncSettings1779900000000 implements MigrationInterface {
@@ -14,10 +15,10 @@ export class AddCrmInauzwaSyncSettings1779900000000 implements MigrationInterfac
           { name: 'autoSyncEnabled', type: 'boolean', default: false, isNullable: false },
           { name: 'autoSyncIntervalMinutes', type: 'int', default: 60, isNullable: false },
           { name: 'refreshBeforeSend', type: 'boolean', default: true, isNullable: false },
-          { name: 'lastSyncAt', type: 'datetime', isNullable: true },
+          { name: 'lastSyncAt', type: migDateTime(queryRunner), isNullable: true },
           { name: 'lastSyncResultJson', type: 'text', isNullable: true },
           { name: 'lastSyncError', type: 'text', isNullable: true },
-          { name: 'updatedAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
+          { name: 'updatedAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
         ],
       }),
       true,

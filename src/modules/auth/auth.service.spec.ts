@@ -190,6 +190,13 @@ describe('AuthService', () => {
       expect(result.lastUsedAt).toBeDefined();
     });
 
+    it('should reject dev-admin-key in production', async () => {
+      const prev = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      await expect(service.validateApiKey('dev-admin-key')).rejects.toThrow(UnauthorizedException);
+      process.env.NODE_ENV = prev;
+    });
+
     it('should throw UnauthorizedException for invalid key', async () => {
       (repository.findOne as jest.Mock).mockResolvedValue(null);
 

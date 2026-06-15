@@ -1,0 +1,295 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Clinical Clarity - Schedule Appointment</title>
+<!-- Fonts and Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#0070eb",
+                        "outline": "#717786",
+                        "on-primary-fixed-variant": "#004493",
+                        "surface-tint": "#005bc1",
+                        "tertiary-fixed": "#f6d9ff",
+                        "surface": "#faf9fe",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-high": "#e9e7ed",
+                        "tertiary-container": "#a649d5",
+                        "on-surface-variant": "#414755",
+                        "on-surface": "#1a1b1f",
+                        "on-primary-fixed": "#001a41",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-bright": "#faf9fe",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#310048",
+                        "on-primary-container": "#fefcff",
+                        "secondary-fixed": "#e2dfff",
+                        "surface-dim": "#dad9df",
+                        "primary": "#0058bc",
+                        "surface-variant": "#e3e2e7",
+                        "secondary": "#4c4aca",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f0f5",
+                        "secondary-fixed-dim": "#c2c1ff",
+                        "on-secondary-container": "#fffbff",
+                        "on-tertiary-fixed-variant": "#7201a2",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e3e2e7",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#fffbff",
+                        "on-background": "#1a1b1f",
+                        "inverse-surface": "#2f3034",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#e8b3ff",
+                        "on-secondary-fixed-variant": "#3631b4",
+                        "surface-container": "#eeedf3",
+                        "secondary-container": "#6664e4",
+                        "inverse-primary": "#adc6ff",
+                        "error-container": "#ffdad6",
+                        "background": "#faf9fe",
+                        "tertiary": "#8a2bb9",
+                        "on-secondary-fixed": "#0c006a",
+                        "surface-container-low": "#f4f3f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-page": "20px",
+                        "component-padding": "16px",
+                        "stack-gap": "12px",
+                        "sidebar-width": "280px",
+                        "inspector-width": "320px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "body-lg": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F2F2F7;
+        }
+        .modal-active {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Mock Background Dashboard -->
+<div class="fixed inset-0 flex">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] flex flex-col py-margin-page z-40 bg-surface-container-low border-r border-outline-variant">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[20px]">medical_services</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Medical Center</h1>
+<p class="text-[10px] text-outline font-semibold uppercase tracking-wider">Clinical Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<div class="flex items-center gap-3 px-4 py-2 text-primary font-semibold hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendar</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">folder_shared</span>
+<span class="font-label-md text-label-md">Patient Records</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">Messages</span>
+</div>
+</nav>
+<div class="px-3 mt-auto border-t border-outline-variant pt-4 space-y-1">
+<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl cursor-pointer">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Workspace (Blurred Dashboard) -->
+<main class="ml-[280px] flex-1 min-h-screen bg-background p-8 opacity-40">
+<div class="max-w-6xl mx-auto">
+<div class="flex justify-between items-center mb-8">
+<h2 class="font-headline-lg text-headline-lg">Dashboard Overview</h2>
+<button class="bg-primary text-white px-6 py-2.5 rounded-xl font-headline-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        New Appointment
+                    </button>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="col-span-2 space-y-6">
+<div class="bg-white p-6 rounded-2xl border border-outline-variant h-64 shadow-sm"></div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant h-96 shadow-sm"></div>
+</div>
+<div class="space-y-6">
+<div class="bg-white p-6 rounded-2xl border border-outline-variant h-80 shadow-sm"></div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant h-80 shadow-sm"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-on-surface/10" id="modalOverlay">
+<!-- Modal Container -->
+<div class="w-full max-w-xl bg-surface-container-lowest rounded-[24px] shadow-[0px_20px_40px_rgba(0,0,0,0.1)] border border-outline-variant flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">
+<!-- Header -->
+<div class="px-8 py-6 flex items-center justify-between border-b border-outline-variant/50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-fixed flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-primary text-[24px]">event_available</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Schedule Appointment</h2>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant" onclick="document.getElementById('modalOverlay').style.display='none'">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Form Content -->
+<div class="p-8 overflow-y-auto max-h-[716px] space-y-8">
+<!-- Patient Selector (Read-only for context) -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">person</span> Patient
+                    </label>
+<div class="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant rounded-2xl">
+<img class="w-10 h-10 rounded-full object-cover border border-white" data-alt="A portrait of Stephany M, a professional-looking woman with dark hair and a warm, empathetic smile. She is set against a clean, light clinical background, embodying the calm and organized patient profile. The lighting is soft and natural, emphasizing clarity and approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB2875VCYWNfOR9liZgy71w7SyMdec2wPImtyF1rMZ2YjLvX-TiIElDcWBlJgw7eSV-AD8qldgryQykOJGDdnzEnoFQ5hMtbjgnFpuEb79S-FiKb4NYAN8WMeu-X5T5Zf30V7JryYQvQcGdejf69nLPpPQJIHJZ5oc7nisidqhEsS1ljN7fmnWacuDxUowZIDJGdYalZJ-DUYQMzZlqVhO13xI3zsDysZwM1qLNjIQlhROvRP4Sc74xKMLyM92-gkgeZeSITHl0kp6">
+<div>
+<p class="font-headline-md text-headline-md text-on-surface">Stephany M.</p>
+<p class="font-body-sm text-body-sm text-outline">Age: 32 • California, US</p>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-primary">verified</span>
+</div>
+</div>
+</div>
+<!-- Date and Time Grid -->
+<div class="grid grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> Date
+                        </label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-white border border-outline-variant rounded-xl font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer" readonly="" type="text" value="Oct 24, 2023">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline">edit_calendar</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">category</span> Type
+                        </label>
+<select class="w-full h-12 px-4 bg-white border border-outline-variant rounded-xl font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+<option>Consultation</option>
+<option selected="">Follow-up</option>
+<option>Surgery Prep</option>
+<option>Emergency</option>
+</select>
+</div>
+</div>
+<!-- Time Slots Grid -->
+<div class="space-y-3">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Available Time Slots
+                    </label>
+<div class="grid grid-cols-4 gap-3">
+<button class="py-3 px-2 border border-outline-variant rounded-xl font-label-md text-label-md hover:border-primary hover:bg-primary-fixed/30 transition-all">09:00 AM</button>
+<button class="py-3 px-2 border-2 border-primary bg-primary text-white rounded-xl font-label-md text-label-md shadow-md">10:30 AM</button>
+<button class="py-3 px-2 border border-outline-variant rounded-xl font-label-md text-label-md hover:border-primary hover:bg-primary-fixed/30 transition-all">01:00 PM</button>
+<button class="py-3 px-2 border border-outline-variant rounded-xl font-label-md text-label-md hover:border-primary hover:bg-primary-fixed/30 transition-all opacity-40 cursor-not-allowed">03:30 PM</button>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">notes</span> Appointment Notes
+                    </label>
+<textarea class="w-full p-4 bg-white border border-outline-variant rounded-xl font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none placeholder:text-outline/50" placeholder="Mention specific patient concerns or required equipment..." rows="4"></textarea>
+</div>
+</div>
+<!-- Footer -->
+<div class="p-8 bg-surface-container-low border-t border-outline-variant/50 flex justify-end items-center gap-4">
+<button class="px-6 py-2.5 font-headline-md text-on-surface-variant bg-surface-container-high hover:bg-surface-variant rounded-xl transition-colors" onclick="document.getElementById('modalOverlay').style.display='none'">
+                    Cancel
+                </button>
+<button class="px-10 py-2.5 bg-[#007aff] hover:bg-[#0063ce] active:scale-95 text-white font-headline-md rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+                    Schedule <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        // Simple handler to simulate slot selection
+        const slots = document.querySelectorAll('.grid-cols-4 button:not([disabled])');
+        slots.forEach(slot => {
+            slot.addEventListener('click', () => {
+                slots.forEach(s => {
+                    s.classList.remove('border-2', 'border-primary', 'bg-primary', 'text-white', 'shadow-md');
+                    s.classList.add('border-outline-variant', 'text-on-surface-variant');
+                });
+                slot.classList.add('border-2', 'border-primary', 'bg-primary', 'text-white', 'shadow-md');
+                slot.classList.remove('border-outline-variant', 'text-on-surface-variant');
+            });
+        });
+
+        // Background click to close
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('modalOverlay');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+
+
+</body></html>

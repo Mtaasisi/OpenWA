@@ -34,6 +34,7 @@ export const PANEL_CATEGORY_MAP: Record<SettingsPanelId, SettingsCategoryId> = {
   'ai-knowledge': 'ai',
   'ai-memory': 'ai',
   'ai-learning': 'ai',
+  'ai-learning-cache': 'ai',
   'ai-branch-profile': 'ai',
   'ai-auto-reply': 'ai',
   'ai-human-behavior': 'ai',

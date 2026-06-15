@@ -1,4 +1,5 @@
 import { AiInboxAgentService } from './ai-inbox-agent.service';
+import { AiCustomerIntent } from './ai-signal.enums';
 
 const SESSION_ID = 'sess-11111111-1111-1111-1111-111111111111';
 const CHAT_ID = '255700000000@c.us';
@@ -14,8 +15,8 @@ function createAgentService(options?: {
     getActiveConfig: jest.fn(async () => ({
       enabled: true,
       autoReplyEnabled: true,
-      autoReplyContextMessages: 8,
-      autoReplyContextMessagesMax: 12,
+      autoReplyContextMessages: 3,
+      autoReplyContextMessagesMax: 5,
       knowledgeRagEnabled: false,
       memoryRagEnabled: false,
       includeCatalogWhenNeeded: true,
@@ -44,17 +45,11 @@ function createAgentService(options?: {
           provider: 'openai',
           model: 'gpt-4o-mini',
           latencyMs: 120,
+          aiCallsCount: 1,
+          toolCallsCount: 0,
         }
       );
     }),
-  };
-
-  const contextService = {
-    buildCrmContextBlock: jest.fn(async () => '=== CRM context ==='),
-    buildContextSummary: jest.fn(async () => '=== Conversation context ==='),
-    buildThread: jest.fn(async () =>
-      options?.thread ?? [{ role: 'user' as const, content: 'iPhone 15 ipo?' }],
-    ),
   };
 
   const customerTools = {
@@ -68,16 +63,41 @@ function createAgentService(options?: {
     executeTool: jest.fn(async () => '{"count":1,"products":[]}'),
   };
 
+  const promptAssembler = {
+    assemble: jest.fn(async () => ({
+      systemContent: [
+        'You are a WhatsApp shop assistant for this business.',
+        '=== Product question rules ===',
+        options?.catalogBlock ??
+          '=== Shop inventory catalog ===\n- iPhone 15 [Phones] — 500 TZS',
+        'Tool rules:',
+        '- Use search_products before quoting prices, stock, or variants.',
+      ].join('\n\n'),
+      thread: options?.thread ?? [{ role: 'user' as const, content: 'iPhone 15 ipo?' }],
+      breakdown: {
+        rules_tokens: 120,
+        knowledge_tokens: 0,
+        history_tokens: 40,
+        tool_tokens: 0,
+        customer_message_tokens: 10,
+        crm_tokens: 0,
+        catalog_tokens: 50,
+        memory_tokens: 0,
+        total_estimated_input_tokens: 220,
+      },
+      budgetWarning: null,
+      intent: AiCustomerIntent.PRODUCT_SEARCH,
+      historyLimit: 3,
+    })),
+  };
+
   const service = new AiInboxAgentService(
     aiSettings as never,
     aiChat as never,
-    contextService as never,
     customerTools as never,
     { logToolCall: jest.fn() } as never,
-    { buildContextualPromptExcerpt: jest.fn(async () => '') } as never,
-    { buildContextualPromptExcerpt: jest.fn(async () => '') } as never,
-    { buildReplySamplesPromptBlock: jest.fn(async () => '') } as never,
     { clampMaxTokens: jest.fn((_f: string, n: number) => n) } as never,
+    promptAssembler as never,
   );
 
   return { service, aiChat, customerTools, getSystemContent: () => capturedSystemContent };
@@ -86,10 +106,10 @@ function createAgentService(options?: {
 describe('AiInboxAgentService', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('injects linked local inventory catalog into the system prompt', async () => {
+  it('uses prompt assembler and includes catalog context', async () => {
     const catalogBlock =
       '=== Shop inventory catalog (local CRM — linked inventory) ===\n- Samsung A05 — 250000 TZS';
-    const { service, customerTools, getSystemContent } = createAgentService({ catalogBlock });
+    const { service, getSystemContent } = createAgentService({ catalogBlock });
 
     await service.runCustomerAgent({
       sessionId: SESSION_ID,
@@ -98,10 +118,8 @@ describe('AiInboxAgentService', () => {
       onEscalate: jest.fn(),
     });
 
-    expect(customerTools.buildCatalogContextBlock).toHaveBeenCalled();
     expect(getSystemContent()).toContain(catalogBlock);
-    expect(getSystemContent()).toContain('linked local inventory');
-    expect(getSystemContent()).toContain('IMEI/serial');
+    expect(getSystemContent()).toContain('search_products');
   });
 
   it('returns null content when thread is empty', async () => {

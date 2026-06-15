@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import configuration from './config/configuration';
+import { repairRenamedMigrations } from './database/repair-renamed-migrations';
 import { SessionModule } from './modules/session/session.module';
 import { MessageModule } from './modules/message/message.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
@@ -24,9 +25,20 @@ import { StatsModule } from './modules/stats/stats.module';
 import { StatusModule } from './modules/status/status.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { ProductsModule } from './modules/products/products.module';
+import { FollowupModule } from './modules/followup/followup.module';
+import { QuickReplyModule } from './modules/quick-reply/quick-reply.module';
+import { QuoteModule } from './modules/quote/quote.module';
+import { AiModule } from './modules/ai/ai.module';
+import { SmsModule } from './modules/sms/sms.module';
+import { StorageManagementModule } from './modules/storage/storage.module';
+import { BackupModule } from './modules/backup/backup.module';
 import { HooksModule } from './core/hooks';
 import { PluginsModule } from './core/plugins';
 import { PluginsApiModule } from './modules/plugins/plugins.module';
+import { WhatsAppSafetyModule } from './modules/whatsapp-safety/whatsapp-safety.module';
+import { DesktopModule } from './modules/desktop/desktop.module';
+import { AppStatusModule } from './modules/app-status/app-status.module';
+import { AgentActionsModule } from './modules/agent-actions/agent-actions.module';
 
 // Only import QueueModule if explicitly enabled to avoid Redis connection errors
 const queueModules: Array<Type | DynamicModule> = [];
@@ -57,6 +69,10 @@ if (process.env.QUEUE_ENABLED === 'true') {
         entities: [__dirname + '/modules/auth/**/*.entity{.ts,.js}', __dirname + '/modules/audit/**/*.entity{.ts,.js}'],
         synchronize: true,
         logging: configService.get<boolean>('database.logging', false),
+        prepareDatabase: (db: { run: (sql: string) => void }) => {
+          db.run('PRAGMA journal_mode = WAL');
+          db.run('PRAGMA busy_timeout = 5000');
+        },
       }),
     }),
 
@@ -73,12 +89,24 @@ if (process.env.QUEUE_ENABLED === 'true') {
             __dirname + '/modules/webhook/**/*.entity{.ts,.js}',
             __dirname + '/modules/message/**/*.entity{.ts,.js}',
             __dirname + '/modules/products/**/*.entity{.ts,.js}',
+            __dirname + '/modules/followup/**/*.entity{.ts,.js}',
+            __dirname + '/modules/quick-reply/**/*.entity{.ts,.js}',
+            __dirname + '/modules/quote/**/*.entity{.ts,.js}',
+            __dirname + '/modules/ai/**/*.entity{.ts,.js}',
+            __dirname + '/modules/ai-training/**/*.entity{.ts,.js}',
+            __dirname + '/modules/agent-actions/**/*.entity{.ts,.js}',
+            __dirname + '/modules/sms/**/*.entity{.ts,.js}',
+            __dirname + '/modules/storage/**/*.entity{.ts,.js}',
+            __dirname + '/modules/backup/**/*.entity{.ts,.js}',
+            __dirname + '/modules/whatsapp-safety/**/*.entity{.ts,.js}',
+            __dirname + '/modules/desktop/**/*.entity{.ts,.js}',
           ],
           migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
           logging: configService.get<boolean>('dataDatabase.logging', false),
         };
 
         if (dbType === 'postgres') {
+          const sslEnabled = configService.get<boolean>('dataDatabase.ssl', false);
           return {
             ...baseConfig,
             type: 'postgres' as const,
@@ -86,12 +114,20 @@ if (process.env.QUEUE_ENABLED === 'true') {
             port: configService.get<number>('dataDatabase.port'),
             username: configService.get<string>('dataDatabase.username'),
             password: configService.get<string>('dataDatabase.password'),
-            database: 'openwa',
+            database: configService.get<string>('dataDatabase.database', 'openwa'),
             // Never auto-sync Postgres in production; rely on migrations.
             synchronize: configService.get<boolean>('dataDatabase.synchronize', false),
             migrationsRun: true,
             retryAttempts: 10,
             retryDelay: 3000,
+            ssl: sslEnabled
+              ? {
+                  rejectUnauthorized: configService.get<boolean>(
+                    'dataDatabase.sslRejectUnauthorized',
+                    true,
+                  ),
+                }
+              : false,
             extra: {
               max: configService.get<number>('dataDatabase.poolSize', 10),
             },
@@ -107,6 +143,11 @@ if (process.env.QUEUE_ENABLED === 'true') {
           database: configService.get<string>('dataDatabase.database', './data/openwa.sqlite'),
           synchronize: configService.get<boolean>('dataDatabase.synchronize', true),
           migrationsRun: !configService.get<boolean>('dataDatabase.synchronize', true),
+          prepareDatabase: (db: { run: (sql: string) => void }) => {
+            db.run('PRAGMA journal_mode = WAL');
+            db.run('PRAGMA busy_timeout = 5000');
+            repairRenamedMigrations(db);
+          },
         };
       },
     }),
@@ -120,12 +161,12 @@ if (process.env.QUEUE_ENABLED === 'true') {
           {
             name: 'short',
             ttl: configService.get<number>('api.rateLimit.shortTtl', 1000),
-            limit: configService.get<number>('api.rateLimit.shortLimit', 10),
+            limit: configService.get<number>('api.rateLimit.shortLimit', 60),
           },
           {
             name: 'medium',
             ttl: configService.get<number>('api.rateLimit.mediumTtl', 60000),
-            limit: configService.get<number>('api.rateLimit.mediumLimit', 100),
+            limit: configService.get<number>('api.rateLimit.mediumLimit', 200),
           },
           {
             name: 'long',
@@ -161,7 +202,18 @@ if (process.env.QUEUE_ENABLED === 'true') {
     StatusModule, // Phase 3: Status/Stories API
     CatalogModule, // Phase 3: Catalog API (WhatsApp Business)
     ProductsModule, // CRM product catalog for inbox
+    FollowupModule, // Rule-based follow-up automation
+    QuickReplyModule, // Inbox quick reply templates (staff speed, not WA-approved)
+    QuoteModule, // WhatsApp chat quotations / offers
+    AiModule, // Multi-provider AI settings & assistant chat
+    AgentActionsModule, // AI settings operator (safe toggles from /ai assistant)
+    WhatsAppSafetyModule,
+    SmsModule, // Outgoing SMS via MobiShastra
+    StorageManagementModule,
+    BackupModule,
     PluginsApiModule, // Phase 5: Plugins API
+    DesktopModule,
+    AppStatusModule,
   ],
 })
 export class AppModule {}

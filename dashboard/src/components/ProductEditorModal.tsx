@@ -12,6 +12,10 @@ import {
   Trash2,
   MessageCircle,
   LayoutGrid,
+  Wallet,
+  Smartphone,
+  DollarSign,
+  History,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -21,6 +25,12 @@ import {
 } from '../services/api';
 import { loadUserPreferences } from '../lib/user-preferences';
 import { ProductVariantsPanel } from './ProductVariantsPanel';
+import { ProductInventoryPanel } from './products/ProductInventoryPanel';
+import { ProductPricingStockPanel } from './products/ProductPricingStockPanel';
+import { ProductHistoryPanel } from './products/ProductHistoryPanel';
+import { ProductHealthBadge } from './products/ProductHealthBadge';
+import { mergeHealthIssues } from '../lib/product-health-utils';
+import { ModalOverlay } from './ModalOverlay';
 import './ProductEditorModal.css';
 
 export type ProductFormState = {
@@ -68,7 +78,60 @@ function formatPrice(currency: string | null, amount: number | null): string | n
   return cur ? `${cur} ${amount.toLocaleString()}` : amount.toLocaleString();
 }
 
-type DrawerTab = 'overview' | 'variants' | 'whatsapp';
+type InstallmentFormState = {
+  installmentEnabled: boolean;
+  installmentMinDeposit: string;
+  installmentDurationDays: string;
+  installmentScheduleType: string;
+  installmentPolicy: string;
+  installmentPenaltyPolicy: string;
+  installmentExpiryDays: string;
+  installmentRequiresApproval: boolean;
+  allowInstallmentWhenOutOfStock: boolean;
+  stockingReminderEnabled: boolean;
+  installmentNotes: string;
+};
+
+const emptyInstallmentForm = (): InstallmentFormState => ({
+  installmentEnabled: false,
+  installmentMinDeposit: '',
+  installmentDurationDays: '',
+  installmentScheduleType: 'monthly',
+  installmentPolicy: '',
+  installmentPenaltyPolicy: '',
+  installmentExpiryDays: '',
+  installmentRequiresApproval: false,
+  allowInstallmentWhenOutOfStock: false,
+  stockingReminderEnabled: false,
+  installmentNotes: '',
+});
+
+function installmentFromProduct(p: CrmProduct): InstallmentFormState {
+  return {
+    installmentEnabled: p.installmentEnabled === true,
+    installmentMinDeposit: p.installmentMinDeposit != null ? String(p.installmentMinDeposit) : '',
+    installmentDurationDays:
+      p.installmentDurationDays != null ? String(p.installmentDurationDays) : '',
+    installmentScheduleType: p.installmentScheduleType ?? 'monthly',
+    installmentPolicy: p.installmentPolicy ?? '',
+    installmentPenaltyPolicy: p.installmentPenaltyPolicy ?? '',
+    installmentExpiryDays:
+      p.installmentExpiryDays != null ? String(p.installmentExpiryDays) : '',
+    installmentRequiresApproval: p.installmentRequiresApproval === true,
+    allowInstallmentWhenOutOfStock: p.allowInstallmentWhenOutOfStock === true,
+    stockingReminderEnabled: p.stockingReminderEnabled === true,
+    installmentNotes: p.installmentNotes ?? '',
+  };
+}
+
+type DrawerTab =
+  | 'overview'
+  | 'variants'
+  | 'inventory'
+  | 'pricing'
+  | 'installment'
+  | 'whatsapp'
+  | 'history';
 
 interface Props {
   isOpen: boolean;
@@ -97,8 +160,10 @@ export function ProductEditorModal({
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>('overview');
   const [productForm, setProductForm] = useState<ProductFormState>(emptyProductForm);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [waPreview, setWaPreview] = useState<string | null>(null);
+  const [previewVariantId, setPreviewVariantId] = useState('');
   const [activeProduct, setActiveProduct] = useState<CrmProduct | null>(product);
+  const [installmentForm, setInstallmentForm] = useState<InstallmentFormState>(emptyInstallmentForm);
 
   const resetFormFromActive = useCallback(() => {
     if (activeProduct) setProductForm(formFromProduct(activeProduct));
@@ -108,16 +173,18 @@ export function ProductEditorModal({
     if (!isOpen) return;
     const p = product;
     setActiveProduct(p);
-    setPreview(null);
+    setWaPreview(null);
     setIsEditing(!p);
     setActiveTab('overview');
     setProductForm(p ? formFromProduct(p) : emptyProductForm());
+    setInstallmentForm(p ? installmentFromProduct(p) : emptyInstallmentForm());
   }, [isOpen, product]);
 
   useEffect(() => {
     if (!isOpen || !product || isEditing) return;
     setActiveProduct(product);
     setProductForm(formFromProduct(product));
+    setInstallmentForm(installmentFromProduct(product));
   }, [isOpen, product, isEditing]);
 
   useEffect(() => {
@@ -142,6 +209,37 @@ export function ProductEditorModal({
       document.body.style.overflow = '';
     };
   }, [isOpen, handleKeyDown]);
+
+  const saveInstallment = useMutation({
+    mutationFn: async () => {
+      if (!activeProduct) throw new Error('No product');
+      return productsApi.update(activeProduct.id, {
+        installmentEnabled: installmentForm.installmentEnabled,
+        installmentMinDeposit: installmentForm.installmentMinDeposit
+          ? Number(installmentForm.installmentMinDeposit)
+          : null,
+        installmentDurationDays: installmentForm.installmentDurationDays
+          ? Number(installmentForm.installmentDurationDays)
+          : null,
+        installmentScheduleType: installmentForm.installmentScheduleType || null,
+        installmentPolicy: installmentForm.installmentPolicy.trim() || null,
+        installmentPenaltyPolicy: installmentForm.installmentPenaltyPolicy.trim() || null,
+        installmentExpiryDays: installmentForm.installmentExpiryDays
+          ? Number(installmentForm.installmentExpiryDays)
+          : null,
+        installmentRequiresApproval: installmentForm.installmentRequiresApproval,
+        allowInstallmentWhenOutOfStock: installmentForm.allowInstallmentWhenOutOfStock,
+        stockingReminderEnabled: installmentForm.stockingReminderEnabled,
+        installmentNotes: installmentForm.installmentNotes.trim() || null,
+      });
+    },
+    onSuccess: (saved) => {
+      setActiveProduct(saved);
+      setInstallmentForm(installmentFromProduct(saved));
+      queryClient.setQueryData(['products', saved.id], saved);
+      onSaved(saved);
+    },
+  });
 
   const saveProduct = useMutation({
     mutationFn: async () => {
@@ -198,7 +296,7 @@ export function ProductEditorModal({
   const cancelEditing = () => {
     if (activeProduct) {
       resetFormFromActive();
-      setPreview(null);
+      setWaPreview(null);
       setIsEditing(false);
       return;
     }
@@ -215,25 +313,26 @@ export function ProductEditorModal({
       if (!activeProduct) throw new Error('No product');
       const prefs = loadUserPreferences();
       return productsApi.previewMessage(activeProduct.id, {
+        variantId: previewVariantId || undefined,
         includeAvailableDevices: prefs.productIncludeDevices,
         inStockOnly: prefs.productInStockOnly,
-        includeAllVariants: true,
+        includeAllVariants: !previewVariantId,
       });
     },
-    onSuccess: (res) => setPreview(res.text),
+    onSuccess: (res) => setWaPreview(res.text),
   });
 
   if (!isOpen) return null;
 
   if (loadingProductId && !product) {
     return (
-      <div className="product-editor-overlay" onClick={onClose} role="presentation">
-        <div className="product-editor product-editor-drawer" onClick={(e) => e.stopPropagation()}>
+      <ModalOverlay onClose={onClose} className="product-editor-overlay">
+        <div className="product-editor product-editor-drawer" data-testid="product-editor" onClick={(e) => e.stopPropagation()}>
           <div className="product-editor__loading">
             <Loader2 className="animate-spin" size={28} />
           </div>
         </div>
-      </div>
+      </ModalOverlay>
     );
   }
 
@@ -266,13 +365,18 @@ export function ProductEditorModal({
     { id: 'variants', label: t('products.tabs.variants'), icon: Layers, badge: variantTabCount },
   ];
   if (activeProduct) {
+    drawerTabs.push({ id: 'inventory', label: t('products.tabs.inventory', { defaultValue: 'Inventory / IMEI' }), icon: Smartphone });
+    drawerTabs.push({ id: 'pricing', label: t('products.tabs.pricing', { defaultValue: 'Pricing & Stock' }), icon: DollarSign });
+    drawerTabs.push({ id: 'installment', label: t('products.tabs.installment'), icon: Wallet });
     drawerTabs.push({ id: 'whatsapp', label: t('products.tabs.whatsapp'), icon: MessageCircle });
+    drawerTabs.push({ id: 'history', label: t('products.tabs.history', { defaultValue: 'History' }), icon: History });
   }
 
   return (
-    <div className="product-editor-overlay" onClick={onClose} role="presentation">
+    <ModalOverlay onClose={onClose} className="product-editor-overlay">
       <div
         className="product-editor product-editor-drawer"
+        data-testid="product-editor"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -321,6 +425,8 @@ export function ProductEditorModal({
                     {detailProduct.variantCount > 0 &&
                       ` · ${t('products.variantCount', { count: detailProduct.variantCount })}`}
                     {heroPrice && ` · ${heroPrice}`}
+                    {' · '}
+                    <ProductHealthBadge issues={mergeHealthIssues(detailProduct)} compact />
                   </p>
                 )}
                 {isEditing && (
@@ -368,6 +474,7 @@ export function ProductEditorModal({
                 type="button"
                 role="tab"
                 id={`product-tab-${tab.id}`}
+                data-testid={`product-editor-tab-${tab.id}`}
                 aria-selected={activeTab === tab.id}
                 aria-controls={`product-panel-${tab.id}`}
                 className={`product-editor__tab ${activeTab === tab.id ? 'active' : ''}`}
@@ -585,6 +692,7 @@ export function ProductEditorModal({
           <ProductVariantsPanel
             product={activeProduct}
             canWrite={canWrite}
+            onOpenInventory={() => setActiveTab('inventory')}
             onUpdated={(updated) => {
               setActiveProduct(updated);
               queryClient.setQueryData(['products', updated.id], updated);
@@ -607,6 +715,234 @@ export function ProductEditorModal({
 
         {activeProduct && (
           <div
+            id="product-panel-inventory"
+            role="tabpanel"
+            className="product-editor__tab-panel"
+            hidden={activeTab !== 'inventory'}
+          >
+            <ProductInventoryPanel
+              product={activeProduct}
+              canWrite={canWrite}
+              onUpdated={(updated) => {
+                setActiveProduct(updated);
+                queryClient.setQueryData(['products', updated.id], updated);
+                onSaved(updated);
+              }}
+            />
+          </div>
+        )}
+
+        {activeProduct && (
+          <div
+            id="product-panel-pricing"
+            role="tabpanel"
+            className="product-editor__tab-panel"
+            hidden={activeTab !== 'pricing'}
+          >
+            <ProductPricingStockPanel product={activeProduct} />
+          </div>
+        )}
+
+        {activeProduct && (
+          <div
+            id="product-panel-history"
+            role="tabpanel"
+            className="product-editor__tab-panel"
+            hidden={activeTab !== 'history'}
+          >
+            <ProductHistoryPanel productId={activeProduct.id} />
+          </div>
+        )}
+
+        {activeProduct && (
+          <div
+            id="product-panel-installment"
+            role="tabpanel"
+            aria-labelledby="product-tab-installment"
+            className="product-editor__tab-panel"
+            hidden={activeTab !== 'installment'}
+          >
+            <section className="product-editor__section">
+              <h3 className="product-editor__section-title">{t('products.installment.title')}</h3>
+              <p className="product-editor__hint">{t('products.installment.hint')}</p>
+              <label className="product-editor__toggle">
+                <input
+                  type="checkbox"
+                  checked={installmentForm.installmentEnabled}
+                  onChange={(e) =>
+                    setInstallmentForm({ ...installmentForm, installmentEnabled: e.target.checked })
+                  }
+                  disabled={!canWrite}
+                />
+                <span>
+                  <strong>{t('products.installment.enabled')}</strong>
+                  <small>{t('products.installment.enabledHint')}</small>
+                </span>
+              </label>
+              <div className="product-editor__row">
+                <div className="product-editor__field">
+                  <label htmlFor="pe-inst-deposit">{t('products.installment.minDeposit')}</label>
+                  <input
+                    id="pe-inst-deposit"
+                    type="number"
+                    min={0}
+                    value={installmentForm.installmentMinDeposit}
+                    onChange={(e) =>
+                      setInstallmentForm({ ...installmentForm, installmentMinDeposit: e.target.value })
+                    }
+                    disabled={!canWrite}
+                  />
+                </div>
+                <div className="product-editor__field">
+                  <label htmlFor="pe-inst-days">{t('products.installment.durationDays')}</label>
+                  <input
+                    id="pe-inst-days"
+                    type="number"
+                    min={0}
+                    value={installmentForm.installmentDurationDays}
+                    onChange={(e) =>
+                      setInstallmentForm({ ...installmentForm, installmentDurationDays: e.target.value })
+                    }
+                    disabled={!canWrite}
+                  />
+                </div>
+              </div>
+              <div className="product-editor__row">
+                <div className="product-editor__field">
+                  <label htmlFor="pe-inst-schedule">{t('products.installment.scheduleType')}</label>
+                  <select
+                    id="pe-inst-schedule"
+                    value={installmentForm.installmentScheduleType}
+                    onChange={(e) =>
+                      setInstallmentForm({
+                        ...installmentForm,
+                        installmentScheduleType: e.target.value,
+                      })
+                    }
+                    disabled={!canWrite}
+                  >
+                    <option value="weekly">{t('products.installment.scheduleWeekly')}</option>
+                    <option value="monthly">{t('products.installment.scheduleMonthly')}</option>
+                    <option value="custom">{t('products.installment.scheduleCustom')}</option>
+                  </select>
+                </div>
+                <div className="product-editor__field">
+                  <label htmlFor="pe-inst-expiry">{t('products.installment.expiryDays')}</label>
+                  <input
+                    id="pe-inst-expiry"
+                    type="number"
+                    min={0}
+                    value={installmentForm.installmentExpiryDays}
+                    onChange={(e) =>
+                      setInstallmentForm({
+                        ...installmentForm,
+                        installmentExpiryDays: e.target.value,
+                      })
+                    }
+                    disabled={!canWrite}
+                  />
+                </div>
+              </div>
+              <div className="product-editor__field product-editor__field--full">
+                <label htmlFor="pe-inst-policy">{t('products.installment.policy')}</label>
+                <textarea
+                  id="pe-inst-policy"
+                  rows={3}
+                  value={installmentForm.installmentPolicy}
+                  onChange={(e) =>
+                    setInstallmentForm({ ...installmentForm, installmentPolicy: e.target.value })
+                  }
+                  disabled={!canWrite}
+                />
+              </div>
+              <div className="product-editor__field product-editor__field--full">
+                <label htmlFor="pe-inst-penalty">{t('products.installment.penaltyPolicy')}</label>
+                <textarea
+                  id="pe-inst-penalty"
+                  rows={2}
+                  value={installmentForm.installmentPenaltyPolicy}
+                  onChange={(e) =>
+                    setInstallmentForm({
+                      ...installmentForm,
+                      installmentPenaltyPolicy: e.target.value,
+                    })
+                  }
+                  disabled={!canWrite}
+                />
+              </div>
+              <div className="product-editor__field product-editor__field--full">
+                <label htmlFor="pe-inst-notes">{t('products.installment.internalNotes')}</label>
+                <textarea
+                  id="pe-inst-notes"
+                  rows={2}
+                  value={installmentForm.installmentNotes}
+                  onChange={(e) =>
+                    setInstallmentForm({ ...installmentForm, installmentNotes: e.target.value })
+                  }
+                  disabled={!canWrite}
+                />
+              </div>
+              <label className="product-editor__toggle">
+                <input
+                  type="checkbox"
+                  checked={installmentForm.installmentRequiresApproval}
+                  onChange={(e) =>
+                    setInstallmentForm({
+                      ...installmentForm,
+                      installmentRequiresApproval: e.target.checked,
+                    })
+                  }
+                  disabled={!canWrite}
+                />
+                <span>{t('products.installment.requiresApproval')}</span>
+              </label>
+              <label className="product-editor__toggle">
+                <input
+                  type="checkbox"
+                  checked={installmentForm.allowInstallmentWhenOutOfStock}
+                  onChange={(e) =>
+                    setInstallmentForm({
+                      ...installmentForm,
+                      allowInstallmentWhenOutOfStock: e.target.checked,
+                    })
+                  }
+                  disabled={!canWrite}
+                />
+                <span>{t('products.installment.allowOutOfStock')}</span>
+              </label>
+              <label className="product-editor__toggle">
+                <input
+                  type="checkbox"
+                  checked={installmentForm.stockingReminderEnabled}
+                  onChange={(e) =>
+                    setInstallmentForm({
+                      ...installmentForm,
+                      stockingReminderEnabled: e.target.checked,
+                    })
+                  }
+                  disabled={!canWrite}
+                />
+                <span>{t('products.installment.stockingReminder')}</span>
+              </label>
+              {canWrite && (
+                <p style={{ marginTop: '1rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    disabled={saveInstallment.isPending}
+                    onClick={() => void saveInstallment.mutateAsync()}
+                  >
+                    {saveInstallment.isPending ? <Loader2 className="animate-spin" size={14} /> : null}
+                    {t('products.installment.save')}
+                  </button>
+                </p>
+              )}
+            </section>
+          </div>
+        )}
+
+        {activeProduct && (
+          <div
             id="product-panel-whatsapp"
             role="tabpanel"
             aria-labelledby="product-tab-whatsapp"
@@ -615,6 +951,20 @@ export function ProductEditorModal({
           >
             <section className="product-editor__whatsapp-panel">
               <p className="product-editor__whatsapp-hint">{t('products.editor.whatsappTabHint')}</p>
+              <div className="product-editor__row" style={{ marginBottom: 12 }}>
+                <select
+                  value={previewVariantId}
+                  onChange={(e) => setPreviewVariantId(e.target.value)}
+                  aria-label={t('products.fields.variant', { defaultValue: 'Variant' })}
+                >
+                  <option value="">{t('products.editor.allVariants', { defaultValue: 'All variants' })}</option>
+                  {topLevelVariants(activeProduct.variants).map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button
                 type="button"
                 className="btn btn-secondary product-editor__preview-wa"
@@ -628,8 +978,8 @@ export function ProductEditorModal({
                 )}
                 {t('products.previewWhatsApp')}
               </button>
-              {preview ? (
-                <pre className="product-editor__wa-preview">{preview}</pre>
+              {waPreview ? (
+                <pre className="product-editor__wa-preview">{waPreview}</pre>
               ) : (
                 <p className="product-editor__whatsapp-empty">{t('products.editor.whatsappEmpty')}</p>
               )}
@@ -639,7 +989,11 @@ export function ProductEditorModal({
         </div>
 
         <footer className="product-editor__footer">
-          {showEditForm ? (
+          {activeTab === 'installment' ? (
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              {t('common.close')}
+            </button>
+          ) : showEditForm ? (
             <>
               <button type="button" className="btn btn-secondary" onClick={cancelEditing}>
                 {t('common.cancel')}
@@ -663,6 +1017,6 @@ export function ProductEditorModal({
           )}
         </footer>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }

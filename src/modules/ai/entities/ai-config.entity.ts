@@ -44,10 +44,10 @@ export class AiConfig {
   @Column({ type: 'int', default: 0 })
   autoReplyCooldownMinutes: number;
 
-  @Column({ type: 'int', default: 8 })
+  @Column({ type: 'int', default: 3 })
   autoReplyContextMessages: number;
 
-  @Column({ type: 'int', default: 12 })
+  @Column({ type: 'int', default: 5 })
   autoReplyContextMessagesMax: number;
 
   @Column({ type: 'text', nullable: true })
@@ -310,6 +310,63 @@ export class AiConfig {
 
   @Column({ type: 'int', default: 2 })
   maxAiCallsPerInboundMessage: number;
+
+  @Column({ default: true })
+  messageBufferEnabled: boolean;
+
+  @Column({ type: 'int', default: 10 })
+  messageBufferDebounceSeconds: number;
+
+  @Column({ type: 'int', default: 30 })
+  messageBufferMaxWaitSeconds: number;
+
+  @Column({ type: 'int', default: 10 })
+  messageBufferMaxMessages: number;
+
+  @Column({ type: 'int', default: 4000 })
+  messageBufferMaxCharacters: number;
+
+  @Column({ default: true })
+  oneReplyPerMessageBurst: boolean;
+
+  @Column({ default: true })
+  learnedReplyCacheEnabled: boolean;
+
+  @Column({ default: true })
+  autoLearnSafeIntents: boolean;
+
+  @Column({ type: 'int', default: 90 })
+  autoApproveConfidenceThreshold: number;
+
+  @Column({ type: 'int', default: 60 })
+  pendingReviewThreshold: number;
+
+  @Column({ default: true })
+  disableLearningForSensitive: boolean;
+
+  @Column({ default: true })
+  replyVariationRotation: boolean;
+
+  @Column({ default: true })
+  ignoreGroupMessages: boolean;
+
+  @Column({ default: true })
+  ignoreSelfMessages: boolean;
+
+  @Column({ type: 'int', default: 1500 })
+  autoReplyPromptBudgetTokens: number;
+
+  @Column({ type: 'int', default: 500 })
+  autoReplySimplePromptBudgetTokens: number;
+
+  @Column({ type: 'int', default: 2 })
+  knowledgeMaxChunks: number;
+
+  @Column({ type: 'int', default: 600 })
+  knowledgeMaxCharsPerChunk: number;
+
+  @Column({ type: 'int', default: 1200 })
+  knowledgeMaxTotalChars: number;
 
   @UpdateDateColumn()
   updatedAt: Date;

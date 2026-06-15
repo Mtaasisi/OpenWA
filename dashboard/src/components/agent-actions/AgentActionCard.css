@@ -1,0 +1,130 @@
+.agent-action-card {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid #e5ede5;
+  background: #fff;
+  max-width: 100%;
+}
+
+.agent-action-card--success {
+  border-color: #cce7df;
+}
+
+.agent-action-card--warning {
+  border-color: #f0dfc4;
+}
+
+.agent-action-card--error {
+  border-color: #f5c2cb;
+}
+
+.agent-action-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.agent-action-card__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.agent-action-card__icon--success {
+  background: #e6f4ef;
+  color: #008069;
+}
+
+.agent-action-card__icon--warning {
+  background: #fff4e5;
+  color: #b26a00;
+}
+
+.agent-action-card__icon--error {
+  background: #fde8ec;
+  color: #ea0038;
+}
+
+.agent-action-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.agent-action-card__message {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #3b4a54;
+  margin: 0 0 10px;
+}
+
+.agent-action-card__meta {
+  font-size: 12px;
+  color: #667781;
+  margin-bottom: 10px;
+}
+
+.agent-action-card__risk {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #b26a00;
+}
+
+.agent-action-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agent-action-card__btn {
+  appearance: none;
+  border: 1px solid #d1d7db;
+  background: #fff;
+  color: #111b21;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.agent-action-card__btn:hover:not(:disabled) {
+  background: #f5f6f6;
+}
+
+.agent-action-card__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.agent-action-card__btn--primary {
+  background: #008069;
+  border-color: #008069;
+  color: #fff;
+}
+
+.agent-action-card__btn--primary:hover:not(:disabled) {
+  background: #006e5a;
+}
+
+.agent-action-card__btn--danger {
+  background: #ea0038;
+  border-color: #ea0038;
+  color: #fff;
+}
+
+.agent-action-card__btn--danger:hover:not(:disabled) {
+  background: #c80030;
+}

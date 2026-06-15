@@ -1,0 +1,127 @@
+.inbox-ai-takeover-confirm-overlay {
+  z-index: 1300;
+  background: rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.inbox-ai-takeover-confirm-overlay--stitch {
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.inbox-ai-takeover-confirm-modal {
+  width: min(420px, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--border-default, #e5e7eb);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+}
+
+.inbox-ai-takeover-confirm-modal--stitch {
+  border-radius: var(--stitch-radius-panel, 16px);
+  border-color: var(--stitch-outline, #f3f4f6);
+  box-shadow: var(--shadow-lg, 0 20px 40px rgba(15, 23, 42, 0.12));
+}
+
+.inbox-ai-takeover-confirm-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--stitch-outline-soft, #f3f4f6);
+}
+
+.inbox-ai-takeover-confirm-modal__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.inbox-ai-takeover-confirm-modal__icon {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.inbox-ai-takeover-confirm-modal__head h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.inbox-ai-takeover-confirm-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.inbox-ai-takeover-confirm-modal__close:hover {
+  color: var(--primary);
+  background: var(--stitch-primary-soft, #eff6ff);
+}
+
+.inbox-ai-takeover-confirm-modal__body {
+  padding: 1.25rem;
+}
+
+.inbox-ai-takeover-confirm-modal__body p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.inbox-ai-takeover-confirm-modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--stitch-outline-soft, #f3f4f6);
+}
+
+.inbox-ai-takeover-confirm-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.inbox-ai-takeover-confirm-modal__btn--ghost {
+  border: 1px solid var(--stitch-outline, #f3f4f6);
+  background: #ffffff;
+  color: var(--text-secondary);
+}
+
+.inbox-ai-takeover-confirm-modal__btn--ghost:hover {
+  background: #f9fafb;
+  color: var(--text-primary);
+}
+
+.inbox-ai-takeover-confirm-modal__btn--primary {
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.inbox-ai-takeover-confirm-modal__btn--primary:hover {
+  background: var(--primary-hover, #1d4ed8);
+}

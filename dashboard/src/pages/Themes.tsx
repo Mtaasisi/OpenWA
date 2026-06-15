@@ -1,20 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check, Copy, Monitor, Moon, Palette, Plus, Sun, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Check, Copy, Palette, Plus, Trash2, X, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useThemeContext } from '../context/ThemeProvider';
-import { PageHeader } from '../components/PageHeader';
-import type { AppearanceMode, CustomThemeInput, DashboardTheme, ThemePalette } from '../lib/theme-types';
+import { WorkspacePageHeader } from '../components/workspace';
+import type { CustomThemeInput, DashboardTheme, ThemePalette } from '../lib/theme-types';
 import { PALETTE_FIELDS, defaultCustomPalette } from '../lib/themes';
 import { ThemePreview } from '../components/ThemePreview';
+import { ModalOverlay } from '../components/ModalOverlay';
+import { settingsSectionHref } from '../components/settings/settings-nav-registry';
 import './Themes.css';
-
-const appearanceOptions: { id: AppearanceMode; icon: typeof Sun }[] = [
-  { id: 'light', icon: Sun },
-  { id: 'dark', icon: Moon },
-  { id: 'system', icon: Monitor },
-];
 
 function PaletteEditor({
   label,
@@ -79,9 +75,6 @@ export function Themes() {
   useDocumentTitle(t('themesPage.documentTitle'));
 
   const {
-    appearance,
-    setAppearance,
-    resolvedAppearance,
     activeThemeId,
     setActiveThemeId,
     themes,
@@ -138,17 +131,19 @@ export function Themes() {
   };
 
   return (
-    <div className="themes-page">
-      <PageHeader
+    <div className="followups-interakt themes-interakt">
+      <WorkspacePageHeader
         title={t('themesPage.title')}
-        subtitle={t('themesPage.subtitle')}
-        actions={
+        showSearch={false}
+        showExport={false}
+        showNewTask={false}
+        extraActions={
           <>
-            <Link to="/settings?section=appearance" className="btn btn-secondary">
+            <Link to={settingsSectionHref('appearance')} className="fu-btn fu-btn--ghost">
               <ArrowLeft size={16} />
               {t('settings.backToSettings')}
             </Link>
-            <button type="button" className="themes-btn themes-btn--primary" onClick={openCreate}>
+            <button type="button" className="fu-btn fu-btn--primary" onClick={openCreate}>
               <Plus size={18} />
               {t('themesPage.createTheme')}
             </button>
@@ -156,33 +151,12 @@ export function Themes() {
         }
       />
 
+      <div className="followups-interakt__scroll">
+        <div className="themes-page">
       <p className="themes-settings-notice">
         {t('themesPage.settingsHint')}{' '}
-        <Link to="/settings?section=appearance">{t('settings.appearanceShortcut')}</Link>
+        <Link to={settingsSectionHref('appearance')}>{t('settings.appearanceShortcut')}</Link>
       </p>
-
-      <section className="themes-section">
-        <h2>{t('themesPage.appearanceTitle')}</h2>
-        <p className="themes-section-desc">{t('themesPage.appearanceDesc')}</p>
-        <div className="themes-appearance-row" role="group" aria-label={t('themesPage.appearanceTitle')}>
-          {appearanceOptions.map(({ id, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              className={`themes-appearance-btn ${appearance === id ? 'active' : ''}`}
-              onClick={() => setAppearance(id)}
-            >
-              <Icon size={18} />
-              {t(`theme.${id}`)}
-            </button>
-          ))}
-        </div>
-        <p className="themes-resolved-hint">
-          {t('themesPage.resolvedHint', {
-            mode: t(`theme.${resolvedAppearance}`),
-          })}
-        </p>
-      </section>
 
       <section className="themes-section">
         <h2>{t('themesPage.galleryTitle')}</h2>
@@ -192,7 +166,7 @@ export function Themes() {
             const isActive = theme.id === activeThemeId;
             return (
               <article key={theme.id} className={`theme-card ${isActive ? 'is-active' : ''}`}>
-                <ThemePreview theme={theme} mode={resolvedAppearance} />
+                <ThemePreview theme={theme} mode="light" />
                 <div className="theme-card__body">
                   <div className="theme-card__head">
                     <h3>{theme.name}</h3>
@@ -205,6 +179,11 @@ export function Themes() {
                   </div>
                   {theme.effects === 'tactical' && (
                     <span className="theme-card__effects-badge">HUD</span>
+                  )}
+                  {theme.effects === 'interakt' && (
+                    <span className="theme-card__effects-badge theme-card__effects-badge--interakt">
+                      Inbox
+                    </span>
                   )}
                   {theme.description && <p className="theme-card__desc">{theme.description}</p>}
                   <div className="theme-card__swatches">
@@ -252,8 +231,11 @@ export function Themes() {
         </div>
       </section>
 
+        </div>
+      </div>
+
       {editor && (
-        <div className="themes-modal-overlay" onClick={closeEditor}>
+        <ModalOverlay onClose={closeEditor} className="themes-modal-overlay">
           <div className="themes-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
             <header className="themes-modal__header">
               <h2>
@@ -336,7 +318,7 @@ export function Themes() {
               </button>
             </footer>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

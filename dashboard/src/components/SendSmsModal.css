@@ -1,0 +1,58 @@
+.sms-modal {
+  width: min(480px, 92vw);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sms-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sms-modal__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.sms-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sms-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.sms-modal__field input,
+.sms-modal__field textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--ws-border, rgba(255, 255, 255, 0.12));
+  background: var(--ws-input-bg, rgba(0, 0, 0, 0.2));
+  color: inherit;
+  font: inherit;
+}
+
+.sms-modal__segments {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.sms-modal__warn {
+  color: var(--ws-warning, #f59e0b);
+}
+
+.sms-modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

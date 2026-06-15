@@ -18,12 +18,19 @@ test.describe('AI Usage & Cost panel', () => {
 
     await expect(page.locator('.ai-usage-panel')).toBeVisible({ timeout: 20_000 });
     await expect(page.locator('.ai-usage-card').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Budget remaining/i })).toBeVisible();
+    await expect(page.locator('.ai-usage-card--budget').first()).toContainText('$0.96');
     await expect(page.getByRole('button', { name: /Pause auto-reply/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Export CSV/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Budget settings/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Cost by model/i })).toBeVisible();
-    await expect(page.locator('.ai-usage-list').first().getByText('gpt-4o-mini')).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'whatsapp_auto_reply' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Cost optimization/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Prompt contributors/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Message buffer activity/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Cost by model/i }).locator('..').getByText('gpt-4o-mini'),
+    ).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'whatsapp_auto_reply' }).first()).toBeVisible();
   });
 
   test('view-only operator sees dashboard without manage controls', async ({ page }) => {
@@ -52,5 +59,28 @@ test.describe('AI Usage & Cost panel', () => {
       timeout: 20_000,
     });
     await expect(page.getByRole('button', { name: /Pause auto-reply/i })).toHaveCount(0);
+  });
+
+  test('recent calls filters and masked buffer conversation IDs', async ({ page }) => {
+    await installAiUsageMocks(page, {
+      permissions: ['ai.cost.view', 'ai.cost.manage'],
+    });
+    await seedAdminSession(page);
+
+    await page.goto('/settings?category=ai&panel=ai-usage');
+    await expect(page.getByRole('heading', { name: /Recent AI calls/i })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    const periodSelect = page.locator('.ai-usage-recent-filters select').first();
+    await periodSelect.selectOption('today');
+    await periodSelect.selectOption('mtd');
+
+    const statusSelect = page.locator('.ai-usage-recent-filters select').nth(1);
+    await statusSelect.selectOption('cache_hit');
+
+    await expect(page.getByRole('heading', { name: /Message buffer activity/i })).toBeVisible();
+    await expect(page.getByRole('cell', { name: /ses…00@c\.us/ })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'sess-1:255700@c.us' })).toHaveCount(0);
   });
 });

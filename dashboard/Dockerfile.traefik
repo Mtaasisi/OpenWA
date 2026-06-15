@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 RUN npm run build
@@ -21,6 +21,14 @@ RUN echo 'server { \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
+    location /assets/ { \
+        try_files $uri =404; \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    location = /index.html { \
+        add_header Cache-Control "no-cache"; \
+    } \
     location / { \
         try_files $uri $uri/ /index.html; \
     } \

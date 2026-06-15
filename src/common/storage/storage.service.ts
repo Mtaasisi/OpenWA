@@ -31,6 +31,10 @@ export class StorageService {
   private readonly localPath: string;
   private s3Client: S3Client | null = null;
   private s3Bucket = 'openwa';
+  private s3Region = 'us-east-1';
+  private s3Endpoint: string | undefined;
+  private s3AccessKeyId: string | undefined;
+  private s3SecretAccessKey: string | undefined;
   private s3Available = false;
 
   constructor(private readonly configService: ConfigService) {
@@ -46,6 +50,10 @@ export class StorageService {
       const region = process.env.S3_REGION || s3Config.region || 'us-east-1';
 
       if (endpoint && accessKeyId && secretAccessKey) {
+        this.s3Endpoint = endpoint;
+        this.s3AccessKeyId = accessKeyId;
+        this.s3SecretAccessKey = secretAccessKey;
+        this.s3Region = region;
         this.s3Client = new S3Client({
           endpoint,
           region,
@@ -102,6 +110,102 @@ export class StorageService {
     return this.s3Available;
   }
 
+  hasS3Credentials(): boolean {
+    return this.s3Client !== null;
+  }
+
+  getDefaultS3Bucket(): string {
+    return this.s3Bucket;
+  }
+
+  private resolveBackupClient(regionOverride?: string | null): S3Client {
+    if (!this.s3Client || !this.s3AccessKeyId || !this.s3SecretAccessKey) {
+      throw new Error('S3 storage is not configured');
+    }
+    const region = regionOverride?.trim() || this.s3Region;
+    if (region === this.s3Region) {
+      return this.s3Client;
+    }
+    return new S3Client({
+      endpoint: this.s3Endpoint,
+      region,
+      credentials: {
+        accessKeyId: this.s3AccessKeyId,
+        secretAccessKey: this.s3SecretAccessKey,
+      },
+      forcePathStyle: true,
+    });
+  }
+
+  private resolveBackupBucket(bucketOverride?: string | null): string {
+    const bucket = bucketOverride?.trim();
+    return bucket || this.s3Bucket;
+  }
+
+  async mirrorBackupArchive(
+    filename: string,
+    data: Buffer,
+    options?: { bucket?: string | null; region?: string | null },
+  ): Promise<void> {
+    if (!this.hasS3Credentials()) {
+      throw new Error('S3 storage is not configured');
+    }
+    const client = this.resolveBackupClient(options?.region);
+    const bucket = this.resolveBackupBucket(options?.bucket);
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `backups/${filename}`,
+        Body: data,
+      }),
+    );
+  }
+
+  async getBackupArchive(
+    filename: string,
+    options?: { bucket?: string | null; region?: string | null },
+  ): Promise<Buffer> {
+    const localPath = path.join(process.cwd(), 'data', 'backups', filename);
+    if (fs.existsSync(localPath)) {
+      return fs.readFileSync(localPath);
+    }
+    if (!this.hasS3Credentials()) {
+      throw new Error(`Backup file not found: ${filename}`);
+    }
+
+    const region = options?.region?.trim() || null;
+    const buckets = [
+      options?.bucket?.trim(),
+      this.s3Bucket,
+    ].filter((value, index, list): value is string => Boolean(value) && list.indexOf(value) === index);
+
+    let lastError: unknown;
+    for (const bucket of buckets) {
+      try {
+        const client = this.resolveBackupClient(region);
+        const response = await client.send(
+          new GetObjectCommand({
+            Bucket: bucket,
+            Key: `backups/${filename}`,
+          }),
+        );
+        if (!response.Body) throw new Error('Empty backup response body');
+        const chunks: Buffer[] = [];
+        const stream = response.Body as Readable;
+        for await (const chunk of stream) {
+          chunks.push(Buffer.from(chunk as ArrayBuffer));
+        }
+        return Buffer.concat(chunks);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`Backup file not found: ${filename}`);
+  }
+
   async listFiles(): Promise<string[]> {
     if (this.storageType === 's3' && this.s3Client && this.s3Available) {
       return this.listS3Files();
@@ -122,6 +226,42 @@ export class StorageService {
     }
     return this.putLocalFile(filePath, data);
   }
+
+  async deleteFile(filePath: string): Promise<void> {
+    if (this.storageType === 's3' && this.s3Client && this.s3Available) {
+      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.s3Bucket,
+          Key: `media/${filePath}`,
+        }),
+      );
+      return;
+    }
+    const fullPath = path.join(this.localPath, filePath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+  }
+
+  /** Delete all stored files under a path prefix (e.g. inbox/{sessionId}). */
+  async deleteFilesWithPrefix(prefix: string): Promise<number> {
+    const normalized = prefix.replace(/^\/+|\/+$/g, '');
+    const files = (await this.listFiles()).filter(
+      file => file === normalized || file.startsWith(`${normalized}/`),
+    );
+    for (const file of files) {
+      await this.deleteFile(file);
+    }
+    if (this.storageType !== 's3' || !this.s3Client || !this.s3Available) {
+      const dirPath = path.join(this.localPath, normalized);
+      if (fs.existsSync(dirPath)) {
+        fs.rmSync(dirPath, { recursive: true, force: true });
+      }
+    }
+    return files.length;
+  }
+
 
   async getFileCount(): Promise<{ count: number; sizeBytes: number }> {
     const files = await this.listFiles();

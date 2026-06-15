@@ -106,6 +106,13 @@ export class AiSettingsController {
     return { ok: true, reply };
   }
 
+  @Get('api-key')
+  @RequireRole(ApiKeyRole.ADMIN)
+  @ApiOperation({ summary: 'Reveal stored AI API key (admin only)' })
+  revealApiKey() {
+    return this.svc.revealApiKey();
+  }
+
   @Delete('api-key')
   @RequireRole(ApiKeyRole.ADMIN)
   @ApiOperation({ summary: 'Remove stored AI API key' })

@@ -10,7 +10,8 @@ import { buildMultimodalUserContent, isVisionCapableModel, type ChatImageAttachm
 import type { AiConfig } from './entities/ai-config.entity';
 import type { AiToolDefinition } from './ai-app-tools';
 import { ApiKeyRole } from '../auth/entities/api-key.entity';
-import { INBOX_CUSTOMER_REPLY_RULES } from './ai-inbox-reply-rules';
+import { buildRulesBlock } from './prompt/ai-reply-rule-packs';
+import { detectCustomerIntent } from './utils/ai-intent-detector.util';
 import { sanitizeCustomerAiReply } from './utils/ai-behavior.util';
 import { AiCostTrackerService } from './cost/ai-cost-tracker.service';
 import { AiBudgetGuardService } from './cost/ai-budget-guard.service';
@@ -616,33 +617,40 @@ export class AiChatService {
     if (!config) return null;
 
     const contextLimit = Math.min(
-      Math.max(config.autoReplyContextMessages ?? 8, 1),
-      config.autoReplyContextMessagesMax ?? 12,
+      Math.max(config.autoReplyContextMessages ?? 3, 1),
+      config.autoReplyContextMessagesMax ?? 5,
     );
     const thread = input.thread.filter(m => m.content.trim()).slice(-contextLimit);
     if (!thread.length) return null;
 
     const latestUser = [...thread].reverse().find(m => m.role === 'user')?.content ?? '';
     const custom = input.customPrompt?.trim() || config.autoReplyPrompt?.trim() || '';
+    const intent = detectCustomerIntent(latestUser);
+    const rulesBlock = buildRulesBlock(intent, latestUser);
+    const knowledgeLimits = {
+      maxChunks: config.knowledgeMaxChunks ?? 2,
+      maxCharsPerChunk: config.knowledgeMaxCharsPerChunk ?? 600,
+      maxTotalChars: config.knowledgeMaxTotalChars ?? 1200,
+    };
     const [knowledgeBlock, memoryBlock] = await Promise.all([
       config.knowledgeRagEnabled !== false
-        ? this.knowledge.buildContextualPromptExcerpt(latestUser)
+        ? this.knowledge.buildAutoReplyKnowledgeExcerpt(latestUser, knowledgeLimits)
         : Promise.resolve(''),
       config.memoryRagEnabled !== false
-        ? this.memory.buildContextualPromptExcerpt(latestUser)
+        ? this.memory.buildContextualPromptExcerpt(latestUser, 800)
         : Promise.resolve(''),
     ]);
     const systemContent = [
       'You are a WhatsApp shop assistant in an ongoing conversation with a customer.',
       'Reply with ONE short message to the customer’s latest message only.',
-      INBOX_CUSTOMER_REPLY_RULES,
+      rulesBlock,
       '- Never claim you completed an order, checked stock, or sent payment unless you truly did.',
       knowledgeBlock,
       memoryBlock,
       custom,
     ]
       .filter(Boolean)
-      .join('\n');
+      .join('\n\n');
 
     const route = resolveModelRoute(config, AiUsageFeature.WHATSAPP_AUTO_REPLY);
     const maxTokens = this.costTracker.clampMaxTokens(

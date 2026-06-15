@@ -33,6 +33,19 @@
   box-sizing: border-box;
 }
 
+.infrastructure-page--embed {
+  padding: 0;
+}
+
+.infrastructure-page--embed .infra-card {
+  border-radius: 1rem;
+  border-color: var(--interakt-outline-soft, var(--border));
+  background: var(--interakt-surface-glass, var(--bg-white));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--interakt-shadow-sm, var(--shadow-sm));
+}
+
 .infra-card.full-width {
   grid-column: 1 / -1;
 }
@@ -76,8 +89,8 @@
 }
 
 .status-indicator.disconnected {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--interakt-danger-surface);
+  color: var(--interakt-danger);
 }
 
 .status-indicator.sqlite {
@@ -233,14 +246,13 @@
 .toggle-info small {
   font-size: 0.75rem;
   font-weight: 400;
-  color: #64748b; /* Slate 500 */
+  color: var(--text-muted);
   opacity: 0.85;
 }
 
+/* toggle-switch — polished in form-sliders.css */
+
 .toggle-switch {
-  position: relative;
-  width: 48px;
-  height: 26px;
   cursor: pointer;
 }
 
@@ -248,38 +260,6 @@
   opacity: 0;
   width: 0;
   height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #e5e7eb;
-  border-radius: 26px;
-  transition: all 0.2s;
-}
-
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  left: 3px;
-  bottom: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  background: var(--primary);
-}
-
-.toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(22px);
 }
 
 /* Migrations Section */
@@ -566,4 +546,22 @@
   .queue-actions button {
     justify-content: center;
   }
+}
+
+.infra-migration-stats {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.infra-migration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.infra-upload-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }

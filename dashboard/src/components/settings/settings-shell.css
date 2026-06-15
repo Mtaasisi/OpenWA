@@ -1,0 +1,650 @@
+/* Settings — Interakt Pro full workspace shell */
+
+.layout--settings-workspace.layout--interakt .settings-shell {
+  left: var(--workspace-nav-sidebar-w, 64px);
+  right: 0;
+  width: auto;
+}
+
+[dir='rtl'] .layout--settings-workspace.layout--interakt .settings-shell {
+  left: 0;
+  right: var(--workspace-nav-sidebar-w, 64px);
+}
+
+.settings-shell {
+  --settings-sidebar-w: 320px;
+  --settings-gutter: 24px;
+  --settings-on-surface: var(--text-primary, #1b1b1e);
+  --settings-on-surface-variant: var(--text-secondary, #3f493f);
+  --settings-outline-variant: var(--interakt-outline, var(--border));
+  --settings-surface: var(--bg-card);
+  --settings-surface-bright: var(--bg-white);
+  --settings-surface-container-low: var(--interakt-surface-muted, var(--bg-light));
+  --settings-surface-container-high: var(--interakt-ghost-hover, var(--bg-hover));
+  --settings-primary: var(--interakt-primary, var(--primary));
+  --settings-primary-container: var(--primary-hover, #006d2f);
+  --settings-on-primary-container: var(--primary-light, #90ec9f);
+  --settings-mac-green: #28c840;
+  --settings-mac-yellow: #febc2e;
+  --settings-error: var(--interakt-danger, var(--danger));
+
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--settings-surface-bright);
+  color: var(--settings-on-surface);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.layout--settings-workspace.layout--interakt .settings-shell__sidebar {
+  left: var(--workspace-nav-sidebar-w, 64px);
+}
+
+[dir='rtl'] .layout--settings-workspace.layout--interakt .settings-shell__sidebar {
+  left: auto;
+  right: var(--workspace-nav-sidebar-w, 64px);
+}
+
+.settings-shell__sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: var(--settings-sidebar-w);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid color-mix(in srgb, var(--settings-outline-variant) 30%, transparent);
+  background: color-mix(in srgb, var(--settings-surface) 70%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.settings-shell__sidebar-header {
+  flex-shrink: 0;
+  padding: 1.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--settings-outline-variant) 30%, transparent);
+}
+
+.settings-shell__nav-search {
+  position: relative;
+}
+
+.settings-shell__nav-search-icon {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--settings-on-surface-variant);
+  pointer-events: none;
+}
+
+.settings-shell__nav-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-block: 0.4rem;
+  padding-inline-start: 2.25rem;
+  padding-inline-end: 0.75rem;
+  border: 1px solid var(--interakt-outline-soft, color-mix(in srgb, var(--settings-outline-variant) 30%, transparent));
+  border-radius: 0.65rem;
+  background: var(--interakt-surface-elevated, color-mix(in srgb, var(--settings-surface-container-low) 50%, transparent));
+  color: var(--settings-on-surface);
+  font-size: 12px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-shell__nav-search-input:focus {
+  outline: none;
+  border-color: var(--interakt-primary-border, var(--settings-primary));
+  box-shadow: 0 0 0 1px var(--interakt-primary-border, var(--settings-primary));
+}
+
+.settings-shell__nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem 1rem;
+}
+
+.settings-shell__nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.settings-shell__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-shell__nav::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.settings-shell__nav-category {
+  margin: 1.1rem 0 0.35rem;
+  padding-inline-start: 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
+.settings-shell__nav-category:first-child {
+  margin-top: 0.15rem;
+}
+
+.settings-shell__nav-empty {
+  margin: 1rem 0.75rem;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--settings-on-surface-variant);
+  text-align: center;
+}
+
+.settings-shell__icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.settings-shell__icon-btn:disabled:hover {
+  background: transparent;
+}
+
+.settings-shell__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--settings-on-surface-variant);
+  font-size: 13px;
+  font-family: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-shell__nav-item:hover {
+  background: var(--interakt-ghost-hover, color-mix(in srgb, var(--settings-surface-container-high) 50%, transparent));
+}
+
+.settings-shell__nav-item.is-active {
+  background: var(--interakt-primary-soft, rgba(0, 82, 34, 0.08));
+  border-color: var(--interakt-primary-border, transparent);
+  color: var(--interakt-primary, var(--settings-primary));
+  font-weight: 600;
+}
+
+.settings-shell__nav-item--detail {
+  padding-inline-start: 1.5rem;
+  font-size: 12.5px;
+}
+
+.settings-shell__nav-spacer {
+  height: 2rem;
+  flex-shrink: 0;
+}
+
+.settings-shell__alert-icon {
+  flex-shrink: 0;
+  color: var(--settings-mac-yellow);
+}
+
+.settings-shell__nav-item--detail .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.settings-shell__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  margin-left: var(--settings-sidebar-w);
+  height: 100%;
+  overflow: hidden;
+}
+
+.settings-shell__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 3.5rem;
+  padding: 0 var(--settings-gutter);
+  border-bottom: 1px solid color-mix(in srgb, var(--settings-outline-variant) 30%, transparent);
+  background: color-mix(in srgb, var(--settings-surface) 70%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.settings-shell__topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.settings-shell__back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -0.5rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--settings-on-surface-variant);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-shell__back-btn:hover {
+  background: var(--settings-surface-container-high);
+}
+
+.settings-shell__topbar-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+  color: var(--settings-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-shell__topbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 28rem;
+  padding: 0 2rem;
+}
+
+.settings-shell__topbar-search-icon {
+  position: absolute;
+  inset-inline-start: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--settings-on-surface-variant);
+  pointer-events: none;
+}
+
+.settings-shell__topbar-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 1rem;
+  padding-inline-start: 2.5rem;
+  padding-inline-end: 1rem;
+  border: 1px solid var(--interakt-outline-soft, color-mix(in srgb, var(--settings-outline-variant) 50%, transparent));
+  border-radius: 999px;
+  background: var(--interakt-surface-elevated, var(--settings-surface-container-low));
+  color: var(--settings-on-surface);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-shell__topbar-search-input:focus {
+  outline: none;
+  border-color: var(--interakt-primary-border, var(--settings-primary));
+  box-shadow: 0 0 0 1px var(--interakt-primary-border, var(--settings-primary));
+}
+
+.settings-shell__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.settings-shell__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--settings-on-surface-variant);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-shell__icon-btn:hover {
+  background: var(--settings-surface-container-high);
+}
+
+.settings-shell__icon-btn--notify {
+  position: relative;
+}
+
+.settings-shell__notify-dot {
+  position: absolute;
+  top: 0.45rem;
+  inset-inline-end: 0.45rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--settings-error);
+  box-shadow: 0 0 0 2px var(--settings-surface);
+}
+
+.settings-shell__topbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  margin: 0 0.5rem;
+  background: var(--settings-outline-variant);
+}
+
+.settings-shell__cancel-btn {
+  border: none;
+  background: transparent;
+  color: var(--settings-on-surface-variant);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.settings-shell__cancel-btn:hover {
+  color: var(--settings-primary);
+}
+
+.settings-shell__save-btn {
+  padding: 0.4rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  background: var(--interakt-primary, var(--settings-primary));
+  color: var(--interakt-on-primary, #fff);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.settings-shell__save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.settings-shell__save-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.settings-shell__save-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.settings-shell__canvas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--settings-gutter);
+  background: var(--settings-surface-bright);
+}
+
+.settings-shell__canvas::-webkit-scrollbar {
+  width: 4px;
+}
+
+.settings-shell__canvas::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.settings-shell__alert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0;
+  border: 1px solid var(--interakt-outline-soft, color-mix(in srgb, var(--settings-outline-variant) 50%, transparent));
+  border-radius: 1rem;
+  background: var(--interakt-surface-muted-soft, var(--settings-surface-container-low));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.settings-shell__alert p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--settings-on-surface-variant);
+}
+
+.settings-shell__page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.settings-shell__page-header:not(:has(h3)) {
+  margin-bottom: 0.5rem;
+}
+
+.settings-shell__page-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--settings-on-surface);
+}
+
+.settings-shell__page-header p {
+  margin: 0.25rem 0 0;
+  font-size: 14px;
+  color: var(--settings-on-surface-variant);
+}
+
+.settings-shell__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 0;
+}
+
+.settings-shell__content--bare {
+  gap: 0;
+}
+
+/* Single scroll surface: nested workspace layouts must not re-trap overflow */
+.settings-shell .followups-interakt,
+.settings-shell .workspace-interakt,
+.settings-shell .logs-interakt,
+.settings-shell .storage-backup-interakt,
+.settings-shell .settings-embed,
+.settings-shell .webhooks-page--embed,
+.settings-shell .api-keys-page--embed,
+.settings-shell .infrastructure-page--embed,
+.settings-shell .plugins-page--interakt,
+.settings-shell .logs-interakt--embed,
+.settings-shell .storage-backup-embedded {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.settings-shell .followups-interakt__scroll,
+.settings-shell .workspace-interakt__scroll,
+.settings-shell .storage-backup-scroll {
+  flex: none;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  padding: 0;
+}
+
+.settings-shell .settings-int-shell,
+.settings-shell .settings-int-shell--chromeless,
+.settings-shell .settings-integration-detail,
+.settings-shell .settings-embed-scroll,
+.settings-shell .ai-settings-shell,
+.settings-shell .ai-settings-body,
+.settings-shell .interakt-panel {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.settings-shell .interakt-about-tile {
+  min-height: 0;
+}
+
+.settings-shell-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--interakt-outline, color-mix(in srgb, var(--settings-outline-variant) 50%, transparent));
+  border-radius: 0.65rem;
+  background: var(--interakt-surface-elevated, var(--settings-surface-bright));
+  color: var(--settings-on-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.settings-shell-refresh-btn:hover {
+  background: var(--interakt-ghost-hover, var(--settings-surface-container-low));
+}
+
+.settings-shell__menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  margin-left: -0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--settings-on-surface-variant);
+  cursor: pointer;
+}
+
+.settings-shell__menu-btn:hover {
+  background: var(--settings-surface-container-high);
+}
+
+.settings-shell__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  background: rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .settings-shell__sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 60;
+  }
+
+  .settings-shell--nav-open .settings-shell__sidebar {
+    transform: translateX(0);
+  }
+
+  .settings-shell--nav-open .settings-shell__overlay {
+    display: block;
+  }
+
+  .settings-shell__main {
+    margin-left: 0;
+  }
+
+  .settings-shell__menu-btn {
+    display: inline-flex;
+  }
+
+  .settings-shell__topbar-search {
+    display: none;
+  }
+
+  .settings-shell__topbar-actions .settings-shell__icon-btn {
+    display: none;
+  }
+
+  .settings-shell__canvas {
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .settings-shell__content {
+    gap: 1.5rem;
+  }
+
+  .settings-shell .interakt-wide-card__split {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .settings-shell .interakt-wide-card__split--toggles {
+    border-inline-start: none;
+    padding-inline-start: 0;
+    border-top: 1px solid var(--interakt-outline-faint);
+    padding-top: 1.5rem;
+  }
+}
+
+/* RTL (Hebrew) */
+[dir='rtl'] .settings-shell__sidebar {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid color-mix(in srgb, var(--settings-outline-variant) 30%, transparent);
+}
+
+[dir='rtl'] .settings-shell__main {
+  margin-left: 0;
+  margin-right: var(--settings-sidebar-w);
+}
+
+[dir='rtl'] .settings-shell__back-btn,
+[dir='rtl'] .settings-shell__menu-btn {
+  margin-left: 0;
+  margin-right: -0.5rem;
+}
+
+[dir='rtl'] .settings-shell__back-btn .inakt-mat-icon {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 900px) {
+  [dir='rtl'] .settings-shell__sidebar {
+    transform: translateX(100%);
+  }
+
+  [dir='rtl'] .settings-shell--nav-open .settings-shell__sidebar {
+    transform: translateX(0);
+  }
+
+  [dir='rtl'] .settings-shell__main {
+    margin-right: 0;
+  }
+}

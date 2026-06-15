@@ -42,7 +42,7 @@ export class AuthController {
   @ApiOperation({ summary: 'List all API keys (admin only)' })
   @ApiResponse({ status: 200, type: [ApiKeyResponseDto] })
   async findAll(): Promise<ApiKeyResponseDto[]> {
-    const keys = await this.authService.findAll();
+    const keys = await this.authService.findAllServiceKeys();
     return keys.map(k => ({
       id: k.id,
       name: k.name,

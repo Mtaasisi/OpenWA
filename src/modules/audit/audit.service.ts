@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, In, IsNull } from 'typeorm';
+import { MoreThan, Repository, LessThan, In, IsNull } from 'typeorm';
 import { AuditLog, AuditAction, AuditSeverity } from './entities/audit-log.entity';
 import { ApiKey } from '../auth/entities/api-key.entity';
 import { Session } from '../session/entities/session.entity';
@@ -73,6 +73,12 @@ export class AuditService {
 
   async logError(action: AuditAction, context: AuditContext = {}): Promise<AuditLog> {
     return this.log(action, context, AuditSeverity.ERROR);
+  }
+
+  async countSince(action: AuditAction, since: Date): Promise<number> {
+    return this.auditRepository.count({
+      where: { action, createdAt: MoreThan(since) },
+    });
   }
 
   async findAll(options: AuditQueryOptions = {}): Promise<{

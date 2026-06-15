@@ -1,0 +1,416 @@
+/**
+ * Tactical Overlay — workspace-wide HUD polish
+ * Settings, dashboard, follow-ups, status bar, and shared Interakt shells.
+ */
+
+html[data-theme-id='tactical-overlay'] {
+  color-scheme: dark;
+  --bg-light: #02060c;
+  --bg-white: #050b14;
+  --bg-card: #03070d;
+  --bg-main: #02060c;
+  --bg-hover: rgba(34, 211, 238, 0.06);
+  --text-primary: #cbd5e1;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --interakt-outline: rgba(34, 211, 238, 0.15);
+  --interakt-outline-soft: rgba(34, 211, 238, 0.12);
+  --interakt-outline-faint: rgba(34, 211, 238, 0.08);
+  --interakt-surface-glass: rgba(3, 7, 13, 0.92);
+  --interakt-surface-glass-high: #03070d;
+  --interakt-surface-elevated: #050b14;
+  --interakt-surface-muted: #0a1018;
+  --interakt-surface-muted-soft: #050b14;
+  --interakt-primary-soft: rgba(34, 211, 238, 0.12);
+  --interakt-primary-border: rgba(34, 211, 238, 0.35);
+  --interakt-primary-hover-bg: rgba(34, 211, 238, 0.08);
+  --interakt-ghost-hover: rgba(34, 211, 238, 0.08);
+  --interakt-shadow: none;
+  --interakt-shadow-sm: none;
+  --settings-surface: #03070d;
+  --settings-surface-bright: #02060c;
+  --settings-surface-container-low: #050b14;
+  --settings-surface-container-high: #0f172a;
+  --statusbar-bg: #03070d;
+  --statusbar-border: rgba(34, 211, 238, 0.15);
+  --statusbar-divider: rgba(34, 211, 238, 0.1);
+  --statusbar-muted: #64748b;
+  --statusbar-text: #cbd5e1;
+  --statusbar-accent: #22d3ee;
+  --statusbar-accent-soft: rgba(34, 211, 238, 0.12);
+  --statusbar-accent-text: #22d3ee;
+  --statusbar-surface-hover: rgba(34, 211, 238, 0.08);
+}
+
+/* ── Settings WhatsApp shell (hardcoded light vars → HUD) ── */
+[data-theme-id='tactical-overlay'] .settings-wa {
+  --settings-wa-bg: #02060c;
+  --settings-wa-card: #03070d;
+  --settings-wa-soft: rgba(34, 211, 238, 0.08);
+  --settings-wa-border: rgba(34, 211, 238, 0.15);
+  --settings-wa-divider: rgba(34, 211, 238, 0.1);
+  --settings-wa-text: #cbd5e1;
+  --settings-wa-text-secondary: #94a3b8;
+  --settings-wa-text-muted: #64748b;
+  --settings-wa-primary: #22d3ee;
+  --settings-wa-primary-hover: #0891b2;
+  --settings-wa-active-bg: rgba(34, 211, 238, 0.12);
+  --settings-wa-active-text: #22d3ee;
+  --settings-wa-danger: #f87171;
+  --settings-wa-danger-bg: rgba(248, 113, 113, 0.1);
+  --settings-wa-radius-card: 0;
+  --settings-wa-radius-input: 0;
+  --settings-wa-primary-container: #22d3ee;
+  --settings-wa-on-primary-container: #000;
+  --settings-wa-surface-container: #050b14;
+  font-family: var(--font-data, ui-monospace, monospace);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__secondary-nav,
+[data-theme-id='tactical-overlay'] .settings-wa__detail-canvas {
+  background: #02060c;
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__nav-card {
+  background: #03070d;
+  border-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__nav-card:hover {
+  background: rgba(34, 211, 238, 0.06);
+  border-color: rgba(34, 211, 238, 0.25);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__nav-card--active {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.05);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__nav-card--active .settings-wa__nav-card-text strong,
+[data-theme-id='tactical-overlay'] .settings-wa__nav-card--active .settings-wa__nav-card-icon {
+  color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__detail-back,
+[data-theme-id='tactical-overlay'] .settings-wa__back-btn {
+  color: #22d3ee;
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__detail-card,
+[data-theme-id='tactical-overlay'] .settings-wa__section,
+[data-theme-id='tactical-overlay'] .settings-hub__section,
+[data-theme-id='tactical-overlay'] .settings-hub__profile-card,
+[data-theme-id='tactical-overlay'] .settings-hub__row {
+  background: #03070d;
+  border-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__detail-row:hover,
+[data-theme-id='tactical-overlay'] .settings-hub__row:hover {
+  background: rgba(34, 211, 238, 0.06);
+}
+
+[data-theme-id='tactical-overlay'] .settings-wa__btn-primary,
+[data-theme-id='tactical-overlay'] .settings-wa__detail-inner .fu-btn--primary {
+  background: #22d3ee;
+  color: #000;
+  border: 1px solid #22d3ee;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+[data-theme-id='tactical-overlay'] .settings-theme-picker__card,
+[data-theme-id='tactical-overlay'] .theme-card {
+  background: #03070d;
+  border-color: rgba(34, 211, 238, 0.15);
+  box-shadow: none;
+}
+
+[data-theme-id='tactical-overlay'] .settings-theme-picker__card.is-active,
+[data-theme-id='tactical-overlay'] .theme-card.is-active {
+  border-color: #22d3ee;
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.35);
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__nav-item.is-active {
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+[data-theme-id='tactical-overlay'] .settings-shell__nav-item:hover {
+  background: rgba(34, 211, 238, 0.06);
+}
+
+/* ── Workspace pages (follow-ups, customers, products, …) ── */
+[data-theme-id='tactical-overlay'] .followups-interakt,
+[data-theme-id='tactical-overlay'] .workspace-interakt,
+[data-theme-id='tactical-overlay'] .dashboard-interakt {
+  font-family: var(--font-data, ui-monospace, monospace);
+  background: #02060c;
+  color: var(--text-primary);
+}
+
+[data-theme-id='tactical-overlay'] .followups-interakt__scroll,
+[data-theme-id='tactical-overlay'] .workspace-interakt__scroll {
+  background: #02060c;
+}
+
+[data-theme-id='tactical-overlay'] .fu-header {
+  background: #03070d;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] .fu-header__title {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+[data-theme-id='tactical-overlay'] .fu-card,
+[data-theme-id='tactical-overlay'] .interakt-glass-card,
+[data-theme-id='tactical-overlay'] .interakt-wide-card,
+[data-theme-id='tactical-overlay'] .interakt-bento-card,
+[data-theme-id='tactical-overlay'] .dashboard-section,
+[data-theme-id='tactical-overlay'] .cr-tab-nav {
+  background: #03070d;
+  border-color: rgba(34, 211, 238, 0.15);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-theme-id='tactical-overlay'] .fu-btn--ghost,
+[data-theme-id='tactical-overlay'] .fu-btn--toolbar {
+  border-color: rgba(34, 211, 238, 0.2);
+  color: #94a3b8;
+}
+
+[data-theme-id='tactical-overlay'] .fu-btn--ghost:hover,
+[data-theme-id='tactical-overlay'] .fu-btn--toolbar:hover {
+  background: rgba(34, 211, 238, 0.08);
+  color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .fu-btn--primary {
+  background: #22d3ee;
+  color: #000;
+  border-color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .cr-tab-nav button[aria-selected='true'],
+[data-theme-id='tactical-overlay'] .cr-tab-nav button.active {
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
+/* ── Bottom status bar ── */
+[data-theme-id='tactical-overlay'] .app-bottom-status-bar {
+  background: #03070d;
+  border-top: 1px solid rgba(34, 211, 238, 0.15);
+  font-family: var(--font-data, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme-id='tactical-overlay'] .app-bottom-status-bar__meta,
+[data-theme-id='tactical-overlay'] .app-bottom-status-bar__user-name {
+  color: #94a3b8;
+}
+
+[data-theme-id='tactical-overlay'] .app-bottom-status-bar .status-semantic-pill--success {
+  color: #22d3ee;
+}
+
+/* ── Forms & inputs everywhere ── */
+[data-theme-id='tactical-overlay'] input,
+[data-theme-id='tactical-overlay'] select,
+[data-theme-id='tactical-overlay'] textarea {
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+  color: var(--text-primary);
+}
+
+[data-theme-id='tactical-overlay'] input:focus,
+[data-theme-id='tactical-overlay'] select:focus,
+[data-theme-id='tactical-overlay'] textarea:focus {
+  border-color: #22d3ee;
+  box-shadow: inset 0 0 8px rgba(34, 211, 238, 0.08);
+}
+
+[data-theme-id='tactical-overlay'] .settings-int-card,
+[data-theme-id='tactical-overlay'] .settings-int-card__head,
+[data-theme-id='tactical-overlay'] .interakt-panel,
+[data-theme-id='tactical-overlay'] .ai-settings-card {
+  background: #03070d;
+  border-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] h1,
+[data-theme-id='tactical-overlay'] h2,
+[data-theme-id='tactical-overlay'] h3,
+[data-theme-id='tactical-overlay'] .settings-wa__secondary-nav-header h1,
+[data-theme-id='tactical-overlay'] .settings-shell__topbar-title {
+  font-family: var(--font-data, ui-monospace, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── AI Chat Assistant (/ai) — studio layout ── */
+[data-theme-id='tactical-overlay'] .ai-chat-interakt {
+  background: #02060c;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-interakt .followups-interakt__scroll {
+  background: #02060c;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-studio__pill-btn,
+[data-theme-id='tactical-overlay'] .ai-chat-hero-card,
+[data-theme-id='tactical-overlay'] .ai-chat-hero__icon {
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+  border-radius: 0;
+  box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.04);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-hero-card__action {
+  border-radius: 0;
+  background: rgba(34, 211, 238, 0.08);
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-hero-card__action:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-hero__title {
+  font-family: var(--font-data, ui-monospace, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-studio__compose {
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+  border-radius: 0;
+  box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.06);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-studio__send {
+  background: #22d3ee;
+  color: #02060c;
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-history {
+  background: #03070d;
+  border-left-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-bubble--user {
+  background: rgba(34, 211, 238, 0.18);
+  color: #e2e8f0;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-bubble--assistant {
+  background: #050b14;
+  color: #cbd5e1;
+  border-color: rgba(34, 211, 238, 0.15);
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-suggestion,
+[data-theme-id='tactical-overlay'] .ai-chat-quick-action {
+  border-radius: 0;
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-conv-btn.active {
+  background: rgba(34, 211, 238, 0.12);
+  color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-history-backdrop.is-open {
+  background: rgba(2, 6, 12, 0.72);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet-overlay {
+  background: rgba(2, 6, 12, 0.82);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet,
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__chip {
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+  color: #94a3b8;
+  border-radius: 0;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__head {
+  border-bottom-color: rgba(34, 211, 238, 0.15);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__head input {
+  color: #e2e8f0;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__head input::placeholder {
+  color: #64748b;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__section-label,
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__item-meta {
+  color: #64748b;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__item-label {
+  color: #cbd5e1;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__chip:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+  color: #22d3ee;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__item:hover,
+[data-theme-id='tactical-overlay'] .ai-chat-search-sheet__item.is-active {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-hero__subtitle {
+  color: #64748b;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-notice {
+  background: #050b14;
+  border-color: rgba(34, 211, 238, 0.2);
+  color: #94a3b8;
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-hero-card__action--ghost {
+  background: rgba(34, 211, 238, 0.06);
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+[data-theme-id='tactical-overlay'] .ai-chat-interakt {
+  --ai-studio-bg: #02060c;
+  --ai-studio-surface: #050b14;
+  --ai-studio-border: rgba(34, 211, 238, 0.15);
+  --ai-studio-user: rgba(34, 211, 238, 0.85);
+}

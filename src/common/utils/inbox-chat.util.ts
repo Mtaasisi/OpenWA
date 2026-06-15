@@ -1,5 +1,11 @@
 import type { IncomingMessage } from '../../engine/interfaces/whatsapp-engine.interface';
 
+/** WhatsApp group thread id suffix. */
+export function isGroupChat(chatId: string | null | undefined): boolean {
+  if (!chatId) return false;
+  return chatId.toLowerCase().endsWith('@g.us');
+}
+
 /** Chats that cannot be used as normal inbox threads (status, newsletters, etc.). */
 export function isInboxChat(chatId: string): boolean {
   if (!chatId) return false;
@@ -24,20 +30,47 @@ const SKIP_MESSAGE_TYPES = new Set([
 /** Whether an inbound engine event should be stored and shown in the inbox. */
 export function shouldPersistMessage(incoming: IncomingMessage): boolean {
   if (!isInboxChat(incoming.chatId)) return false;
+  if (incoming.isStatus) return false;
   if (SKIP_MESSAGE_TYPES.has(incoming.type)) return false;
   const hasContent = Boolean(incoming.body?.trim()) || Boolean(incoming.media);
   if (!incoming.fromMe && !hasContent) return false;
   return true;
 }
 
+/** Incoming message sent via the sender's WhatsApp broadcast list. */
+export function isBroadcastListMessage(incoming: Pick<IncomingMessage, 'broadcast' | 'fromMe'>): boolean {
+  return Boolean(incoming.broadcast) && !incoming.fromMe;
+}
+
 const MEDIA_MESSAGE_TYPES = new Set(['image', 'sticker', 'video', 'audio', 'ptt', 'document']);
 
+/** Map Baileys/proto content types (e.g. imageMessage) to inbox message types (image). */
+export function normalizeMessageType(type: string): string {
+  switch (type) {
+    case 'imageMessage':
+      return 'image';
+    case 'videoMessage':
+      return 'video';
+    case 'audioMessage':
+      return 'audio';
+    case 'documentMessage':
+      return 'document';
+    case 'stickerMessage':
+      return 'sticker';
+    case 'extendedTextMessage':
+    case 'conversation':
+      return 'chat';
+    default:
+      return type;
+  }
+}
+
 export function isMediaMessageType(type: string): boolean {
-  return MEDIA_MESSAGE_TYPES.has(type);
+  return MEDIA_MESSAGE_TYPES.has(normalizeMessageType(type));
 }
 
 export function defaultMimetypeForMessageType(type: string): string {
-  switch (type) {
+  switch (normalizeMessageType(type)) {
     case 'image':
     case 'sticker':
       return 'image/jpeg';
@@ -72,7 +105,7 @@ export function extensionForMimetype(mimetype: string): string {
 export function formatMessagePreview(body: string | null | undefined, type: string): string {
   const text = body?.trim();
   if (text) return text.slice(0, 200);
-  switch (type) {
+  switch (normalizeMessageType(type)) {
     case 'image':
       return '📷 Image';
     case 'video':

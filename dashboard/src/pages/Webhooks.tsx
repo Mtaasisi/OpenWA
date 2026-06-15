@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { webhookApi, type Webhook } from '../services/api';
+import { ModalOverlay } from '../components/ModalOverlay';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useRole } from '../hooks/useRole';
 import {
@@ -36,6 +37,9 @@ const availableEventNames = [
 
 export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
+  const modalOverlayClass = embedded
+    ? 'modal-overlay settings-embed-modal-overlay'
+    : 'modal-overlay';
   useDocumentTitle(t('webhooks.title'));
   const { canWrite } = useRole();
   const { data: webhooks = [], isLoading: loadingWebhooks } = useWebhooksQuery();
@@ -178,7 +182,7 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
   if (loading) {
     return (
       <div
-        className={`webhooks-page ${embedded ? 'settings-embed' : ''}`}
+        className={`webhooks-page ${embedded ? 'settings-embed webhooks-page--embed' : ''}`}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: embedded ? '200px' : '400px' }}
       >
         <Loader2 className="animate-spin" size={32} />
@@ -187,7 +191,7 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
   }
 
   return (
-    <div className={`webhooks-page ${embedded ? 'settings-embed' : ''}`}>
+    <div className={`webhooks-page ${embedded ? 'settings-embed webhooks-page--embed' : ''}`}>
       {toast && (
         <div className={`toast ${toast.type}`}>
           {toast.type === 'success' ? <Check size={18} /> : <AlertTriangle size={18} />}
@@ -215,7 +219,7 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
 
       {embedded && canWrite && (
         <div className="settings-embed-toolbar">
-          <button className="btn-primary" type="button" onClick={() => setShowCreateModal(true)}>
+          <button className="fu-btn fu-btn--primary" type="button" onClick={() => setShowCreateModal(true)}>
             <Plus size={18} />
             {t('webhooks.addWebhook')}
           </button>
@@ -223,7 +227,7 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
       )}
 
       {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+        <ModalOverlay onClose={() => setShowCreateModal(false)} className={modalOverlayClass}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('webhooks.createTitle')}</h2>
@@ -274,11 +278,11 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showEditModal && editWebhook && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+        <ModalOverlay onClose={() => setShowEditModal(false)} className={modalOverlayClass}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('webhooks.editTitle')}</h2>
@@ -330,11 +334,11 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {showDeleteModal && deleteTarget && (
-        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+        <ModalOverlay onClose={() => setShowDeleteModal(false)} className={modalOverlayClass}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('webhooks.deleteTitle')}</h2>
@@ -367,7 +371,7 @@ export function Webhooks({ embedded = false }: { embedded?: boolean } = {}) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       <div className="webhooks-content">

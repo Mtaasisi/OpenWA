@@ -1,0 +1,204 @@
+.inbox-context-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+}
+
+.inbox-context-menu {
+  position: fixed;
+  z-index: 12001;
+  width: 220px;
+  max-width: min(220px, calc(100vw - 1rem));
+  padding: 0.5rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid #e5ede5;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: #111b21;
+  animation: inbox-context-menu-in 0.15s ease-out;
+  transform-origin: top left;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes inbox-context-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.inbox-context-menu__header {
+  padding: 0.25rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: rgba(102, 119, 129, 0.6);
+}
+
+.inbox-context-menu__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inbox-context-menu__item-wrap {
+  position: relative;
+}
+
+.inbox-context-menu__item-wrap--open > .inbox-context-menu__item--submenu {
+  background: #f7f8f6;
+}
+
+.inbox-context-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: none;
+  background: transparent;
+  color: #111b21;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.inbox-context-menu__item-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-context-menu__item-icon {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #667781;
+}
+
+.inbox-context-menu__item-icon--accent {
+  color: #00a884;
+}
+
+.inbox-context-menu__item-icon--danger {
+  color: #ea0038;
+}
+
+.inbox-context-menu__item:hover:not(:disabled),
+.inbox-context-menu__item:focus-visible {
+  background: #f7f8f6;
+  outline: none;
+}
+
+.inbox-context-menu__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.inbox-context-menu__item--danger {
+  color: #ea0038;
+}
+
+.inbox-context-menu__item--danger:hover:not(:disabled),
+.inbox-context-menu__item--danger:focus-visible {
+  background: rgba(234, 0, 56, 0.05);
+}
+
+.inbox-context-menu__shortcut {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #667781;
+  font-variant-numeric: tabular-nums;
+}
+
+.inbox-context-menu__item--danger .inbox-context-menu__shortcut {
+  color: rgba(234, 0, 56, 0.6);
+}
+
+.inbox-context-menu__separator {
+  display: block;
+  margin: 0.25rem 0.5rem;
+  border: 0;
+  border-top: 1px solid #e5ede5;
+  height: 0;
+}
+
+.inbox-context-menu__submenu {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 0.25rem);
+  width: 220px;
+  padding: 0.5rem 0;
+  margin: 0;
+  border-radius: 0.75rem;
+  border: 1px solid #e9edef;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  animation: inbox-context-menu-in 0.15s ease-out;
+}
+
+.inbox-context-menu__submenu .inbox-context-menu__item {
+  padding: 0.5rem 1rem;
+}
+
+.inbox-context-menu__submenu .inbox-context-menu__item:hover:not(:disabled),
+.inbox-context-menu__submenu .inbox-context-menu__item:focus-visible {
+  background: #f0f2f5;
+}
+
+.inbox-context-menu__item--submenu .inbox-context-menu__submenu-chevron {
+  margin-left: auto;
+  color: #667781;
+  font-size: 1.125rem;
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu,
+[data-theme-effects='tactical'] .inbox-context-menu__submenu {
+  border-color: rgba(34, 211, 238, 0.22);
+  background: #041018;
+  color: #e2e8f0;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__header {
+  color: rgba(148, 163, 184, 0.65);
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__item {
+  color: #e2e8f0;
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__item-icon {
+  color: #e2e8f0;
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__item-icon--accent {
+  color: #22d3ee;
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__item:hover:not(:disabled),
+[data-theme-effects='tactical'] .inbox-context-menu__item:focus-visible,
+[data-theme-effects='tactical'] .inbox-context-menu__item-wrap--open > .inbox-context-menu__item--submenu {
+  background: rgba(34, 211, 238, 0.1);
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__shortcut {
+  color: rgba(148, 163, 184, 0.65);
+}
+
+[data-theme-effects='tactical'] .inbox-context-menu__separator {
+  border-top-color: rgba(34, 211, 238, 0.15);
+}

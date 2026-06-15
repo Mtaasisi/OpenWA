@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createLogger } from '../../common/services/logger.service';
+import { assertValidPluginId, assertValidPluginStorageKey } from '../../common/utils/plugin-security.util';
 import { PluginStatus, PluginStorage, PluginRegistryEntry } from './plugin.interfaces';
 
 @Injectable()
@@ -160,6 +161,7 @@ export class PluginStorageService {
   // ============================================================================
 
   createPluginStorage(pluginId: string): PluginStorage {
+    assertValidPluginId(pluginId);
     const pluginDataDir = path.join(this.dataDir, 'plugins', pluginId);
 
     // Ensure directory exists
@@ -171,6 +173,7 @@ export class PluginStorageService {
 
     return {
       get: <T = unknown>(key: string): Promise<T | null> => {
+        assertValidPluginStorageKey(key);
         const filePath = path.join(pluginDataDir, `${key}.json`);
         try {
           if (fs.existsSync(filePath)) {
@@ -184,6 +187,7 @@ export class PluginStorageService {
       },
 
       set: <T = unknown>(key: string, value: T): Promise<void> => {
+        assertValidPluginStorageKey(key);
         const filePath = path.join(pluginDataDir, `${key}.json`);
         try {
           fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
@@ -195,6 +199,7 @@ export class PluginStorageService {
       },
 
       delete: (key: string): Promise<void> => {
+        assertValidPluginStorageKey(key);
         const filePath = path.join(pluginDataDir, `${key}.json`);
         try {
           if (fs.existsSync(filePath)) {
@@ -209,6 +214,7 @@ export class PluginStorageService {
 
       list: (prefix?: string): Promise<string[]> => {
         try {
+          if (prefix) assertValidPluginStorageKey(prefix);
           const files = fs.readdirSync(pluginDataDir);
           let keys = files.filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''));
 

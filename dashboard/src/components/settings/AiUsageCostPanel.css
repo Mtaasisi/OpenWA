@@ -14,6 +14,20 @@
   margin-bottom: 4px;
 }
 
+.ai-usage-panel__error-detail {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ai-usage-panel__error-cell {
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-muted, #6b7280);
+}
+
 .ai-usage-panel__cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -33,6 +47,37 @@
 .ai-usage-card__label {
   font-size: 12px;
   color: var(--text-muted, #6b7280);
+}
+
+.ai-usage-card__sub {
+  font-size: 11px;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.35;
+}
+
+.ai-usage-card--budget strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.ai-usage-card--low {
+  border-color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 8%, var(--surface-elevated, #f8f9fb));
+}
+
+.ai-usage-card--empty {
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 8%, var(--surface-elevated, #f8f9fb));
+}
+
+.ai-usage-section--compact {
+  margin-top: -4px;
+}
+
+.ai-usage-section--compact h3 {
+  font-size: 14px;
+  color: var(--text-muted, #6b7280);
+  font-weight: 600;
 }
 
 .ai-usage-panel__actions {
@@ -56,6 +101,44 @@
 .ai-usage-section h3 {
   margin: 0 0 10px;
   font-size: 15px;
+}
+
+.ai-usage-section__head {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ai-usage-section__head h3 {
+  margin: 0;
+}
+
+.ai-usage-recent-filters {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.ai-usage-recent-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.ai-usage-recent-filters select {
+  min-width: 130px;
+}
+
+.ai-usage-panel__save-hint {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ai-usage-bars {

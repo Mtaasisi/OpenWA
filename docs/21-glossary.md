@@ -66,7 +66,12 @@ Containerization platform for packaging and deploying applications. OpenWA is di
 ## E
 
 ### Engine
-Component that handles communication with WhatsApp Web. The primary engine used is `whatsapp-web.js`.
+Component that handles communication with WhatsApp. OpenWA supports pluggable engines via `ENGINE_TYPE`:
+
+- **`whatsapp-web.js`** — Puppeteer/Chromium-based (default)
+- **`baileys`** — WebSocket-based, no browser; auth stored under `baileys/{sessionId}`
+
+Switch engines in **Settings → Plugins**. Restart the API after switching; linked sessions require a new QR scan.
 
 ### Event
 A system-emitted occurrence, for example:

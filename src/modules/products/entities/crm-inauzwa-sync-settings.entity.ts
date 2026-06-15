@@ -50,6 +50,34 @@ export class CrmInauzwaSyncSettings {
   @Column({ default: true })
   refreshBeforeSend: boolean;
 
+  /** Optional data pulls from INAUZWA (read-only unless pushSalesToInauzwa). */
+  @Column({ default: true })
+  syncProducts: boolean;
+
+  @Column({ default: false })
+  syncCustomers: boolean;
+
+  @Column({ default: false })
+  syncProformas: boolean;
+
+  @Column({ default: false })
+  syncRecentSales: boolean;
+
+  @Column({ default: false })
+  syncCategories: boolean;
+
+  @Column({ default: false })
+  pushSalesToInauzwa: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  businessName: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  defaultPaymentInstructions: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  defaultBranchPickupInfo: string | null;
+
   @Column({ type: dateColumnType(), nullable: true, transformer: DateTransformer })
   lastSyncAt: Date | null;
 

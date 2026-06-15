@@ -10,7 +10,9 @@ export function SettingsThemePicker() {
 
   return (
     <div className="settings-theme-picker">
-      <p className="settings-row__hint settings-theme-picker__hint">{t('settings.appearance.themeGalleryHint')}</p>
+      <p className="settings-int-hint settings-int-hint--muted settings-theme-picker__hint">
+        {t('settings.appearance.themeGalleryHint')}
+      </p>
       <div className="themes-grid settings-theme-picker__grid" role="list">
         {themes.map(theme => {
           const isActive = theme.id === activeThemeId;
@@ -37,6 +39,11 @@ export function SettingsThemePicker() {
                 </div>
                 {theme.effects === 'tactical' && (
                   <span className="theme-card__effects-badge">HUD</span>
+                )}
+                {theme.effects === 'interakt' && (
+                  <span className="theme-card__effects-badge theme-card__effects-badge--interakt">
+                    Inbox
+                  </span>
                 )}
                 {theme.description && <p className="theme-card__desc">{theme.description}</p>}
                 <div className="theme-card__swatches">

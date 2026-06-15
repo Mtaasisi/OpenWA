@@ -1,0 +1,3948 @@
+{
+  "generated_at": "2026-06-09T01:39:30.720633+00:00",
+  "source_zip": "/Users/mtaasisi/Desktop/Message backup/Archive.zip",
+  "whatsapp_files": [
+    "all whatsapp.csv",
+    "WhatsApp - 2323 chat sessions.csv"
+  ],
+  "stats": {
+    "raw_rows": 1699129,
+    "deduped_rows": 956732,
+    "incoming_text": 489903,
+    "excluded_system": 5552,
+    "excluded_length": 103685,
+    "excluded_ads": 123037,
+    "group_sessions": 151,
+    "private_sessions": 1860,
+    "biz_sessions": 22,
+    "tier_a_questions": 119,
+    "tier_b_questions": 9252,
+    "tier_c_questions": 36818,
+    "qa_pairs": 3428
+  },
+  "tiers": {
+    "A_business": {
+      "total_questions": 119,
+      "intent_counts": {
+        "other": 76,
+        "availability": 17,
+        "spec_compat": 8,
+        "price_general": 6,
+        "greeting": 4,
+        "trade_in": 2,
+        "accessories": 2,
+        "price_with_product": 2,
+        "warranty": 2
+      },
+      "intent_percentages": {
+        "other": 63.9,
+        "availability": 14.3,
+        "spec_compat": 6.7,
+        "price_general": 5.0,
+        "greeting": 3.4,
+        "trade_in": 1.7,
+        "accessories": 1.7,
+        "price_with_product": 1.7,
+        "warranty": 1.7
+      },
+      "examples": {
+        "other": [
+          "Kweli?",
+          "So hakuna disc yake?",
+          "Ni sawa kuwaambia price pale pale kwenye comments?",
+          "Salama kabisa",
+          "Sasa boss swala la nauli lina kaaje, na kama ulivyosema kuhusu hizo powerbank napata vipi?",
+          "Iwe round collar?",
+          "Deadline ni leo leo au hata kesho sawa boss?",
+          "Mambo poa boss"
+        ],
+        "availability": [
+          "Kuna hela inatumwa Monday naeza ipata Tuesday. Nahis nitaeka miezi mitatu",
+          "Kuna sehemu imetoboka kabisa",
+          "Ipo",
+          "ipo",
+          "Habari wakuu\nPixel 8 ipo wakuu?",
+          "Habari Tajiri yangu, kuna huduma nimeona nikushirkishe",
+          "Kuna nyingine tofauti na hiyo?",
+          "Kuna mteja anataka series 10 warranty ameomba 1 year"
+        ],
+        "trade_in": [
+          "Lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?"
+        ],
+        "greeting": [
+          "Mambo",
+          "Salama"
+        ],
+        "accessories": [
+          "Apple Watch SE \nApple Watch s6\nAirpods 3\nNaomba bei kka ya hizo??"
+        ],
+        "price_general": [
+          "Bei gan inakuwa kka",
+          "Bei yake Sir.",
+          "Bei zake Sir"
+        ],
+        "spec_compat": [
+          "Habari maboss zangu\nNaulizia \n15 pro max , Gb 256",
+          "Hiyo ni M1 atakuwa amejichanganya M1 ni 1.5M au?",
+          "Naomba bei ya monitor inch 34"
+        ],
+        "price_with_product": [
+          "Naomba pia bei ya iphone 17promax 256gb"
+        ],
+        "warranty": [
+          "Warranty za iwatch ni muda gan?"
+        ]
+      },
+      "top_templates": {
+        "other": [
+          [
+            "salama kabisa",
+            4
+          ],
+          [
+            "kweli?",
+            2
+          ],
+          [
+            "so hakuna disc yake?",
+            2
+          ],
+          [
+            "ni sawa kuwaambia price pale pale kwenye comments?",
+            2
+          ],
+          [
+            "sasa boss swala la nauli lina kaaje, na kama ulivyosema kuhusu hizo powerbank napata vipi?",
+            2
+          ],
+          [
+            "iwe round collar?",
+            2
+          ],
+          [
+            "deadline ni leo leo au hata kesho sawa boss?",
+            2
+          ],
+          [
+            "mambo poa boss",
+            2
+          ],
+          [
+            "au mwisho ngap?",
+            2
+          ],
+          [
+            "au ?",
+            2
+          ],
+          [
+            "unakua unanipa at the end of the month ?",
+            2
+          ],
+          [
+            "apple watch se ??",
+            2
+          ],
+          [
+            "hii sasa??",
+            2
+          ],
+          [
+            "good evening sir how are you?",
+            2
+          ],
+          [
+            "good evening sir how are you doing?🤗",
+            2
+          ],
+          [
+            "shikamoo boss samahani nilisahau kuuliza nipost mwenyew uku au utaipost moja kwa moja mwenyew?",
+            2
+          ],
+          [
+            "nizipost zipo vzr?",
+            2
+          ],
+          [
+            "habari za saizi",
+            2
+          ],
+          [
+            "habari wakuu tunaweza pata pixel #pro, #?",
+            2
+          ],
+          [
+            "hauko na login details ?!",
+            2
+          ],
+          [
+            "habari za asubuhi boss",
+            2
+          ],
+          [
+            "habari yako",
+            2
+          ],
+          [
+            "naomba uhakikishe hiyo miamala",
+            2
+          ],
+          [
+            "itakuwepo nimwambie asubirie huo mzigo?",
+            2
+          ],
+          [
+            "naomba bei ya hivyo",
+            2
+          ]
+        ],
+        "availability": [
+          [
+            "ipo",
+            4
+          ],
+          [
+            "kuna hela inatumwa monday naeza ipata tuesday. nahis nitaeka miezi mitatu",
+            2
+          ],
+          [
+            "kuna sehemu imetoboka kabisa",
+            2
+          ],
+          [
+            "habari wakuu pixel # ipo wakuu?",
+            2
+          ],
+          [
+            "kuna nyingine tofauti na hiyo?",
+            2
+          ],
+          [
+            "kuna mteja anataka series # warranty ameomba # year",
+            2
+          ],
+          [
+            "hii ipo?",
+            2
+          ],
+          [
+            "habari tajiri yangu, kuna huduma nimeona nikushirkishe",
+            1
+          ]
+        ],
+        "trade_in": [
+          [
+            "lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?",
+            2
+          ]
+        ],
+        "accessories": [
+          [
+            "apple watch se apple watch s# airpods # naomba bei kka ya hizo??",
+            2
+          ]
+        ],
+        "price_general": [
+          [
+            "bei gan inakuwa kka",
+            2
+          ],
+          [
+            "bei yake sir.",
+            2
+          ],
+          [
+            "bei zake sir",
+            2
+          ]
+        ],
+        "spec_compat": [
+          [
+            "habari maboss zangu naulizia # pro max , gb #",
+            4
+          ],
+          [
+            "hiyo ni m# atakuwa amejichanganya m# ni #m au?",
+            2
+          ],
+          [
+            "naomba bei ya monitor inch #",
+            2
+          ]
+        ],
+        "price_with_product": [
+          [
+            "naomba pia bei ya iphone #promax #gb",
+            2
+          ]
+        ],
+        "warranty": [
+          [
+            "warranty za iwatch ni muda gan?",
+            2
+          ]
+        ]
+      }
+    },
+    "B_private": {
+      "total_questions": 9252,
+      "intent_counts": {
+        "other": 6040,
+        "availability": 988,
+        "price_general": 832,
+        "greeting": 529,
+        "location_delivery": 400,
+        "spec_compat": 137,
+        "price_with_product": 90,
+        "condition_used_new": 74,
+        "accessories": 72,
+        "payment_installment": 60,
+        "trade_in": 16,
+        "icloud_lock": 12,
+        "warranty": 2
+      },
+      "intent_percentages": {
+        "other": 65.3,
+        "availability": 10.7,
+        "price_general": 9.0,
+        "greeting": 5.7,
+        "location_delivery": 4.3,
+        "spec_compat": 1.5,
+        "price_with_product": 1.0,
+        "condition_used_new": 0.8,
+        "accessories": 0.8,
+        "payment_installment": 0.6,
+        "trade_in": 0.2,
+        "icloud_lock": 0.1,
+        "warranty": 0.0
+      },
+      "examples": {
+        "other": [
+          "Habari za asubui",
+          "naomba msamaha boss",
+          "Bado sijapata mkuu\ntunafanyaje?",
+          "Shwal mishe zinaenda?",
+          "Mambo mshkaj wangu",
+          "Je naeza pata cn ya 250 iphone 6 uniletee ukija?",
+          "Nataka ik0basi mwambie kabisa dany",
+          "?????"
+        ],
+        "greeting": [
+          "mambo",
+          "Mambo",
+          "Niaje",
+          "Habari",
+          "Kwema?",
+          "habari",
+          "Mambo?",
+          "kwema?"
+        ],
+        "availability": [
+          "Je utakua nayo from Dubai? Au niende pale dukan kwenu leo pale inauzwa?",
+          "Kuna mtu anashida na i phone 11 plain\nIvi kuagiza uko ni bei gan",
+          "una mto anaweza nitengenezea passport za watu wangu",
+          "This looks awesome, but unayo working prototype???",
+          "Hii una pdf yake?",
+          "Unazo?",
+          "Kuna kuona aina nyingi",
+          "Hello, how are you doing? Would you be available for a call sometime this week?"
+        ],
+        "price_with_product": [
+          "IPhone 6 plain bei gan?",
+          "Nilikua nauliza ku replace glass ya nyuma ya iPhone xs ilikua tsh ngapi?",
+          "Naomba kuuliza bei ya iphone 13 plain",
+          "Naomba hiyo video ya ipad 6 na bei ya mazoez",
+          "Hi Vanny, kufix screen ya Iphone 7 ni shilling ngapi?",
+          "Samsung kali nijipangeje mzee wangu? Bei zake",
+          "Naomba bei ya iphone 12 na 13",
+          "Jaman Iphone 13 na 14 pro max bei gani?"
+        ],
+        "price_general": [
+          "Bei haipungui boss..kwa 130 boss inaenda?",
+          "Bei gani hiyo bro",
+          "Bei gani",
+          "Bei ya chini sijui ni bei gani,? Mana ile tab ilishakufaga muda napata tabu sana",
+          "Bei gani kaka",
+          "Bei yao ndo shid",
+          "Bei ngp",
+          "Bei gani hiyo"
+        ],
+        "location_delivery": [
+          "Eti vile viti vya counter pale dukani kwako umenunua wapi na sh ngapi??",
+          "Okey so the person where is he or she located?",
+          "Where is ur shop",
+          "Where r u now",
+          "mzigo nakachukue saa ngapi?",
+          "Where are you",
+          "Ooooh ouk ndo your office iko wapi vilee???",
+          "wapi io..?"
+        ],
+        "accessories": [
+          "Did you want \nAirPods 2\nAirPods Pro \nAirPods 3 ??",
+          "Hii ni cover ya what phone?",
+          "Kk zile airpods uliniuzia last time hazjashuka kdg?",
+          "DO YOU TAKE THE BATTERY",
+          "Habari yako kaka \nNaomba kuuliza \n\nac ya simu inaweza kudrain betri mpya",
+          "Nataka airpods pro sh ngap",
+          "Mtaasisi hivi mna battery ya iPhone 6??",
+          "Habari mtaasisi...hv unabadilisha battery za samsung au ni iphone tu?"
+        ],
+        "spec_compat": [
+          "which model?",
+          "Hello, hii ni gb ngapi?",
+          "ipi kazi hizi naweza pata?\n256 gb",
+          "Naomba uniulizie gb 64 na 32",
+          "Sawaha zile 6+ za gb 32 zipo???",
+          "Kwaiyo zilizopo ni gb 16??",
+          "Gb gapi?",
+          "Nataka kujua how to get the year poa"
+        ],
+        "payment_installment": [
+          "Sawa asante,a wanted tu know the price☺️piaa huwa unafanya installment payment!?",
+          "Can't you pay via stripe or paypal?",
+          "what mode you want to use for payment? what you mean by Visa pay?",
+          "You want to pay in crypto?",
+          "Malipo?",
+          "he pay?",
+          "Lipa namba..?",
+          "Mzee wa michuzi, utafanya malipo kwenye ile account ya benki au Mpesa?"
+        ],
+        "condition_used_new": [
+          "Na amini ni used lakini zinakuwa mkataba au sio mzee??",
+          "Surface Pro 8, 512 GB SSD na 8 GB RAM brand new unauza bei gani?",
+          "pia used iphone hauziii??",
+          "Sasa any how ya kupata my old data? Maana naona iko brand new kabisa",
+          "Je naweza pata samsung smart watch Pro 5 LTE used?",
+          "Na used ambayo imenyoooka?",
+          "iPhone 7 32 \nSilver \nA/A+\nOriginal \n500 pes \nKindly confirm if u need ?",
+          "Fresh ,, Laki nne ni mpya au used?"
+        ],
+        "trade_in": [
+          "Kwa Exchange ya 8+..!!?😳",
+          "Anyone unaona inakaa kwa hii exchange?",
+          "Na nikisema nilipe cash mbila exchange ni sh gapi?",
+          "Lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?",
+          "Sasa ukiwa tayari niambie..\nNa mimi exchange yangu ni nini??? Niipate mapema",
+          "Habari, naomba kuja kubadilisha pc",
+          "Exchange rate ead to tshs ngapi?",
+          "Exchange rate?"
+        ],
+        "icloud_lock": [
+          "unazungumzia macbook ya icloud??",
+          "Na vp icloud ishatolewa???",
+          "Hii mlitoa icloud!???",
+          "Passcode?",
+          "Ok ina icloud?",
+          "And icloud ikijaa ina tatizo kwenye simu?"
+        ],
+        "warranty": [
+          "Warranty za iwatch ni muda gan?"
+        ]
+      },
+      "top_templates": {
+        "other": [
+          [
+            "[URL]",
+            161
+          ],
+          [
+            "mambo vipi",
+            60
+          ],
+          [
+            "mambo vp",
+            57
+          ],
+          [
+            "‎can you please add me to the group?",
+            50
+          ],
+          [
+            "???",
+            46
+          ],
+          [
+            "mambo vip",
+            24
+          ],
+          [
+            "please",
+            24
+          ],
+          [
+            "can you please add me to the group?",
+            18
+          ],
+          [
+            "niaje bro",
+            16
+          ],
+          [
+            "salama kaka",
+            16
+          ],
+          [
+            "habari boss",
+            16
+          ],
+          [
+            "how are you?",
+            12
+          ],
+          [
+            "niaje kaka",
+            12
+          ],
+          [
+            "habari kaka",
+            12
+          ],
+          [
+            "????",
+            12
+          ],
+          [
+            "please check",
+            10
+          ],
+          [
+            "umerudi?",
+            10
+          ],
+          [
+            "mambo van",
+            10
+          ],
+          [
+            "niaje mzee",
+            8
+          ],
+          [
+            "why?",
+            8
+          ],
+          [
+            "salama kabisa",
+            8
+          ],
+          [
+            "habari mtaasisi",
+            8
+          ],
+          [
+            "niaje mkuu",
+            8
+          ],
+          [
+            "naomba",
+            8
+          ],
+          [
+            "salama boss wangu",
+            8
+          ]
+        ],
+        "availability": [
+          [
+            "available",
+            63
+          ],
+          [
+            "ipo",
+            31
+          ],
+          [
+            "available stock",
+            11
+          ],
+          [
+            "ipo boss",
+            8
+          ],
+          [
+            "ipo #",
+            8
+          ],
+          [
+            "unayo",
+            6
+          ],
+          [
+            "available quantity",
+            5
+          ],
+          [
+            "ipo?",
+            4
+          ],
+          [
+            "ofisi bado ipo?",
+            4
+          ],
+          [
+            "hii ipo?",
+            4
+          ],
+          [
+            "available # pec brand new full complete set",
+            3
+          ],
+          [
+            "available # pcs",
+            3
+          ],
+          [
+            "je utakua nayo from dubai? au niende pale dukan kwenu leo pale inauzwa?",
+            2
+          ],
+          [
+            "kuna mtu anashida na i phone # plain ivi kuagiza uko ni bei gan",
+            2
+          ],
+          [
+            "una mto anaweza nitengenezea passport za watu wangu",
+            2
+          ],
+          [
+            "this looks awesome, but unayo working prototype???",
+            2
+          ],
+          [
+            "hii una pdf yake?",
+            2
+          ],
+          [
+            "unazo?",
+            2
+          ],
+          [
+            "hello, how are you doing? would you be available for a call sometime this week?",
+            2
+          ],
+          [
+            "kuna mashuka nimeyasahau",
+            2
+          ],
+          [
+            "kuna mtu ndio kaniambia njoo ulale kwangu ndio nipo",
+            2
+          ],
+          [
+            "kuna simu inahitaj kubadilishwa kioo",
+            2
+          ],
+          [
+            "shop ipo wp?!",
+            2
+          ],
+          [
+            "ipo hivyo mzee",
+            2
+          ],
+          [
+            "kuna hela inatumwa monday naeza ipata tuesday. nahis nitaeka miezi mitatu",
+            2
+          ]
+        ],
+        "price_with_product": [
+          [
+            "iphone # plain bei gan?",
+            2
+          ],
+          [
+            "nilikua nauliza ku replace glass ya nyuma ya iphone xs ilikua tsh ngapi?",
+            2
+          ],
+          [
+            "naomba kuuliza bei ya iphone # plain",
+            2
+          ],
+          [
+            "naomba hiyo video ya ipad # na bei ya mazoez",
+            2
+          ],
+          [
+            "hi vanny, kufix screen ya iphone # ni shilling ngapi?",
+            2
+          ],
+          [
+            "samsung kali nijipangeje mzee wangu? bei zake",
+            2
+          ],
+          [
+            "naomba bei ya iphone # na #",
+            2
+          ],
+          [
+            "jaman iphone # na # pro max bei gani?",
+            2
+          ],
+          [
+            "hii ni mpya au used?? battery life ni ngapi",
+            2
+          ],
+          [
+            "dah nilikuwa na #k kaka siwezi pata iphone kali kwa bei za dubai?",
+            2
+          ],
+          [
+            "🔥🔥iphone # (#gb) original stock a$a+ 🔥🔥 (price #??)",
+            2
+          ],
+          [
+            "🔥iphone #promax #gb take all #pc original a grade tested stock price:#??",
+            2
+          ],
+          [
+            "vp mtaasisi naweza pata kioo cha samsung s#+ na bei itakuwa sh ngap???",
+            2
+          ],
+          [
+            "salaam, how much is samsung galaxy s# ultra #gb and s# ultra #gb ?",
+            2
+          ],
+          [
+            "iphone # pro bei gani unauza??",
+            2
+          ],
+          [
+            "mtaasisi, vipi umeshaninunulia iphone se? 😅 nataka kuongeza na # how much????",
+            2
+          ],
+          [
+            "mtaasisi, hizi macbook air bei gani? usisahau iphone se",
+            2
+          ],
+          [
+            "van mambo vipi iphone # bei gani?!",
+            2
+          ],
+          [
+            "iphone # pro yangu unaniuzia bei gani????😎",
+            2
+          ],
+          [
+            "iphone #pro genuine replacement how much? without a message",
+            2
+          ],
+          [
+            "apple watch tunapata ya bei nzuri ?",
+            2
+          ],
+          [
+            "kuna macbook kutoka uk zinauzwa zikifika bei ikiwa nzuri utachukua?kuna i#i# pc #",
+            2
+          ],
+          [
+            "😜iko na battery health ngapi? gb # hii mitego sasa ndugu yangu 🤨",
+            2
+          ],
+          [
+            "mtaasisi, niaje? waya za charger iphone unazo? bei gn?",
+            2
+          ],
+          [
+            "mtaasisi una iphone x dukani? naomba price za matoleo x zote mlizonazo",
+            2
+          ]
+        ],
+        "price_general": [
+          [
+            "price",
+            132
+          ],
+          [
+            "how much",
+            55
+          ],
+          [
+            "bei",
+            49
+          ],
+          [
+            "how much?",
+            34
+          ],
+          [
+            "price?",
+            34
+          ],
+          [
+            "bei gan",
+            29
+          ],
+          [
+            "price please",
+            28
+          ],
+          [
+            "bei gani",
+            15
+          ],
+          [
+            "bei?",
+            12
+          ],
+          [
+            "bei gan?",
+            11
+          ],
+          [
+            "bei gani?",
+            10
+          ],
+          [
+            "price ?",
+            8
+          ],
+          [
+            "bei za laptop na tablet.pdf",
+            8
+          ],
+          [
+            "price please?",
+            6
+          ],
+          [
+            "price #",
+            5
+          ],
+          [
+            "bei gani kaka",
+            4
+          ],
+          [
+            "bei ngapi",
+            4
+          ],
+          [
+            "how much ?",
+            4
+          ],
+          [
+            "bei mkuu",
+            4
+          ],
+          [
+            "how much to pay",
+            4
+          ],
+          [
+            "how much you give bro",
+            4
+          ],
+          [
+            "ngapi bei",
+            4
+          ],
+          [
+            "bei haipungui boss..kwa # boss inaenda?",
+            2
+          ],
+          [
+            "bei gani hiyo bro",
+            2
+          ],
+          [
+            "bei ya chini sijui ni bei gani,? mana ile tab ilishakufaga muda napata tabu sana",
+            2
+          ]
+        ],
+        "location_delivery": [
+          [
+            "where are you",
+            42
+          ],
+          [
+            "where",
+            24
+          ],
+          [
+            "wapi",
+            12
+          ],
+          [
+            "where are you now",
+            10
+          ],
+          [
+            "where are you bro",
+            6
+          ],
+          [
+            "please send me your location",
+            6
+          ],
+          [
+            "saa ngapi?",
+            4
+          ],
+          [
+            "where are",
+            4
+          ],
+          [
+            "where are you know",
+            4
+          ],
+          [
+            "eti vile viti vya counter pale dukani kwako umenunua wapi na sh ngapi??",
+            2
+          ],
+          [
+            "okey so the person where is he or she located?",
+            2
+          ],
+          [
+            "where r u now",
+            2
+          ],
+          [
+            "mzigo nakachukue saa ngapi?",
+            2
+          ],
+          [
+            "ooooh ouk ndo your office iko wapi vilee???",
+            2
+          ],
+          [
+            "wapi io..?",
+            2
+          ],
+          [
+            "wapi sasa!!!!?",
+            2
+          ],
+          [
+            "bro follow this location?",
+            2
+          ],
+          [
+            "wapi hio",
+            2
+          ],
+          [
+            "wapi hii brotha niende",
+            2
+          ],
+          [
+            "ofisi ni wapi?",
+            2
+          ],
+          [
+            "nimeambiwa nikutumie hela ya kodi nafanya malipo wapi?",
+            2
+          ],
+          [
+            "umefeli wapi sasa mkuu ?",
+            2
+          ],
+          [
+            "duka liko api?",
+            2
+          ],
+          [
+            "asante, hua mnafunga saa ngapi?",
+            2
+          ],
+          [
+            "where is your location",
+            2
+          ]
+        ],
+        "accessories": [
+          [
+            "did you want airpods # airpods pro airpods # ??",
+            2
+          ],
+          [
+            "hii ni cover ya what phone?",
+            2
+          ],
+          [
+            "kk zile airpods uliniuzia last time hazjashuka kdg?",
+            2
+          ],
+          [
+            "do you take the battery",
+            2
+          ],
+          [
+            "habari yako kaka naomba kuuliza ac ya simu inaweza kudrain betri mpya",
+            2
+          ],
+          [
+            "nataka airpods pro sh ngap",
+            2
+          ],
+          [
+            "mtaasisi hivi mna battery ya iphone #??",
+            2
+          ],
+          [
+            "habari mtaasisi...hv unabadilisha battery za samsung au ni iphone tu?",
+            2
+          ],
+          [
+            "battery % ..? camera … bomba right",
+            2
+          ],
+          [
+            "mambo vipi , nahitaji hii adapter, ni ya levono thinkpad p# gen # laptop",
+            2
+          ],
+          [
+            "oi eti ile battery amna namna tunaweza pata?",
+            2
+          ],
+          [
+            "afu ile saa tulio toa ile battery ina shida gani na unaiuzaje?",
+            2
+          ],
+          [
+            "nataka battery ya mackbook pro #",
+            2
+          ],
+          [
+            "battery bado iko vizuri sio??",
+            2
+          ],
+          [
+            "apple watch se apple watch s# airpods # naomba bei kka ya hizo??",
+            2
+          ],
+          [
+            "chaja zake si utakua nazo og ?",
+            2
+          ],
+          [
+            "tunaanza na kusolve battery tu mkuu si ndyo??",
+            2
+          ],
+          [
+            "kama nilizuia kusafirisha battery nani kapokea??",
+            2
+          ],
+          [
+            "naweza kukuoder battery ya ipad.?",
+            2
+          ],
+          [
+            "bro your apple charger want time take ??",
+            2
+          ],
+          [
+            "battery ya smartwatch mnauzaje pale?",
+            2
+          ],
+          [
+            "nataka cover la ipad #th",
+            2
+          ],
+          [
+            "sorry unaweza ukawa na charger ya boombox #?",
+            2
+          ],
+          [
+            "izi cover zime kwisha ?",
+            2
+          ],
+          [
+            "battery health?",
+            2
+          ]
+        ],
+        "spec_compat": [
+          [
+            "habari maboss zangu naulizia # pro max , gb #",
+            4
+          ],
+          [
+            "which model?",
+            2
+          ],
+          [
+            "hello, hii ni gb ngapi?",
+            2
+          ],
+          [
+            "ipi kazi hizi naweza pata? # gb",
+            2
+          ],
+          [
+            "naomba uniulizie gb # na #",
+            2
+          ],
+          [
+            "sawaha zile #+ za gb # zipo???",
+            2
+          ],
+          [
+            "kwaiyo zilizopo ni gb #??",
+            2
+          ],
+          [
+            "gb gapi?",
+            2
+          ],
+          [
+            "nataka kujua how to get the year poa",
+            2
+          ],
+          [
+            "what gb u need?",
+            2
+          ],
+          [
+            "mtaasis storage ndan ngap hii?",
+            2
+          ],
+          [
+            "spear zipo kaka za hii model?",
+            2
+          ],
+          [
+            "imac # inch za # unanunua?",
+            2
+          ],
+          [
+            "macbook air m# unanunua?",
+            2
+          ],
+          [
+            "year?",
+            2
+          ],
+          [
+            "any specific model you want?",
+            2
+          ],
+          [
+            "uku zinabei mama. kama iphone xs max ? # gb ~ #/= #gb~ #/=",
+            2
+          ],
+          [
+            "iphone xs max gb #!? gb #!? bei yako",
+            2
+          ],
+          [
+            "kwahyo inafaa kutengenezeka?",
+            2
+          ],
+          [
+            "na za inch ngapi?",
+            2
+          ],
+          [
+            "a# kioo unacho?",
+            2
+          ],
+          [
+            "a# kipo?",
+            2
+          ],
+          [
+            "okey # nazo ni inch # na #?",
+            2
+          ],
+          [
+            "zile za #k ni model ngap vile?",
+            2
+          ],
+          [
+            "zina gb ngapi?",
+            2
+          ]
+        ],
+        "payment_installment": [
+          [
+            "pay to ?",
+            4
+          ],
+          [
+            "sawa asante,a wanted tu know the price☺️piaa huwa unafanya installment payment!?",
+            2
+          ],
+          [
+            "can't you pay via stripe or paypal?",
+            2
+          ],
+          [
+            "what mode you want to use for payment? what you mean by visa pay?",
+            2
+          ],
+          [
+            "you want to pay in crypto?",
+            2
+          ],
+          [
+            "malipo?",
+            2
+          ],
+          [
+            "he pay?",
+            2
+          ],
+          [
+            "lipa namba..?",
+            2
+          ],
+          [
+            "mzee wa michuzi, utafanya malipo kwenye ile account ya benki au mpesa?",
+            2
+          ],
+          [
+            "je, umekamilisha malipo ya # ya kuunganishwa?",
+            2
+          ],
+          [
+            "ndugu mteja, tunapenda kufahamu je wewe ni wakala wa lipa kwa simu?",
+            2
+          ],
+          [
+            "malipo nayafanya kwa danny?",
+            2
+          ],
+          [
+            "you integrate already mpesa??",
+            2
+          ],
+          [
+            "kodi nani analipa? mpangaji au mpangishaji",
+            2
+          ],
+          [
+            "nataka nifanye installment kwa ajili ya sound bar ya m-series",
+            2
+          ],
+          [
+            "tigopesa mpesa halopesa au?bank account",
+            2
+          ],
+          [
+            "nataka nichukue hiyo,hivi naweza lipa kwa installments?",
+            2
+          ],
+          [
+            "do you use mpesa api in tanzania?",
+            2
+          ],
+          [
+            "you can pay through till?",
+            2
+          ],
+          [
+            "it has mpesa button?",
+            2
+          ],
+          [
+            "naomba lipa namba yako",
+            2
+          ],
+          [
+            "naomba lipa no",
+            2
+          ],
+          [
+            "you paid or your going to pay now?",
+            2
+          ],
+          [
+            "na expectation ya kodi mkuu inaweza kuwa shingap ?",
+            2
+          ],
+          [
+            "hapo bado usafiri na kodi??",
+            2
+          ]
+        ],
+        "condition_used_new": [
+          [
+            "fresh bro vp hali aiseee?",
+            4
+          ],
+          [
+            "na amini ni used lakini zinakuwa mkataba au sio mzee??",
+            2
+          ],
+          [
+            "surface pro # # gb ssd na # gb ram brand new unauza bei gani?",
+            2
+          ],
+          [
+            "pia used iphone hauziii??",
+            2
+          ],
+          [
+            "sasa any how ya kupata my old data? maana naona iko brand new kabisa",
+            2
+          ],
+          [
+            "je naweza pata samsung smart watch pro # lte used?",
+            2
+          ],
+          [
+            "na used ambayo imenyoooka?",
+            2
+          ],
+          [
+            "fresh ,, laki nne ni mpya au used?",
+            2
+          ],
+          [
+            "do you guys buy used phones?",
+            2
+          ],
+          [
+            "sio haba, naendelea kupambana, alafu zile simu used umeshaleta?.",
+            2
+          ],
+          [
+            "nauliza kutop up hio ni used au mpya!?",
+            2
+          ],
+          [
+            "used ya dubai je?",
+            2
+          ],
+          [
+            "nilikua nauliza xr max bei gani? used",
+            2
+          ],
+          [
+            "iz home theater used bado zipo tajiri?",
+            2
+          ],
+          [
+            "hv inakua new?!",
+            2
+          ],
+          [
+            "u hali gani mtaasisi _*soundbar zimefika*_ _*soon naweka bei zake??*_",
+            2
+          ],
+          [
+            "used hatuna?",
+            2
+          ],
+          [
+            "incase nikitaka kuagiza used inawezekana??",
+            2
+          ],
+          [
+            "new tai chi dance challenge [URL]",
+            2
+          ],
+          [
+            "hivi # macho mawili used bei gani huko tajiri?",
+            2
+          ],
+          [
+            "zile high quality copy ulizimaliza..?",
+            2
+          ],
+          [
+            "ya box au used?",
+            2
+          ],
+          [
+            "ok poa ni refurb?",
+            2
+          ],
+          [
+            "safi bro vp hali?",
+            2
+          ],
+          [
+            "nakuuliza vp pale dukani nitapata chaji original ya iphone zipo?",
+            2
+          ]
+        ],
+        "trade_in": [
+          [
+            "kwa exchange ya #+..!!?😳",
+            2
+          ],
+          [
+            "anyone unaona inakaa kwa hii exchange?",
+            2
+          ],
+          [
+            "na nikisema nilipe cash mbila exchange ni sh gapi?",
+            2
+          ],
+          [
+            "lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?",
+            2
+          ],
+          [
+            "sasa ukiwa tayari niambie.. na mimi exchange yangu ni nini??? niipate mapema",
+            2
+          ],
+          [
+            "habari, naomba kuja kubadilisha pc",
+            2
+          ],
+          [
+            "exchange rate ead to tshs ngapi?",
+            2
+          ],
+          [
+            "exchange rate?",
+            2
+          ]
+        ],
+        "icloud_lock": [
+          [
+            "unazungumzia macbook ya icloud??",
+            2
+          ],
+          [
+            "na vp icloud ishatolewa???",
+            2
+          ],
+          [
+            "hii mlitoa icloud!???",
+            2
+          ],
+          [
+            "passcode?",
+            2
+          ],
+          [
+            "ok ina icloud?",
+            2
+          ],
+          [
+            "and icloud ikijaa ina tatizo kwenye simu?",
+            2
+          ]
+        ],
+        "warranty": [
+          [
+            "warranty za iwatch ni muda gan?",
+            2
+          ]
+        ]
+      }
+    },
+    "C_all": {
+      "total_questions": 36818,
+      "intent_counts": {
+        "other": 18882,
+        "availability": 10512,
+        "price_general": 4152,
+        "location_delivery": 1060,
+        "greeting": 901,
+        "spec_compat": 457,
+        "price_with_product": 263,
+        "condition_used_new": 212,
+        "accessories": 199,
+        "payment_installment": 110,
+        "trade_in": 30,
+        "icloud_lock": 25,
+        "warranty": 15
+      },
+      "intent_percentages": {
+        "other": 51.3,
+        "availability": 28.6,
+        "price_general": 11.3,
+        "location_delivery": 2.9,
+        "greeting": 2.4,
+        "spec_compat": 1.2,
+        "price_with_product": 0.7,
+        "condition_used_new": 0.6,
+        "accessories": 0.5,
+        "payment_installment": 0.3,
+        "trade_in": 0.1,
+        "icloud_lock": 0.1,
+        "warranty": 0.0
+      },
+      "examples": {
+        "other": [
+          "Habari za asubui",
+          "naomba msamaha boss",
+          "Bado sijapata mkuu\ntunafanyaje?",
+          "Shwal mishe zinaenda?",
+          "Mambo mshkaj wangu",
+          "Je naeza pata cn ya 250 iphone 6 uniletee ukija?",
+          "Nataka ik0basi mwambie kabisa dany",
+          "?????"
+        ],
+        "greeting": [
+          "mambo",
+          "Mambo",
+          "Niaje",
+          "Habari",
+          "Kwema?",
+          "Salama",
+          "habari",
+          "Mambo?"
+        ],
+        "availability": [
+          "Je utakua nayo from Dubai? Au niende pale dukan kwenu leo pale inauzwa?",
+          "Kuna mtu anashida na i phone 11 plain\nIvi kuagiza uko ni bei gan",
+          "una mto anaweza nitengenezea passport za watu wangu",
+          "This looks awesome, but unayo working prototype???",
+          "Hii una pdf yake?",
+          "Unazo?",
+          "Kuna kuona aina nyingi",
+          "Hello, how are you doing? Would you be available for a call sometime this week?"
+        ],
+        "price_with_product": [
+          "IPhone 6 plain bei gan?",
+          "Nilikua nauliza ku replace glass ya nyuma ya iPhone xs ilikua tsh ngapi?",
+          "Naomba kuuliza bei ya iphone 13 plain",
+          "Naomba hiyo video ya ipad 6 na bei ya mazoez",
+          "Hi Vanny, kufix screen ya Iphone 7 ni shilling ngapi?",
+          "Samsung kali nijipangeje mzee wangu? Bei zake",
+          "Naomba bei ya iphone 12 na 13",
+          "Jaman Iphone 13 na 14 pro max bei gani?"
+        ],
+        "price_general": [
+          "Bei haipungui boss..kwa 130 boss inaenda?",
+          "Bei gani hiyo bro",
+          "Bei gani",
+          "Bei ya chini sijui ni bei gani,? Mana ile tab ilishakufaga muda napata tabu sana",
+          "Bei gani kaka",
+          "Bei yao ndo shid",
+          "Bei ngp",
+          "Bei gani hiyo"
+        ],
+        "location_delivery": [
+          "Eti vile viti vya counter pale dukani kwako umenunua wapi na sh ngapi??",
+          "Okey so the person where is he or she located?",
+          "Where is ur shop",
+          "Where r u now",
+          "mzigo nakachukue saa ngapi?",
+          "Where are you",
+          "Ooooh ouk ndo your office iko wapi vilee???",
+          "wapi io..?"
+        ],
+        "accessories": [
+          "Did you want \nAirPods 2\nAirPods Pro \nAirPods 3 ??",
+          "Hii ni cover ya what phone?",
+          "Kk zile airpods uliniuzia last time hazjashuka kdg?",
+          "DO YOU TAKE THE BATTERY",
+          "Habari yako kaka \nNaomba kuuliza \n\nac ya simu inaweza kudrain betri mpya",
+          "Nataka airpods pro sh ngap",
+          "Mtaasisi hivi mna battery ya iPhone 6??",
+          "Habari mtaasisi...hv unabadilisha battery za samsung au ni iphone tu?"
+        ],
+        "spec_compat": [
+          "which model?",
+          "Hello, hii ni gb ngapi?",
+          "ipi kazi hizi naweza pata?\n256 gb",
+          "13 gb ngap?",
+          "Naomba uniulizie gb 64 na 32",
+          "Sawaha zile 6+ za gb 32 zipo???",
+          "Kwaiyo zilizopo ni gb 16??",
+          "Gb gapi?"
+        ],
+        "payment_installment": [
+          "Sawa asante,a wanted tu know the price☺️piaa huwa unafanya installment payment!?",
+          "Can't you pay via stripe or paypal?",
+          "what mode you want to use for payment? what you mean by Visa pay?",
+          "You want to pay in crypto?",
+          "Malipo?",
+          "he pay?",
+          "Can you pay 1600/= for that Projector?",
+          "Lipa namba..?"
+        ],
+        "condition_used_new": [
+          "Na amini ni used lakini zinakuwa mkataba au sio mzee??",
+          "Surface Pro 8, 512 GB SSD na 8 GB RAM brand new unauza bei gani?",
+          "pia used iphone hauziii??",
+          "Sasa any how ya kupata my old data? Maana naona iko brand new kabisa",
+          "Je naweza pata samsung smart watch Pro 5 LTE used?",
+          "Na used ambayo imenyoooka?",
+          "iPhone 7 32 \nSilver \nA/A+\nOriginal \n500 pes \nKindly confirm if u need ?",
+          "Hizi pcs niziweke Kama\n 1:“USED(like new)”\n2:“REFURBISHED” au\n3:“NEW”\n?"
+        ],
+        "trade_in": [
+          "Kwa Exchange ya 8+..!!?😳",
+          "Anyone unaona inakaa kwa hii exchange?",
+          "Na nikisema nilipe cash mbila exchange ni sh gapi?",
+          "Lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?",
+          "Sasa ukiwa tayari niambie..\nNa mimi exchange yangu ni nini??? Niipate mapema",
+          "Iphone 11 plain kubadilisha speaker ni sh ngap?",
+          "Habari, naomba kuja kubadilisha pc",
+          "Nataka kubadilisha jina hapa chap aya unaitwa nan sasa hv"
+        ],
+        "icloud_lock": [
+          "unazungumzia macbook ya icloud??",
+          "Na vp icloud ishatolewa???",
+          "Hii mlitoa icloud!???",
+          "Passcode?",
+          "icloud unatumia unatumia apple id ipi?",
+          "Ok ina icloud?",
+          "And icloud ikijaa ina tatizo kwenye simu?",
+          "Apple 🍎 NONACTIVE \n13. 128GB🇸🇦\nBlack……📦📦…….15??\nLock also usa 🇺🇸 non 8??"
+        ],
+        "warranty": [
+          "Boss \n1. warranty zimeisha pale mbele\n2.  Mtu wa interior design anauliza bajet yetu ipoje?",
+          "Soundbar unatoa warranty?",
+          "Drone zina warranty??? Muda gani??",
+          "Warranty za iwatch ni muda gan?",
+          "LCD warranty have?",
+          "Warranty card si ulimpa? na nyuma umeandika kioo damage ofisi haihusiki? \nThen mnyooshee maelekezo",
+          "Stiker warranty ya nani hii??",
+          "A52s ya Africa warranty napataje mkuu?"
+        ]
+      },
+      "top_templates": {
+        "other": [
+          [
+            "[URL]",
+            1779
+          ],
+          [
+            "mambo vp",
+            102
+          ],
+          [
+            "???",
+            98
+          ],
+          [
+            "mambo vipi",
+            90
+          ],
+          [
+            "‎can you please add me to the group?",
+            50
+          ],
+          [
+            "habari boss",
+            46
+          ],
+          [
+            "please",
+            44
+          ],
+          [
+            "habari yako",
+            42
+          ],
+          [
+            "????",
+            38
+          ],
+          [
+            "naomba bei",
+            36
+          ],
+          [
+            "mambo vipi weweeeeee",
+            36
+          ],
+          [
+            "naomba",
+            34
+          ],
+          [
+            "mambo van",
+            34
+          ],
+          [
+            "salama kaka",
+            30
+          ],
+          [
+            "salama boss",
+            30
+          ],
+          [
+            "mambo vip",
+            26
+          ],
+          [
+            "niaje mzee",
+            26
+          ],
+          [
+            "niaje bro",
+            22
+          ],
+          [
+            "niaje kaka",
+            22
+          ],
+          [
+            "habari yako boss",
+            22
+          ],
+          [
+            "[URL] bonyeza link hiyo 👆🏼 utakutana na video ndefu ya rode go ii wireless mic.",
+            22
+          ],
+          [
+            "mambo vipi?",
+            20
+          ],
+          [
+            "how are you?",
+            18
+          ],
+          [
+            "can you please add me to the group?",
+            18
+          ],
+          [
+            "#name?",
+            18
+          ]
+        ],
+        "availability": [
+          [
+            "available",
+            6597
+          ],
+          [
+            "ipo",
+            110
+          ],
+          [
+            "available now",
+            63
+          ],
+          [
+            "ipo #",
+            16
+          ],
+          [
+            "available stock",
+            14
+          ],
+          [
+            "ipo boss",
+            13
+          ],
+          [
+            "kuna offer mdebwedo ya background papers",
+            13
+          ],
+          [
+            "available bei #/= haipungui maboss😁",
+            13
+          ],
+          [
+            "available now microphone studio with sound card #/=",
+            13
+          ],
+          [
+            "available #",
+            13
+          ],
+          [
+            "mambo! karibu kwenye lats chance. tuna huduma za kurekebisha vifaa na kuuza. una tatizo gani?",
+            12
+          ],
+          [
+            "kuna hii pixel # jaman inataka #k",
+            12
+          ],
+          [
+            "ipo kwenye ofa",
+            11
+          ],
+          [
+            "kuna hii",
+            10
+          ],
+          [
+            "available 💸💸 *𝒔𝒊𝒛𝒆 , # ,# ,",
+            10
+          ],
+          [
+            "available kitonga",
+            9
+          ],
+          [
+            "available now💥",
+            9
+          ],
+          [
+            "available quantity",
+            8
+          ],
+          [
+            "kuna promotion ya tsh# kutoka u.n",
+            8
+          ],
+          [
+            "ipo kwenye offer njoo inbox",
+            8
+          ],
+          [
+            "available sizes. #…………#",
+            8
+          ],
+          [
+            "available fanya kama unajikuna wahi inbox tukubwagie bei",
+            7
+          ],
+          [
+            "kuna punguzo njoo chap kwa haraka",
+            7
+          ],
+          [
+            "ipo?",
+            6
+          ],
+          [
+            "unayo",
+            6
+          ]
+        ],
+        "price_with_product": [
+          [
+            "naomba iphone x #gb no face bei ya kitonga sana zingatia body 🙏🏽🙏🏽",
+            4
+          ],
+          [
+            "naomba iphone #pro #gb clean bei ya kwacha.",
+            4
+          ],
+          [
+            "apple watch series # #mm battery #% cellular✅ mnalipia ngapi..??!🤷🏻‍♂️",
+            3
+          ],
+          [
+            "iphone # plain bei gan?",
+            2
+          ],
+          [
+            "nilikua nauliza ku replace glass ya nyuma ya iphone xs ilikua tsh ngapi?",
+            2
+          ],
+          [
+            "naomba kuuliza bei ya iphone # plain",
+            2
+          ],
+          [
+            "naomba hiyo video ya ipad # na bei ya mazoez",
+            2
+          ],
+          [
+            "hi vanny, kufix screen ya iphone # ni shilling ngapi?",
+            2
+          ],
+          [
+            "samsung kali nijipangeje mzee wangu? bei zake",
+            2
+          ],
+          [
+            "naomba bei ya iphone # na #",
+            2
+          ],
+          [
+            "jaman iphone # na # pro max bei gani?",
+            2
+          ],
+          [
+            "hii ni mpya au used?? battery life ni ngapi",
+            2
+          ],
+          [
+            "dah nilikuwa na #k kaka siwezi pata iphone kali kwa bei za dubai?",
+            2
+          ],
+          [
+            "🔥🔥iphone # (#gb) original stock a$a+ 🔥🔥 (price #??)",
+            2
+          ],
+          [
+            "🔥iphone #promax #gb take all #pc original a grade tested stock price:#??",
+            2
+          ],
+          [
+            "vp mtaasisi naweza pata kioo cha samsung s#+ na bei itakuwa sh ngap???",
+            2
+          ],
+          [
+            "samsung note #+ #/#gb how much?",
+            2
+          ],
+          [
+            "salaam, how much is samsung galaxy s# ultra #gb and s# ultra #gb ?",
+            2
+          ],
+          [
+            "iphone # pro bei gani unauza??",
+            2
+          ],
+          [
+            "mtaasisi, vipi umeshaninunulia iphone se? 😅 nataka kuongeza na # how much????",
+            2
+          ],
+          [
+            "mtaasisi, hizi macbook air bei gani? usisahau iphone se",
+            2
+          ],
+          [
+            "van mambo vipi iphone # bei gani?!",
+            2
+          ],
+          [
+            "iphone # pro yangu unaniuzia bei gani????😎",
+            2
+          ],
+          [
+            "iphone #pro genuine replacement how much? without a message",
+            2
+          ],
+          [
+            "apple watch tunapata ya bei nzuri ?",
+            2
+          ]
+        ],
+        "price_general": [
+          [
+            "bei #",
+            902
+          ],
+          [
+            "price",
+            308
+          ],
+          [
+            "bei",
+            219
+          ],
+          [
+            "bei #m",
+            177
+          ],
+          [
+            "bei #/=",
+            169
+          ],
+          [
+            "how much",
+            134
+          ],
+          [
+            "price?",
+            60
+          ],
+          [
+            "bei gan",
+            52
+          ],
+          [
+            "bei?",
+            51
+          ],
+          [
+            "bei gani",
+            47
+          ],
+          [
+            "bei yake",
+            43
+          ],
+          [
+            "price please",
+            40
+          ],
+          [
+            "how much?",
+            38
+          ],
+          [
+            "bei ya jioni kabisaaa lipia #/= tuu🥹",
+            35
+          ],
+          [
+            "price yake",
+            30
+          ],
+          [
+            "bei #/= original",
+            28
+          ],
+          [
+            "bei # full na shortgun",
+            24
+          ],
+          [
+            "bei # size # # # # # #",
+            24
+          ],
+          [
+            "bei ya sikukuu, jichagulie.",
+            22
+          ],
+          [
+            "ngapi",
+            21
+          ],
+          [
+            "bei za sikukuu",
+            18
+          ],
+          [
+            "bei # size # # # # #",
+            18
+          ],
+          [
+            "bei gan?",
+            17
+          ],
+          [
+            "bei imekufaa #",
+            17
+          ],
+          [
+            "bei gani?",
+            16
+          ]
+        ],
+        "location_delivery": [
+          [
+            "where",
+            60
+          ],
+          [
+            "where are you",
+            58
+          ],
+          [
+            "‎open this link to join my whatsapp group: [URL]",
+            58
+          ],
+          [
+            "wapi",
+            34
+          ],
+          [
+            "where are you now",
+            14
+          ],
+          [
+            "where r u",
+            14
+          ],
+          [
+            "where?",
+            8
+          ],
+          [
+            "where r u now",
+            6
+          ],
+          [
+            "where are you bro",
+            6
+          ],
+          [
+            "saa ngapi?",
+            6
+          ],
+          [
+            "please send me your location",
+            6
+          ],
+          [
+            "delivery friday # # #$. 🇮🇳 # # #$. 🇮🇳 # # #$ 🇮🇳",
+            6
+          ],
+          [
+            "wapi?",
+            6
+          ],
+          [
+            "nikutumie wapi?",
+            4
+          ],
+          [
+            "[URL]",
+            4
+          ],
+          [
+            "where are",
+            4
+          ],
+          [
+            "wapi iyo",
+            4
+          ],
+          [
+            "wapi io bro",
+            4
+          ],
+          [
+            "wapi io",
+            4
+          ],
+          [
+            "where are you know",
+            4
+          ],
+          [
+            "uko wapi?",
+            4
+          ],
+          [
+            "wapi hio?",
+            4
+          ],
+          [
+            "where ?",
+            4
+          ],
+          [
+            "where r you now",
+            4
+          ],
+          [
+            "wapi iyoo",
+            4
+          ]
+        ],
+        "accessories": [
+          [
+            "did you want airpods # airpods pro airpods # ??",
+            2
+          ],
+          [
+            "hii ni cover ya what phone?",
+            2
+          ],
+          [
+            "kk zile airpods uliniuzia last time hazjashuka kdg?",
+            2
+          ],
+          [
+            "do you take the battery",
+            2
+          ],
+          [
+            "habari yako kaka naomba kuuliza ac ya simu inaweza kudrain betri mpya",
+            2
+          ],
+          [
+            "nataka airpods pro sh ngap",
+            2
+          ],
+          [
+            "mtaasisi hivi mna battery ya iphone #??",
+            2
+          ],
+          [
+            "habari mtaasisi...hv unabadilisha battery za samsung au ni iphone tu?",
+            2
+          ],
+          [
+            "battery % ..? camera … bomba right",
+            2
+          ],
+          [
+            "same this battery?",
+            2
+          ],
+          [
+            "#pcs battery i send it ?",
+            2
+          ],
+          [
+            "# battery ?",
+            2
+          ],
+          [
+            "only cable?",
+            2
+          ],
+          [
+            "which battery?",
+            2
+          ],
+          [
+            "br kwenye mzig mpya kun iz cover shngap..?",
+            2
+          ],
+          [
+            "br izi case mpya ni shngap?",
+            2
+          ],
+          [
+            "....bss bei ya cable mount nyeupe za kufichia waya za tv ni ngapi ?",
+            2
+          ],
+          [
+            "izi key board za macbook za battery shngap ?",
+            2
+          ],
+          [
+            "imaaa anachukua hizi cover # tumuuzie kwa shngap ?",
+            2
+          ],
+          [
+            "samahan. hii adapter inauzwa shingapi ?",
+            2
+          ],
+          [
+            "mambo vipi , nahitaji hii adapter, ni ya levono thinkpad p# gen # laptop",
+            2
+          ],
+          [
+            "oi eti ile battery amna namna tunaweza pata?",
+            2
+          ],
+          [
+            "afu ile saa tulio toa ile battery ina shida gani na unaiuzaje?",
+            2
+          ],
+          [
+            "nataka battery ya mackbook pro #",
+            2
+          ],
+          [
+            "battery bado iko vizuri sio??",
+            2
+          ]
+        ],
+        "spec_compat": [
+          [
+            "[URL]",
+            10
+          ],
+          [
+            "gb?",
+            6
+          ],
+          [
+            "naomba #plain gb # bm body nyoofuu nalipaaa cash ankoo leo leo",
+            6
+          ],
+          [
+            "which model?",
+            4
+          ],
+          [
+            "a#?",
+            4
+          ],
+          [
+            "habari maboss zangu naulizia # pro max , gb #",
+            4
+          ],
+          [
+            "gb??",
+            4
+          ],
+          [
+            "# gb ?",
+            4
+          ],
+          [
+            "want to sell 💻 air m# *mly#lla* m# #gb #gb silver system active *#??*",
+            3
+          ],
+          [
+            "naomba # pro max gb # dm bongo",
+            3
+          ],
+          [
+            "hello, hii ni gb ngapi?",
+            2
+          ],
+          [
+            "ipi kazi hizi naweza pata? # gb",
+            2
+          ],
+          [
+            "# gb ngap?",
+            2
+          ],
+          [
+            "naomba uniulizie gb # na #",
+            2
+          ],
+          [
+            "sawaha zile #+ za gb # zipo???",
+            2
+          ],
+          [
+            "kwaiyo zilizopo ni gb #??",
+            2
+          ],
+          [
+            "gb gapi?",
+            2
+          ],
+          [
+            "nataka kujua how to get the year poa",
+            2
+          ],
+          [
+            "what gb u need?",
+            2
+          ],
+          [
+            "mtaasis storage ndan ngap hii?",
+            2
+          ],
+          [
+            "spear zipo kaka za hii model?",
+            2
+          ],
+          [
+            "imac # inch za # unanunua?",
+            2
+          ],
+          [
+            "macbook air m# unanunua?",
+            2
+          ],
+          [
+            "year?",
+            2
+          ],
+          [
+            "any specific model you want?",
+            2
+          ]
+        ],
+        "payment_installment": [
+          [
+            "naomba lipa namba",
+            6
+          ],
+          [
+            "pay to ?",
+            4
+          ],
+          [
+            "sawa asante,a wanted tu know the price☺️piaa huwa unafanya installment payment!?",
+            2
+          ],
+          [
+            "can't you pay via stripe or paypal?",
+            2
+          ],
+          [
+            "what mode you want to use for payment? what you mean by visa pay?",
+            2
+          ],
+          [
+            "you want to pay in crypto?",
+            2
+          ],
+          [
+            "malipo?",
+            2
+          ],
+          [
+            "he pay?",
+            2
+          ],
+          [
+            "can you pay #/= for that projector?",
+            2
+          ],
+          [
+            "lipa namba..?",
+            2
+          ],
+          [
+            "mzee wa michuzi, utafanya malipo kwenye ile account ya benki au mpesa?",
+            2
+          ],
+          [
+            "je, umekamilisha malipo ya # ya kuunganishwa?",
+            2
+          ],
+          [
+            "ndugu mteja, tunapenda kufahamu je wewe ni wakala wa lipa kwa simu?",
+            2
+          ],
+          [
+            "malipo nayafanya kwa danny?",
+            2
+          ],
+          [
+            "you integrate already mpesa??",
+            2
+          ],
+          [
+            "kodi nani analipa? mpangaji au mpangishaji",
+            2
+          ],
+          [
+            "nataka nifanye installment kwa ajili ya sound bar ya m-series",
+            2
+          ],
+          [
+            "how will you pay??",
+            2
+          ],
+          [
+            "tigopesa mpesa halopesa au?bank account",
+            2
+          ],
+          [
+            "nataka nichukue hiyo,hivi naweza lipa kwa installments?",
+            2
+          ],
+          [
+            "pesa ya kodi naiweka kwenye acc ipi?",
+            2
+          ],
+          [
+            "mtaasisi nataka nifanye deposit hapa, pesa nilipe kwa bank?",
+            2
+          ],
+          [
+            "do you use mpesa api in tanzania?",
+            2
+          ],
+          [
+            "you can pay through till?",
+            2
+          ],
+          [
+            "it has mpesa button?",
+            2
+          ]
+        ],
+        "condition_used_new": [
+          [
+            "u hali gani?",
+            4
+          ],
+          [
+            "fresh bro vp hali aiseee?",
+            4
+          ],
+          [
+            "xr body ya #pro #gb bh # clean as new with original box unalipajeee tajiri???",
+            3
+          ],
+          [
+            "na amini ni used lakini zinakuwa mkataba au sio mzee??",
+            2
+          ],
+          [
+            "surface pro # # gb ssd na # gb ram brand new unauza bei gani?",
+            2
+          ],
+          [
+            "pia used iphone hauziii??",
+            2
+          ],
+          [
+            "sasa any how ya kupata my old data? maana naona iko brand new kabisa",
+            2
+          ],
+          [
+            "je naweza pata samsung smart watch pro # lte used?",
+            2
+          ],
+          [
+            "na used ambayo imenyoooka?",
+            2
+          ],
+          [
+            "hizi pcs niziweke kama #:“used(like new)” #:“refurbished” au #:“new” ?",
+            2
+          ],
+          [
+            "fresh ,, laki nne ni mpya au used?",
+            2
+          ],
+          [
+            "do you guys buy used phones?",
+            2
+          ],
+          [
+            "sio haba, naendelea kupambana, alafu zile simu used umeshaleta?.",
+            2
+          ],
+          [
+            "nauliza kutop up hio ni used au mpya!?",
+            2
+          ],
+          [
+            "used ya dubai je?",
+            2
+          ],
+          [
+            "nilikua nauliza xr max bei gani? used",
+            2
+          ],
+          [
+            "iz home theater used bado zipo tajiri?",
+            2
+          ],
+          [
+            "hv inakua new?!",
+            2
+          ],
+          [
+            "copy nzuri?",
+            2
+          ],
+          [
+            "u hali gani mtaasisi _*soundbar zimefika*_ _*soon naweka bei zake??*_",
+            2
+          ],
+          [
+            "used hatuna?",
+            2
+          ],
+          [
+            "incase nikitaka kuagiza used inawezekana??",
+            2
+          ],
+          [
+            "used?",
+            2
+          ],
+          [
+            "ile #phone # used #gb mteja anahitaji yupo arusha bei ya mwisho???",
+            2
+          ],
+          [
+            "boss kioo kimekuja hivi, ni used?",
+            2
+          ]
+        ],
+        "trade_in": [
+          [
+            "kwa exchange ya #+..!!?😳",
+            2
+          ],
+          [
+            "anyone unaona inakaa kwa hii exchange?",
+            2
+          ],
+          [
+            "na nikisema nilipe cash mbila exchange ni sh gapi?",
+            2
+          ],
+          [
+            "lakini pia bei za exchange ndio zimebadilishwa au pia na simu husika?",
+            2
+          ],
+          [
+            "sasa ukiwa tayari niambie.. na mimi exchange yangu ni nini??? niipate mapema",
+            2
+          ],
+          [
+            "iphone # plain kubadilisha speaker ni sh ngap?",
+            2
+          ],
+          [
+            "habari, naomba kuja kubadilisha pc",
+            2
+          ],
+          [
+            "nataka kubadilisha jina hapa chap aya unaitwa nan sasa hv",
+            2
+          ],
+          [
+            "exchange rate ead to tshs ngapi?",
+            2
+          ],
+          [
+            "exchange rate?",
+            2
+          ],
+          [
+            "nataka pia kubadilisha kiooo cha saaa",
+            2
+          ],
+          [
+            "hiyo ya kubadilisha?",
+            2
+          ],
+          [
+            "greetings boss hivi naomba kuuliza tunaweza kufanya exchange hp with macbook?",
+            2
+          ],
+          [
+            "(nunua salama na inauzwa) ?",
+            2
+          ],
+          [
+            "unanichanganya mara umetaja bei mara mta exchange na content?",
+            2
+          ]
+        ],
+        "icloud_lock": [
+          [
+            "naomba kioo cha #promax cha icloud",
+            4
+          ],
+          [
+            "unazungumzia macbook ya icloud??",
+            2
+          ],
+          [
+            "na vp icloud ishatolewa???",
+            2
+          ],
+          [
+            "hii mlitoa icloud!???",
+            2
+          ],
+          [
+            "passcode?",
+            2
+          ],
+          [
+            "icloud unatumia unatumia apple id ipi?",
+            2
+          ],
+          [
+            "ok ina icloud?",
+            2
+          ],
+          [
+            "and icloud ikijaa ina tatizo kwenye simu?",
+            2
+          ],
+          [
+            "naomba kioo cha # pro max cha icloud?",
+            2
+          ],
+          [
+            "kaka mpakistan gan? afunge display kioo cha icloud",
+            2
+          ],
+          [
+            "apple 🍎 nonactive # #gb🇸🇦 black……📦📦…….#?? lock also usa 🇺🇸 non #??",
+            1
+          ],
+          [
+            "naomba kioo cha icloud cha #promax cha icloud njoo na ofa yako",
+            1
+          ],
+          [
+            "naomba x no face kitonga ata bypass naomba x no face kitonga ata bypass",
+            1
+          ]
+        ],
+        "warranty": [
+          [
+            "boss # warranty zimeisha pale mbele # mtu wa interior design anauliza bajet yetu ipoje?",
+            2
+          ],
+          [
+            "soundbar unatoa warranty?",
+            2
+          ],
+          [
+            "drone zina warranty??? muda gani??",
+            2
+          ],
+          [
+            "warranty za iwatch ni muda gan?",
+            2
+          ],
+          [
+            "lcd warranty have?",
+            2
+          ],
+          [
+            "warranty card si ulimpa? na nyuma umeandika kioo damage ofisi haihusiki? then mnyooshee maelekezo",
+            2
+          ],
+          [
+            "stiker warranty ya nani hii??",
+            2
+          ],
+          [
+            "a#s ya africa warranty napataje mkuu?",
+            1
+          ]
+        ]
+      }
+    }
+  },
+  "qa_pairs_sample": [
+    {
+      "session": "Sixbert Gloria",
+      "question": "mambo",
+      "answer": "Mabaya",
+      "intent": "greeting"
+    },
+    {
+      "session": "Sixbert Gloria",
+      "question": "naomba msamaha boss",
+      "answer": "Wakishua",
+      "intent": "other"
+    },
+    {
+      "session": "Sixbert Gloria",
+      "question": "Bado sijapata mkuu\ntunafanyaje?",
+      "answer": "Dah unaniangusha sana groria",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "tunatengeneza moja au ziki tofauti tofauti ? Kwa maana ya idadi",
+      "answer": "Ziko tofauti",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Hapa umesema poster !? Ni Poster au Squeeze Back Kiongozi ?",
+      "answer": "maelezo hayo hapo",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Okay ulisema posts 3 tofauti izo zingine bei yake ?",
+      "answer": "Tuanze na moja mzee",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Tunashinda?",
+      "answer": "Nakusikiliza",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "wakunyumba nini ?",
+      "answer": "Kabisa🤣",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Mambo vip, naoma logo ya inauzwa niweke kwenye hii squeeze back",
+      "answer": "Rangi gani inafaa",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Naomba kujua solution ya izo issue mbili",
+      "answer": "Kioo ni kubadili tuu",
+      "intent": "other"
+    },
+    {
+      "session": "Mar-20",
+      "question": "How much",
+      "answer": "Njoo nayo kwanza mkuu",
+      "intent": "price_general"
+    },
+    {
+      "session": "Mar-20",
+      "question": "Mambo vipi kaka",
+      "answer": "Izo ninazo nyingi sana kaka",
+      "intent": "other"
+    },
+    {
+      "session": "Official MtengaB",
+      "question": "Shwal mishe zinaenda?",
+      "answer": "Ngumu kinoma",
+      "intent": "other"
+    },
+    {
+      "session": "Gloria❤🍓",
+      "question": "Mambo",
+      "answer": "Pow vp",
+      "intent": "greeting"
+    },
+    {
+      "session": "No Name",
+      "question": "Mambo vipi",
+      "answer": "Zipo shop",
+      "intent": "other"
+    },
+    {
+      "session": "No Name",
+      "question": "Dirhams..?",
+      "answer": "🙏🏾🙏🏾",
+      "intent": "other"
+    },
+    {
+      "session": "No Name",
+      "question": "Habari Mkuu",
+      "answer": "Kwema vp",
+      "intent": "other"
+    },
+    {
+      "session": "Alex Omary",
+      "question": "Je naeza pata cn ya 250 iphone 6 uniletee ukija?",
+      "answer": "Happy",
+      "intent": "other"
+    },
+    {
+      "session": "Alex Omary",
+      "question": "Nataka ik0basi mwambie kabisa dany",
+      "answer": "Tayari",
+      "intent": "other"
+    },
+    {
+      "session": "Alex Omary",
+      "question": "?????",
+      "answer": "Okey good",
+      "intent": "other"
+    },
+    {
+      "session": "Alex Omary",
+      "question": "So umeongea  nae??",
+      "answer": "Yan happy unpnda kitu kimoja tuongee mara elfu moja",
+      "intent": "other"
+    },
+    {
+      "session": "Winnie Salim",
+      "question": "Je utakua nayo from Dubai? Au niende pale dukan kwenu leo pale inauzwa?",
+      "answer": "Untk iphone au",
+      "intent": "availability"
+    },
+    {
+      "session": "Chatter sr",
+      "question": "Vp ile issue ya app ulishakamilisha!?",
+      "answer": "Nlikupgia sana cm hukupokea",
+      "intent": "other"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Bei haipungui boss..kwa 130 boss inaenda?",
+      "answer": "Chek namba ya ofisini",
+      "intent": "price_general"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Na hizi wanauzaje??",
+      "answer": "Sijauliza coz sio husika",
+      "intent": "other"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Sawa...so sh. Ngapi watataka kaka??",
+      "answer": "6015110 jina inauzwa",
+      "intent": "other"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Dukani kuna 15 pro ?",
+      "answer": "1.7 tuu boss",
+      "intent": "availability"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Line ya pili ipo wap ?",
+      "answer": "Chini ya trey",
+      "intent": "availability"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Naomba nizifiate kesho na ile ssd",
+      "answer": "Mkuu",
+      "intent": "other"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Hivi ile 15 pro nilionunua hai support Apple intelligence?",
+      "answer": "Hahaaa badooooo",
+      "intent": "other"
+    },
+    {
+      "session": "Jul-19",
+      "question": "Sh ngap?",
+      "answer": "Mkuu",
+      "intent": "other"
+    },
+    {
+      "session": "Adonis Mdendemi",
+      "question": "Kuna mtu anashida na i phone 11 plain\nIvi kuagiza uko ni bei gan",
+      "answer": "Hii si namba ya kazi mkuu",
+      "intent": "availability"
+    },
+    {
+      "session": "Ayub",
+      "question": "Imefaa???",
+      "answer": "Passward inagoma",
+      "intent": "other"
+    },
+    {
+      "session": "Allie",
+      "question": "Mpo wazi mida gani?",
+      "answer": "Kuanzia saa 4 asubuhi mapaka saa 4 usiku",
+      "intent": "other"
+    },
+    {
+      "session": "JyCarls_tz",
+      "question": "X6 ???",
+      "answer": "🔥🔥🔥🔥",
+      "intent": "other"
+    },
+    {
+      "session": "Studio Pixola Interiors",
+      "question": "Na ile 300k utakuja au nije dukani ili tuweke na yale makubaliano yetu?",
+      "answer": "Powa",
+      "intent": "other"
+    },
+    {
+      "session": "Studio Pixola Interiors",
+      "question": "Kaka jina lako kamili nani?",
+      "answer": "Samuel masika",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Nkuletee uicheki?! 😭😭😭😭😭😭",
+      "answer": "Mambo",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Did you get a time to look at it?!",
+      "answer": "Jmni nlikuwa bzy kdg mama",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Haitaki window update?",
+      "answer": "Uje basi",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Mamboooo?! Tayari nije?",
+      "answer": "Hujambo",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Update me please, umeshafanikiwa?",
+      "answer": "Akiii",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Mambo yasiwe mengi",
+      "answer": "Nataka zawadi",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Au figo?!!",
+      "answer": "😅😅😅😅",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Mpk ifike ngapii??! 😭😭😭",
+      "answer": "Jaman ningepata muda hata wa kuitafuta hio 550",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Yaani nitafute M 1.150 ?",
+      "answer": "Utapeli gan tena",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Yan mwaka huu uishe nisiwe na iphone ya kueleweka?! Mm wa kutumia 6S  mm??? 😂",
+      "answer": "Jaman mm tena😒😒",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Hya nambie nikatapeli pesa ngapi nipate iyo simu?? Nmechoka mm 🤣🤣🤣🤣",
+      "answer": "Unadhani ni bei sasa ni 1.15 tuu",
+      "intent": "other"
+    },
+    {
+      "session": "Raudhwa",
+      "question": "Milioni moja na laki moja na nusu! Correct?",
+      "answer": "Yeah",
+      "intent": "other"
+    },
+    {
+      "session": "+971 56 100 8125",
+      "question": "What laptop you brought from us?",
+      "answer": "Ask your boss he is not picking the phone",
+      "intent": "other"
+    },
+    {
+      "session": "Macs Bar Dubai",
+      "question": "your calling number please?",
+      "answer": "+971 52 701 4932",
+      "intent": "other"
+    },
+    {
+      "session": "Lwanda",
+      "question": "Mambo niaje",
+      "answer": "Powa vp kaka",
+      "intent": "other"
+    },
+    {
+      "session": "Lwanda",
+      "question": "Vip ushasepa",
+      "answer": "Bado mzee",
+      "intent": "other"
+    },
+    {
+      "session": "Lwanda",
+      "question": "una mto anaweza nitengenezea passport za watu wangu",
+      "answer": "Dah hapana kaka",
+      "intent": "availability"
+    },
+    {
+      "session": "Miriamjumaa",
+      "question": "Mambo",
+      "answer": "Powa vp",
+      "intent": "greeting"
+    },
+    {
+      "session": "Kevoo",
+      "question": "Ile logo mark huitumii??",
+      "answer": "Unashauri nn mzee",
+      "intent": "other"
+    },
+    {
+      "session": "Kevoo",
+      "question": "This looks awesome, but unayo working prototype???",
+      "answer": "Ndo hio",
+      "intent": "availability"
+    },
+    {
+      "session": "Kevoo",
+      "question": "Hii una pdf yake?",
+      "answer": "Itabidi nkutolee",
+      "intent": "availability"
+    },
+    {
+      "session": "Anonymous",
+      "question": "So wats the process and expenses?",
+      "answer": "Its 9$ per kg",
+      "intent": "other"
+    },
+    {
+      "session": "Anonymous",
+      "question": "Okey so the person where is he or she located?",
+      "answer": "St deira",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "Fasilia",
+      "question": "Unazo?",
+      "answer": "No boss",
+      "intent": "availability"
+    },
+    {
+      "session": "Lwanda Dubai",
+      "question": "Vip mzee baba jamaa ako asaivi ana kazi ya security marina",
+      "answer": "We jamaa unanamba ya tatu hii🤣",
+      "intent": "other"
+    },
+    {
+      "session": "Lwanda Dubai",
+      "question": "Vip lini pande hizii tena naona dada zetu wamekimbia dubai",
+      "answer": "Kaka acha tuu",
+      "intent": "other"
+    },
+    {
+      "session": "Mr Niko",
+      "question": "unafanya biashara gani?",
+      "answer": "https://instagram.com/inauzwa?utm_medium=copy_link",
+      "intent": "other"
+    },
+    {
+      "session": "Djween",
+      "question": "Aahh ushwah mla?",
+      "answer": "Na emagine tuu yaan",
+      "intent": "other"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Mambo",
+      "answer": "Ipi",
+      "intent": "greeting"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Now?",
+      "answer": "Why not",
+      "intent": "other"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Mm nauliza unanionesha hvo ndo nn ?",
+      "answer": "Jamani mbona mkaliii😥",
+      "intent": "other"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Kuna kuona aina nyingi",
+      "answer": "Nlitk kuja nkuone bana😹",
+      "intent": "availability"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Woow kweli?",
+      "answer": "Yes",
+      "intent": "other"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Where is ur shop",
+      "answer": "Mwenge hapa",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Mambo",
+      "answer": "Utanambia basi",
+      "intent": "greeting"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Mambo",
+      "answer": "Wap",
+      "intent": "greeting"
+    },
+    {
+      "session": "1g Tegeta",
+      "question": "Nataka laptop sh ngap",
+      "answer": "Powa vp",
+      "intent": "other"
+    },
+    {
+      "session": "rey_closet",
+      "question": "Habari",
+      "answer": "Hey hii si namba ya ofisini",
+      "intent": "greeting"
+    },
+    {
+      "session": "Mirror Etiquette",
+      "question": "Sure, kindly advise what time next week could be convenient for a call?",
+      "answer": "Okey",
+      "intent": "other"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Niaje",
+      "answer": "Namba ngap",
+      "intent": "greeting"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Kaka umeamkaje?",
+      "answer": "Nambie",
+      "intent": "other"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "???",
+      "answer": "Mm sijtoka",
+      "intent": "other"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Niaje",
+      "answer": "Nasema maduka wew mm navaanje nguo yako kaka",
+      "intent": "greeting"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Wewe wap??",
+      "answer": "Mi ndo natoka ila nina kaz mbili tatu",
+      "intent": "other"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Uko wao?",
+      "answer": "Wap",
+      "intent": "other"
+    },
+    {
+      "session": "Shabir Amasha",
+      "question": "Beach leo??",
+      "answer": "Ni swali tuu",
+      "intent": "other"
+    },
+    {
+      "session": "Hawa Ronaldo",
+      "question": "Imesimama bei gani?",
+      "answer": "450",
+      "intent": "other"
+    },
+    {
+      "session": "Mjoli",
+      "question": "Naomba kukuuliza kitu aisee",
+      "answer": "Dah swali gumu sana",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 125 3513",
+      "question": "Where r u now",
+      "answer": "Sabca",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "+255 658 242 829",
+      "question": "https://maps.google.com/?q=25.277746,55.308434",
+      "answer": "Wait mkuu naongea na jama wa hela hapa",
+      "intent": "other"
+    },
+    {
+      "session": "Kings Apple Star",
+      "question": "How are you?",
+      "answer": "Ja shooting club",
+      "intent": "other"
+    },
+    {
+      "session": "Santana Melody",
+      "question": "Niaje blood",
+      "answer": "Mambo vp",
+      "intent": "other"
+    },
+    {
+      "session": "Santana Melody",
+      "question": "Niaje mzee",
+      "answer": "Niaje",
+      "intent": "other"
+    },
+    {
+      "session": "+971 50 865 7016",
+      "question": "What is that please?",
+      "answer": "Cisco switch",
+      "intent": "other"
+    },
+    {
+      "session": "Lizzy Malips Dubai",
+      "question": "Hapo wanauza ni na nn?",
+      "answer": "Misosi yote",
+      "intent": "other"
+    },
+    {
+      "session": "Lizzy Malips Dubai",
+      "question": "Usher udi?",
+      "answer": "Nko hapa",
+      "intent": "other"
+    },
+    {
+      "session": "Agnes Kimath",
+      "question": "Mambo kaka",
+      "answer": "Niaje",
+      "intent": "other"
+    },
+    {
+      "session": "Hassan Silent Dubai",
+      "question": "vip baba",
+      "answer": "Kwema",
+      "intent": "other"
+    },
+    {
+      "session": "Hassan Silent Dubai",
+      "question": "vip kijanaa",
+      "answer": "Powa tuu",
+      "intent": "other"
+    },
+    {
+      "session": "Ansigar",
+      "question": "Kaka ile 12 pro max Dan kaishindwa huku... tuitume huko?",
+      "answer": "Ijee",
+      "intent": "other"
+    },
+    {
+      "session": "Ansigar",
+      "question": "Nimpe Dan akutumie?",
+      "answer": "Okey",
+      "intent": "other"
+    },
+    {
+      "session": "Pst Dr Jj Rwiza",
+      "question": "Naomba mchango wa ninisambazia tu hili bango",
+      "answer": "Shikamoo",
+      "intent": "other"
+    },
+    {
+      "session": "+971 56 828 4026",
+      "question": "Kuna mtu ndio kaniambia njoo ulale kwangu ndio nipo",
+      "answer": "Dah nakuonea huruma but am asking when r u going to stop this? Utaishi ivo kilasiku?",
+      "intent": "availability"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Mkwe kwema? Vipi alikutafuta huyu binti?",
+      "answer": "Hapana mkwe",
+      "intent": "other"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Bei ya chini sijui ni bei gani,? Mana ile tab ilishakufaga muda napata tabu sana",
+      "answer": "Ungentajia bei ungekuwa umenirahisishia sana ili nisizunguke kila duka",
+      "intent": "price_general"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Mbona ni ya Dubai hiyo mkwe? Yeye yupo abudhabi",
+      "answer": "Heee tunakutana vp sasa abudhabi sio dubai",
+      "intent": "other"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Mkwe hii inayogeuka kuwa ya tablet bei gani?",
+      "answer": "Heee mkwe ni karibia 6m",
+      "intent": "other"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Hakuna za line?",
+      "answer": "Hamna",
+      "intent": "other"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Hizi za wifi bei gani?",
+      "answer": "1.35 mkwe",
+      "intent": "other"
+    },
+    {
+      "session": "I Love 🇮🇱🇮🇱",
+      "question": "Kumbe za moto 🔥\nNa A7?",
+      "answer": "A7 sijajua bado",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "hiyo Spectra S1 plus?",
+      "answer": "Hamna",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "ukiweka order itachukua siku ngapi?",
+      "answer": "Kila kitu na muda wake vingine siku 10 vingine siku 5",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "mzigo nakachukue saa ngapi?",
+      "answer": "Ule wa mwanzo wait niulize",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "Techolovers",
+      "question": "Kesho ni uhakika?",
+      "answer": "Kaka nmekutumia video nlikuwa na ongea na jamaa",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "mzigo tayari upo dukani!?",
+      "answer": "Call namba ya shop ile",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "wakiutuma huo mzigo mimi nitaupataje na lini? na gharama zake zitakuaje",
+      "answer": "Shop pale",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "gharama zake?",
+      "answer": "10/kg",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "Hii issue ya Monitor umepata muda wakuicheki?",
+      "answer": "Kaka naenda tena leo nliwatext naona hatuelewani",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "Unajua Duka la Mansoor?",
+      "answer": "Onground kote hamna hio pc",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "Techolovers",
+      "question": "upo mji gani?",
+      "answer": "Uko sehemu gan mkuu",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "hapo ni pamoja na AC?",
+      "answer": "Ic not sure kwasababu anaebadilisha ni mwngne",
+      "intent": "other"
+    },
+    {
+      "session": "Techolovers",
+      "question": "itachukua siku ngapi?",
+      "answer": "Nikipata mtu wa kuenda china",
+      "intent": "other"
+    },
+    {
+      "session": "Don Chaz",
+      "question": "Gari gan io?",
+      "answer": "Imeisha hata sifahamu kaka",
+      "intent": "other"
+    },
+    {
+      "session": "Aezack Wingu",
+      "question": "Niaje bro",
+      "answer": "Pow vp",
+      "intent": "other"
+    },
+    {
+      "session": "Minus",
+      "question": "Naomba instagram name",
+      "answer": "Inauzwa",
+      "intent": "other"
+    },
+    {
+      "session": "+971 58 298 7505",
+      "question": "Do you know about me",
+      "answer": "Remind me",
+      "intent": "other"
+    },
+    {
+      "session": "Moni Bango La Taa",
+      "question": "Please check",
+      "answer": "I wish to have all red",
+      "intent": "other"
+    },
+    {
+      "session": "Moni Bango La Taa",
+      "question": "Please decide quickly cargo person waiting",
+      "answer": "Ok make white",
+      "intent": "other"
+    },
+    {
+      "session": "Moni Bango La Taa",
+      "question": "Please check",
+      "answer": "Yes",
+      "intent": "other"
+    },
+    {
+      "session": "Airpods Copy Kali China Dubai",
+      "question": "You want make your brand ?",
+      "answer": "On perking only",
+      "intent": "other"
+    },
+    {
+      "session": "Airpods Copy Kali China Dubai",
+      "question": "Print and paste it directly?",
+      "answer": "Yes",
+      "intent": "other"
+    },
+    {
+      "session": "Airpods Copy Kali China Dubai",
+      "question": "Did you want \nAirPods 2\nAirPods Pro \nAirPods 3 ??",
+      "answer": "Boss",
+      "intent": "accessories"
+    },
+    {
+      "session": "Britco Vifaa Dubai",
+      "question": "which model?",
+      "answer": "A1876",
+      "intent": "spec_compat"
+    },
+    {
+      "session": "+255 769 697 217",
+      "question": "kuna simu inahitaj kubadilishwa kioo",
+      "answer": "Njoo",
+      "intent": "availability"
+    },
+    {
+      "session": "+255 769 697 217",
+      "question": "naomba kujua bei",
+      "answer": "Sijajua ni cm gan",
+      "intent": "other"
+    },
+    {
+      "session": "+255 769 697 217",
+      "question": "umepata?",
+      "answer": "Bado boss wangu kesho kuna mzigo unaingia",
+      "intent": "other"
+    },
+    {
+      "session": "+7 920 409-77-62",
+      "question": "Vipi 1.7M napata sim gani?",
+      "answer": "Nko naongea na jamaa mmoja kwenye cm",
+      "intent": "other"
+    },
+    {
+      "session": "+255 719 697 806",
+      "question": "Habari",
+      "answer": "Mambo vp",
+      "intent": "greeting"
+    },
+    {
+      "session": "Diana",
+      "question": "naomba upokee simu yangu",
+      "answer": "Nmeongea na ofisini watakup majibu soon",
+      "intent": "other"
+    },
+    {
+      "session": "Diana",
+      "question": "nataka tuongee i want to known the conclusion",
+      "answer": "Yes watakupa",
+      "intent": "other"
+    },
+    {
+      "session": "+255 673 573 860",
+      "question": "hii ninidham ?",
+      "answer": "Tunahitaji mtu atakae weza ku deal vema na wateja wa aina zote,",
+      "intent": "other"
+    },
+    {
+      "session": "Jacob Mwanje",
+      "question": "Shop ipo wp?!",
+      "answer": "👏🏾👏🏾",
+      "intent": "availability"
+    },
+    {
+      "session": "Ashraf Uganda",
+      "question": "Where are you",
+      "answer": "Brooo",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Naomba kuuliza bei ya iphone 13 plain",
+      "answer": "Mambo vp",
+      "intent": "price_with_product"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Sawa asante,a wanted tu know the price☺️piaa huwa unafanya installment payment!?",
+      "answer": "Yeah u can do that pia",
+      "intent": "payment_installment"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Mambo",
+      "answer": "zote nzuri my boss tofauti 13 is latest than 12 pro",
+      "intent": "greeting"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Features??means camera??",
+      "answer": "kama nkipewa nafasi ya ushauri chukua 13",
+      "intent": "other"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Hayaa nna iphone x 64gb natoa cash sh ngapii??",
+      "answer": "u mean xchange?",
+      "intent": "other"
+    },
+    {
+      "session": "Sozie🧕🏾",
+      "question": "Ooooh ouk ndo your office iko wapi vilee???",
+      "answer": "mwenge mpakani",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "Selcom Wasap",
+      "question": "habari,tunaomba uwasiliane na Patrick kwa msaada wa haraka [PHONE]",
+      "answer": "Kwani kuna malipo yyte kufanya integration",
+      "intent": "other"
+    },
+    {
+      "session": "+255 683 045 172",
+      "question": "wapi io..?",
+      "answer": "Nataka api ya selcom aisee nmepewa namba na casmir",
+      "intent": "location_delivery"
+    },
+    {
+      "session": "+255 683 045 172",
+      "question": "unafanya isse gani....?",
+      "answer": "E-commerce",
+      "intent": "other"
+    },
+    {
+      "session": "+255 683 045 172",
+      "question": "be specific..?",
+      "answer": "How",
+      "intent": "other"
+    },
+    {
+      "session": "+255 678 232 393",
+      "question": "Habari Boss!",
+      "answer": "Pow",
+      "intent": "other"
+    },
+    {
+      "session": "+255 678 232 393",
+      "question": "Naomba Ntumie Bank Details ambazo ntakua nafanyia hizo settlement!",
+      "answer": "Ahaaa sawa",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "yup huyo!!?",
+      "answer": "Dubai",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "tanzania unarudi lini!?",
+      "answer": "Eeeh 🙌🏾",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "unampango wakuja moro!!?",
+      "answer": "Hapana kwakweli",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "man \nunaweza nisaidia pata ramani ya mishe town mzee?",
+      "answer": "Swali gumu mzee",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "lkn siumeenda fubai kwaajili ya biashara?",
+      "answer": "Hamna maisha marahisi kijana juhudi zako ndo zitakazo kukwamua tumezaliwa familia ya kimasikini hamna atakae kushika mkono km mzembe kila mtu anajitahidi kuinusuru nafsi yake",
+      "intent": "other"
+    },
+    {
+      "session": "OfficialmtengaB",
+      "question": "Tz?",
+      "answer": "No dubai",
+      "intent": "other"
+    },
+    {
+      "session": "Mpangaji Inauzwa",
+      "question": "Kweli?",
+      "answer": "Manake ni mwezi mzima mkuu",
+      "intent": "other"
+    },
+    {
+      "session": "Mpangaji Inauzwa",
+      "question": "Kuna hela inatumwa Monday naeza ipata Tuesday. Nahis nitaeka miezi mitatu",
+      "answer": "Mkuu uhakika?",
+      "intent": "availability"
+    },
+    {
+      "session": "+90 501 345 06 48",
+      "question": "Mambo \nM mtoto wa manara",
+      "answer": "Hujambo",
+      "intent": "other"
+    },
+    {
+      "session": "Dec-21",
+      "question": "Atakuja lin kupima?",
+      "answer": "Niaje bro",
+      "intent": "other"
+    },
+    {
+      "session": "Dec-21",
+      "question": "Poa asee..kwema?",
+      "answer": "Kwema kaka",
+      "intent": "other"
+    },
+    {
+      "session": "+255 767 527 009",
+      "question": "Bei gani kaka",
+      "answer": "Ile ni 2015",
+      "intent": "price_general"
+    },
+    {
+      "session": "+255 769 002 876",
+      "question": "Vip harakat",
+      "answer": "Jua kali",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 310 3069",
+      "question": "Mambo vipi",
+      "answer": "Niaje",
+      "intent": "other"
+    },
+    {
+      "session": "+255 679 072 625",
+      "question": "Kuna mtu kanielekeza nikuchek ni unauza simu used tu au na mpya?",
+      "answer": "Unataka ipi",
+      "intent": "availability"
+    },
+    {
+      "session": "Kachwamba Shabir Dubai",
+      "question": "Hii inapatikana?",
+      "answer": "Ipo boss wangu",
+      "intent": "other"
+    },
+    {
+      "session": "+255 717 568 861",
+      "question": "Juzi niliona ulipost PC za HP ni bei gani zile?",
+      "answer": "Kaka kesho naanza kupost used",
+      "intent": "other"
+    },
+    {
+      "session": "+255 717 568 861",
+      "question": "Na amini ni used lakini zinakuwa mkataba au sio mzee??",
+      "answer": "Yes bro",
+      "intent": "condition_used_new"
+    },
+    {
+      "session": "+255 717 568 861",
+      "question": "So kesho Utakuwa unapost kwenye whatsapp status ya number hii au ile ya office?",
+      "answer": "Hii sio ya kazi",
+      "intent": "other"
+    },
+    {
+      "session": "+255 683 707 301",
+      "question": "Kwako napata 6s ?",
+      "answer": "Hapana boss wangu",
+      "intent": "other"
+    },
+    {
+      "session": "Mr.orders",
+      "question": "Niaje",
+      "answer": "Ipi boss",
+      "intent": "greeting"
+    },
+    {
+      "session": "Jamsy Zarooni Dubai Anker",
+      "question": "Dammas?",
+      "answer": "Send me photo this side",
+      "intent": "other"
+    },
+    {
+      "session": "Dady AD😊",
+      "question": "nataka kukuwekea kesho",
+      "answer": "Okey",
+      "intent": "other"
+    },
+    {
+      "session": "Dady AD😊",
+      "question": "nataka hioo nitafutie nipe bei",
+      "answer": "Kaka kwema",
+      "intent": "other"
+    },
+    {
+      "session": "Rare Bavy (sam Moro Ndugu)",
+      "question": "Mambo",
+      "answer": "Mwaka gani hii mama",
+      "intent": "greeting"
+    },
+    {
+      "session": "+255 717 101 219",
+      "question": "Nataka kesho",
+      "answer": "Kaka",
+      "intent": "other"
+    },
+    {
+      "session": "Sarah Samuel",
+      "question": "Mambo",
+      "answer": "Badoo",
+      "intent": "greeting"
+    },
+    {
+      "session": "Sarah Samuel",
+      "question": "Kuna vidudu kukaa wiki sitaweza",
+      "answer": "Aiseee",
+      "intent": "availability"
+    },
+    {
+      "session": "Sarah Samuel",
+      "question": "Nataka kutoka",
+      "answer": "Sawa",
+      "intent": "other"
+    },
+    {
+      "session": "+971 55 544 0869",
+      "question": "What time u will come ??",
+      "answer": "Bro i come tomorrow now in dubai",
+      "intent": "other"
+    },
+    {
+      "session": "+971 55 544 0869",
+      "question": "R u there in uae 🇦🇪 ?",
+      "answer": "How r u bro",
+      "intent": "other"
+    },
+    {
+      "session": "+91 90999 13364",
+      "question": "Please check Below Link For Pricing,\nhttps://www.chatsup.co/pricing",
+      "answer": "Thnx",
+      "intent": "other"
+    },
+    {
+      "session": "+91 90999 13364",
+      "question": "Hello, are you there?",
+      "answer": "Okey I will transfer to paypal",
+      "intent": "other"
+    },
+    {
+      "session": "+91 90999 13364",
+      "question": "Great, Did you get a mail from our end?",
+      "answer": "No boss",
+      "intent": "other"
+    },
+    {
+      "session": "+91 90999 13364",
+      "question": "You want this plan for lifetime right?",
+      "answer": "Yes",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Naomba unitumie pesa",
+      "answer": "Umeamka😅",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Mambo",
+      "answer": "Sorry",
+      "intent": "greeting"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Yeah nakuja nae ananifungia hapa then nakuja kuchkua si fresh ?",
+      "answer": "Powa",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Si upo kwako bado??",
+      "answer": "Yes",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Wat for? Nyoko",
+      "answer": "Macho kopi na pesti",
+      "intent": "other"
+    },
+    {
+      "session": "+971 52 527 1951",
+      "question": "Mambo",
+      "answer": "Nlikukumbuka jana nkakupigia sikukupata",
+      "intent": "greeting"
+    },
+    {
+      "session": "+255 747 194 073",
+      "question": "Bei yao ndo shid",
+      "answer": "Land ndo nn",
+      "intent": "price_general"
+    },
+    {
+      "session": "+255 624 568 570",
+      "question": "Niaje kaka",
+      "answer": "Pow",
+      "intent": "other"
+    },
+    {
+      "session": "+255 624 568 570",
+      "question": "Vp ww?",
+      "answer": "Mi safi kbsa",
+      "intent": "other"
+    },
+    {
+      "session": "+255 624 568 570",
+      "question": "Inawezekana?",
+      "answer": "Kinaja vp",
+      "intent": "other"
+    },
+    {
+      "session": "Shamwaa Africa",
+      "question": "Habari inauzwa unamzigo wako",
+      "answer": "Mambo",
+      "intent": "other"
+    },
+    {
+      "session": "+255 767 335 054",
+      "question": "Who is this ? May I help you?",
+      "answer": "Inauzwa",
+      "intent": "other"
+    },
+    {
+      "session": "+255 773 905 242",
+      "question": "Bei ngp",
+      "answer": "Kuajili ya",
+      "intent": "price_general"
+    }
+  ],
+  "qa_pairs_total": 3428,
+  "playbooks": {
+    "price_general": {
+      "ai_target": "search_products + reply rules",
+      "playbook": "Ask which product/model if not stated. Use search_products for live price and stock. Quote in-stock items only (name, qty, price, variant). End with a sales question.",
+      "sw_triggers": "bei, bei gani, bei gan, ngapi, sh ngapi",
+      "en_triggers": "price, how much, cost"
+    },
+    "price_with_product": {
+      "ai_target": "search_products + reply rules",
+      "playbook": "Search the named product immediately. If variant unclear (RAM/storage/year), ask ONE compatibility question — do not re-search the whole category when they answer briefly.",
+      "sw_triggers": "bei ya iPhone, MacBook bei gani, charger bei",
+      "en_triggers": "price for iPhone, how much MacBook"
+    },
+    "availability": {
+      "ai_target": "search_products + reply rules",
+      "playbook": "Confirm exact model/variant, then search_products. Say clearly if in stock or not. If out of stock only, mention briefly — do not list OOS unless nothing matches.",
+      "sw_triggers": "kuna, una, unayo, ipo, duke kuna",
+      "en_triggers": "do you have, available, in stock"
+    },
+    "location_delivery": {
+      "ai_target": "FAQ.md / search_shop_knowledge",
+      "playbook": "Answer store location, hours, pickup, and delivery areas from shop knowledge. If policy unknown, escalate or say team will confirm — do not invent fees.",
+      "sw_triggers": "wapi, delivery, peleka, mikoani, saa ngapi",
+      "en_triggers": "where, delivery, pickup, address"
+    },
+    "payment_installment": {
+      "ai_target": "FAQ.md / search_shop_knowledge",
+      "playbook": "Explain accepted payment methods (M-Pesa, cash, lipa namba) and installment/deposit policy from shop knowledge. Never confirm payment received without tool data.",
+      "sw_triggers": "mpesa, malipo, lipa namba, kodi",
+      "en_triggers": "payment, installment, deposit, pay"
+    },
+    "condition_used_new": {
+      "ai_target": "FAQ.md + reply rules",
+      "playbook": "Clarify used vs new vs refurb/CPO/copy. Explain grading and warranty differences. Search catalog for matching condition.",
+      "sw_triggers": "used, dub, hali, original, copy",
+      "en_triggers": "used, new, refurb, CPO, condition"
+    },
+    "spec_compat": {
+      "ai_target": "reply rules (intent context)",
+      "playbook": "Treat short replies as answers to your previous spec question. Use model codes (A####) for Mac parts. Do NOT re-run search_products for the original category.",
+      "sw_triggers": "GB, RAM, inch, model, inafaa",
+      "en_triggers": "RAM, storage, compatible, model year"
+    },
+    "accessories": {
+      "ai_target": "search_products + reply rules",
+      "playbook": "Only lead with accessories when customer explicitly asked (battery, charger, case). Otherwise list devices first, then optional accessories line.",
+      "sw_triggers": "betri, chaja, charger, battery",
+      "en_triggers": "charger, battery, cable, case"
+    },
+    "warranty": {
+      "ai_target": "FAQ.md / search_shop_knowledge",
+      "playbook": "State warranty period and what it covers per product type from shop knowledge.",
+      "sw_triggers": "dhamana, warranty",
+      "en_triggers": "warranty, guarantee"
+    },
+    "greeting": {
+      "ai_target": "reply rules",
+      "playbook": "Brief warm greeting in customer's language — do not repeat hello if thread started. Immediately ask what they are looking for (one sales question).",
+      "sw_triggers": "habari, mambo, vip, niaje",
+      "en_triggers": "hello, hi, good morning"
+    },
+    "icloud_lock": {
+      "ai_target": "FAQ.md + escalate if needed",
+      "playbook": "Explain iCloud/lock policy honestly. Escalate bypass or passcode requests to human if outside standard policy.",
+      "sw_triggers": "icloud, bypass, passcode",
+      "en_triggers": "icloud, locked, bypass"
+    },
+    "trade_in": {
+      "ai_target": "FAQ.md / escalate",
+      "playbook": "Explain trade-in/buy-back policy or escalate to staff for valuation.",
+      "sw_triggers": "kubadilisha, nunua uzwa",
+      "en_triggers": "trade in, exchange, buy back"
+    },
+    "other": {
+      "ai_target": "context + tools",
+      "playbook": "Use full thread context. search_products or search_shop_knowledge as needed. Escalate if unclear or customer wants a person.",
+      "sw_triggers": "(context-dependent)",
+      "en_triggers": "(context-dependent)"
+    }
+  }
+}

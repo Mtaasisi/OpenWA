@@ -373,8 +373,41 @@
   align-items: center;
 }
 
-.ai-settings-key-row input {
+.ai-settings-key-input-wrap {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.ai-settings-key-input-wrap input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-settings-key-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #6b7280);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ai-settings-key-toggle:hover:not(:disabled) {
+  background: var(--surface-elevated, #f3f4f6);
+  color: var(--text-primary, #111827);
+}
+
+.ai-settings-key-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .ai-settings-inline-loading {

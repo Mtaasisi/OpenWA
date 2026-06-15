@@ -16,6 +16,20 @@ const SAFE_PATH = /^[a-zA-Z0-9._/-]+$/;
 const MAX_FILE_BYTES = 512_000;
 const MAX_PROMPT_CHARS = 9_000;
 
+/** Knowledge files excluded from auto-reply RAG (rules injected via intent packs instead). */
+export const EXCLUDED_FROM_AUTO_REPLY_RAG = [
+  'AI_REPLY_RULES.md',
+  'AI_REPLY_EXAMPLES.md',
+  'AGENT_ACTION_RULES.md',
+  'README_AI_TRAINING_SETUP.md',
+] as const;
+
+export interface AutoReplyKnowledgeLimits {
+  maxChunks?: number;
+  maxCharsPerChunk?: number;
+  maxTotalChars?: number;
+}
+
 const VERSION_MARKER_PREFIX = 'AI_RULES_VERSION:';
 
 /** Inauzwa default training — version-synced from seed/ai-knowledge on boot. */
@@ -288,6 +302,54 @@ The AI inbox agent reads this file when replying to customers.
       /* fall through */
     }
     return this.buildPromptExcerpt(maxChars);
+  }
+
+  /**
+   * Capped knowledge excerpt for auto-reply — excludes rule/example files and limits chunk count/size.
+   */
+  async buildAutoReplyKnowledgeExcerpt(
+    contextQuery: string,
+    limits: AutoReplyKnowledgeLimits = {},
+  ): Promise<string> {
+    const maxChunks = limits.maxChunks ?? 2;
+    const maxCharsPerChunk = limits.maxCharsPerChunk ?? 600;
+    const maxTotalChars = limits.maxTotalChars ?? 1200;
+
+    const q = contextQuery.trim();
+    if (!q) return '';
+
+    try {
+      const hits = await this.search(q, maxChunks + 2);
+      const filtered = hits.filter(
+        h => !(EXCLUDED_FROM_AUTO_REPLY_RAG as readonly string[]).includes(h.path),
+      );
+
+      if (!filtered.length) return '';
+
+      const parts: string[] = ['=== Shop knowledge (relevant to this message) ==='];
+      let used = parts[0].length;
+      let chunks = 0;
+
+      for (const h of filtered) {
+        if (chunks >= maxChunks) break;
+        const snippet = h.snippet.slice(0, maxCharsPerChunk);
+        const chunk = `[${h.path}] ${snippet}`;
+        if (used + chunk.length + 2 > maxTotalChars) {
+          const remaining = maxTotalChars - used - 2;
+          if (remaining > 40) {
+            parts.push(`${chunk.slice(0, remaining)}…`);
+          }
+          break;
+        }
+        parts.push(chunk);
+        used += chunk.length + 2;
+        chunks += 1;
+      }
+
+      return parts.length > 1 ? parts.join('\n\n') : '';
+    } catch {
+      return '';
+    }
   }
 
   private ensureVersionMarker(content: string): string {

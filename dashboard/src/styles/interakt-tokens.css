@@ -1,0 +1,43 @@
+/* Interakt Pro — theme-aware design tokens (global) */
+
+:root {
+  --interakt-outline: color-mix(in srgb, var(--border) 35%, transparent);
+  --interakt-outline-soft: color-mix(in srgb, var(--border) 30%, transparent);
+  --interakt-outline-faint: color-mix(in srgb, var(--border) 22%, transparent);
+  --interakt-surface-glass: color-mix(in srgb, var(--bg-white) 72%, transparent);
+  --interakt-surface-glass-high: color-mix(in srgb, var(--bg-white) 78%, transparent);
+  --interakt-surface-elevated: color-mix(in srgb, var(--bg-white) 85%, transparent);
+  --interakt-surface-muted: color-mix(in srgb, var(--bg-light) 65%, transparent);
+  --interakt-surface-muted-soft: color-mix(in srgb, var(--bg-light) 55%, transparent);
+  --interakt-primary: var(--primary);
+  --interakt-primary-soft: color-mix(in srgb, var(--primary) 10%, transparent);
+  --interakt-primary-border: color-mix(in srgb, var(--primary) 26%, transparent);
+  --interakt-primary-hover-bg: color-mix(in srgb, var(--primary) 6%, var(--bg-white));
+  --interakt-shadow: 0 10px 30px -5px color-mix(in srgb, #000 8%, transparent);
+  --interakt-shadow-sm: 0 4px 14px color-mix(in srgb, #000 6%, transparent);
+  --interakt-danger: var(--danger, #ba1a1a);
+  --interakt-danger-surface: color-mix(in srgb, var(--danger, #ba1a1a) 12%, var(--bg-card));
+  --interakt-danger-border: color-mix(in srgb, var(--interakt-danger) 20%, transparent);
+  --interakt-warning-surface: color-mix(in srgb, var(--warning, #febc2e) 14%, var(--bg-card));
+  --interakt-info: var(--info, #1d4ed8);
+  --interakt-info-surface: color-mix(in srgb, var(--info, #1d4ed8) 12%, var(--bg-card));
+  --interakt-info-border: color-mix(in srgb, var(--info, #1d4ed8) 22%, transparent);
+  --interakt-success: var(--settings-mac-green, #28c840);
+  --interakt-on-primary: #fff;
+  --interakt-ghost-hover: var(--bg-hover);
+}
+
+[data-theme-resolved='dark'] {
+  --interakt-surface-glass: color-mix(in srgb, var(--bg-card) 78%, transparent);
+  --interakt-surface-glass-high: color-mix(in srgb, var(--bg-card) 84%, transparent);
+  --interakt-surface-elevated: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  --interakt-surface-muted: color-mix(in srgb, var(--bg-light) 72%, transparent);
+  --interakt-surface-muted-soft: color-mix(in srgb, var(--bg-light) 58%, transparent);
+  --interakt-primary-hover-bg: color-mix(in srgb, var(--primary) 10%, var(--bg-card));
+  --interakt-primary-soft: color-mix(in srgb, var(--primary) 16%, transparent);
+  --interakt-shadow: 0 10px 30px -5px color-mix(in srgb, #000 40%, transparent);
+  --interakt-shadow-sm: 0 4px 14px color-mix(in srgb, #000 28%, transparent);
+  --interakt-danger-surface: color-mix(in srgb, var(--danger, #ba1a1a) 18%, var(--bg-card));
+  --interakt-warning-surface: color-mix(in srgb, var(--warning, #febc2e) 18%, var(--bg-card));
+  --interakt-info-surface: color-mix(in srgb, var(--info, #1d4ed8) 18%, var(--bg-card));
+}

@@ -1,0 +1,32 @@
+/* Digital Reconstruction — Stitch design tokens */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+[data-theme-effects='stitch'] {
+  --stitch-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --stitch-sidebar-w: 80px;
+  --stitch-header-h: 4rem;
+  --stitch-chat-header-h: 3.5rem;
+  --stitch-crm-panel-w: 380px;
+  --stitch-page-bg: var(--bg-light, #f8f9fb);
+  --stitch-surface-muted: #f3f6f9;
+  --stitch-primary-soft: #eff6ff;
+  --stitch-mac-red: #ff5f57;
+  --stitch-mac-yellow: #febc2e;
+  --stitch-mac-green: #28c840;
+  --stitch-filter-menu-w: 14rem;
+  --stitch-radius-panel: 16px;
+  --stitch-radius-pill: 9999px;
+  --stitch-outline: #f3f4f6;
+  --stitch-outline-soft: #f9fafb;
+  font-family: var(--stitch-font);
+}
+
+[data-theme-effects='stitch'] .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+[data-theme-effects='stitch'] .material-symbols-outlined.is-filled,
+[data-theme-effects='stitch'] .is-active .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

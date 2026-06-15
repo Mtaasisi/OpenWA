@@ -1,0 +1,96 @@
+/* Base avatar shell — shared anywhere InboxContactAvatar is used (inbox, pipeline, customers). */
+
+.inbox-contact-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.inbox-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--accent-light, rgba(37, 211, 102, 0.18));
+  color: var(--accent, #128c7e);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.inbox-contact-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
+}
+
+.inbox-contact-avatar__group-badge {
+  position: absolute;
+  right: -0.125rem;
+  bottom: -0.125rem;
+  z-index: 1;
+  width: clamp(0.875rem, 34%, 1.125rem);
+  height: clamp(0.875rem, 34%, 1.125rem);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--bg-white, #ffffff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+  pointer-events: auto;
+  background: #000;
+}
+
+.inbox-contact-avatar__group-badge--below {
+  position: static;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+}
+
+.inbox-contact-avatar-wrap--group-below {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.inbox-contact-avatar__private-badge {
+  position: absolute;
+  right: -0.125rem;
+  bottom: -0.125rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(0.875rem, 34%, 1.125rem);
+  height: clamp(0.875rem, 34%, 1.125rem);
+  border-radius: 50%;
+  border: 1.5px solid var(--bg-white, #ffffff);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+  color: var(--primary, #128c7e);
+  background: var(--interakt-primary-hover-bg, color-mix(in srgb, var(--primary) 14%, #ffffff));
+  pointer-events: auto;
+}
+
+.inbox-contact-avatar-wrap--offline .inbox-avatar {
+  opacity: 0.72;
+}
+
+.inbox-contact-avatar__offline {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 1.5px solid var(--bg-white, #ffffff);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+  pointer-events: none;
+}
+
+.inbox-contact-avatar__offline--group {
+  bottom: auto;
+  top: -1px;
+}

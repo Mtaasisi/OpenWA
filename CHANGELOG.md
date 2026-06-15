@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Desktop app (plug-and-play)**: Electron shell with setup wizard, Neon PostgreSQL, bundled Node + Chromium, system tray, and macOS/Windows installers (`npm run dist:mac` / `dist:windows`).
+
+### Fixed
+
+- **Desktop setup wizard packaging**: Wizard HTML/JS was excluded from `app.asar` (electron-builder only included a non-existent `setup-wizard/dist/` path). First-run wizard now bundles correctly; `npm run verify:desktop` checks for it.
+- **Desktop setup wizard path**: `WindowManager` looked for `dist/renderer/setup-wizard/` but files live at `renderer/setup-wizard/` in `app.asar`; now resolves via `app.getAppPath()`.
+- **Desktop auto-update**: GitHub Releases integration via `electron-updater`; tray and Settings → Desktop App → Check for updates.
+- **Release CI**: Tag `v*` builds desktop installers and attaches DMG/EXE to GitHub Releases.
+
 ## [0.1.6] - 2026-05-17
 
 ### Fixed

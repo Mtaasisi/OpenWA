@@ -1,0 +1,145 @@
+/* Swipeable inbox filters — scoped to Interakt inbox page (no fade overlays, grid-safe clip) */
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem 0.85rem;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__track {
+  min-width: 0;
+  overflow: hidden;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chips--swipe {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.15rem 0.5rem 0.15rem 0.1rem;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chips--swipe::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 10.5rem;
+  min-height: 2rem;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--inakt-outline-variant, #d1d1d6) 80%, transparent);
+  border-radius: 999px;
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe:hover:not(.is-active) {
+  border-color: color-mix(in srgb, var(--crm-green, #006d2f) 25%, var(--inakt-outline-variant, #d1d1d6));
+  background: color-mix(in srgb, var(--inakt-primary-soft, #e8f8ee) 45%, var(--bg-white));
+  color: var(--text-primary);
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe.is-active {
+  border-color: var(--crm-green, #006d2f);
+  background: var(--inakt-primary-soft, #e8f8ee);
+  color: var(--crm-green, #006d2f);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe__count {
+  flex-shrink: 0;
+  min-width: 1.125rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  color: inherit;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-chip--swipe.is-active .inbox-interakt-filter-chip--swipe__count {
+  background: color-mix(in srgb, var(--crm-green, #006d2f) 18%, transparent);
+  color: var(--crm-green, #006d2f);
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__more {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid color-mix(in srgb, var(--inakt-outline-variant, #d1d1d6) 80%, transparent);
+  border-radius: 0.625rem;
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__more:hover {
+  border-color: color-mix(in srgb, var(--crm-green, #006d2f) 30%, var(--inakt-outline-variant, #d1d1d6));
+  background: color-mix(in srgb, var(--inakt-primary-soft, #e8f8ee) 50%, var(--bg-white));
+  color: var(--crm-green, #006d2f);
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__more.is-active {
+  border-color: color-mix(in srgb, var(--crm-green, #006d2f) 35%, transparent);
+  background: var(--inakt-primary-soft, #e8f8ee);
+  color: var(--crm-green, #006d2f);
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__more.is-open {
+  border-color: var(--crm-green, #006d2f);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--crm-green, #006d2f) 18%, transparent);
+}
+
+:is(.inbox-page--interakt, .tactical-inbox) .inbox-interakt-filter-bar__more-dot {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--crm-green, #006d2f);
+  box-shadow: 0 0 0 2px var(--bg-white);
+}

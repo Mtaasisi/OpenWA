@@ -1,32 +1,58 @@
-import { Controller, Get, Put, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Body,
+  Req,
+  BadRequestException,
+  NotFoundException,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Public } from '../auth/decorators/auth.decorators';
+import { Request } from 'express';
+import { Public, RequireRole } from '../auth/decorators/auth.decorators';
+import { ApiKey, ApiKeyRole } from '../auth/entities/api-key.entity';
+import { AuditService } from '../audit/audit.service';
+import { AuditAction } from '../audit/entities/audit-log.entity';
+import { resolveControlledImportFile, toRelativeDataPath } from '../../common/utils/safe-import-path.util';
+import { persistDashboardEnvUpdates } from '../../common/utils/env-file.util';
 import { EngineFactory } from '../../engine/engine.factory';
 import { DockerService } from '../docker';
 import { CacheService } from '../../common/cache/cache.service';
 import { StorageService } from '../../common/storage/storage.service';
 import { ShutdownService } from '../../common/services/shutdown.service';
+import { InfraStatusService } from './infra-status.service';
 import { createLogger } from '../../common/services/logger.service';
+import { isDesktopMode } from '../../common/utils/desktop-paths.util';
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface InfraStatus {
-  api: { port: number; baseUrl: string };
-  database: { connected: boolean; type: string; host: string };
-  redis: { enabled: boolean; connected: boolean; host: string; port: number };
-  queue: {
-    enabled: boolean;
-    messages: { pending: number; completed: number; failed: number };
-    webhooks: { pending: number; completed: number; failed: number };
-  };
-  storage: { type: 'local' | 's3'; path?: string; bucket?: string };
-  engine: { type: string; headless: boolean; sessionDataPath: string; browserArgs: string };
-}
-
 interface SaveConfigDto {
+  server?: {
+    nodeEnv?: 'production' | 'development';
+    domain?: string;
+    port?: string;
+    dashboardPort?: string;
+    baseUrl?: string;
+    dashboardUrl?: string;
+    corsOrigins?: string;
+  };
+  webhook?: {
+    timeout?: number;
+    maxRetries?: number;
+    retryDelay?: number;
+  };
+  rateLimit?: {
+    ttl?: number;
+    max?: number;
+  };
   database?: {
     type: 'sqlite' | 'postgres';
     builtIn?: boolean;
@@ -59,6 +85,7 @@ interface SaveConfigDto {
     s3Endpoint?: string;
   };
   engine?: {
+    type?: string;
     headless?: boolean;
     sessionDataPath?: string;
     browserArgs?: string;
@@ -132,8 +159,11 @@ interface MigrationTables {
   messageBatches: MessageBatchRow[];
 }
 
+type AuthedRequest = Request & { apiKey?: ApiKey };
+
 @ApiTags('infrastructure')
 @Controller('infra')
+@RequireRole(ApiKeyRole.ADMIN)
 export class InfraController {
   private readonly logger = createLogger('InfraController');
 
@@ -148,50 +178,26 @@ export class InfraController {
     private readonly cacheService: CacheService,
     private readonly storageService: StorageService,
     private readonly shutdownService: ShutdownService,
+    private readonly infraStatusService: InfraStatusService,
+    private readonly auditService: AuditService,
   ) {}
+
+  private auditContext(req: AuthedRequest, metadata?: Record<string, unknown>) {
+    return {
+      apiKey: req.apiKey,
+      ipAddress: req.ip || req.socket.remoteAddress || undefined,
+      userAgent: req.headers['user-agent'] as string | undefined,
+      method: req.method,
+      path: req.path,
+      metadata,
+    };
+  }
 
   @Get('status')
   @ApiOperation({ summary: 'Get infrastructure status' })
   @ApiResponse({ status: 200, description: 'Infrastructure status' })
-  async getStatus(): Promise<InfraStatus> {
-    // Check both database connections
-    const mainDbConnected = this.mainDataSource.isInitialized;
-    const dataDbConnected = this.dataDataSource.isInitialized;
-    const dbConnected = mainDbConnected && dataDbConnected;
-    const dbType = this.configService.get<string>('dataDatabase.type', 'sqlite');
-    const dbHost = this.configService.get<string>('dataDatabase.host', 'localhost');
-
-    const redisHost = process.env.REDIS_HOST || this.configService.get<string>('redis.host', 'localhost');
-    const redisPort = parseInt(process.env.REDIS_PORT || '', 10) || this.configService.get<number>('redis.port', 6379);
-    const redisEnabled = process.env.REDIS_ENABLED === 'true';
-    const queueEnabled = this.configService.get<boolean>('queue.enabled', false);
-
-    // Check actual Redis connectivity via CacheService
-    const redisConnected = await this.cacheService.isAvailable();
-
-    const storageType = this.configService.get<'local' | 's3'>('storage.type', 'local');
-    const storagePath = this.configService.get<string>('storage.path', './uploads');
-
-    const engineType = this.configService.get<string>('engine.type', 'whatsapp-web.js');
-    const engineHeadless = this.configService.get<boolean>('engine.headless', true);
-    const sessionDataPath = this.configService.get<string>('engine.sessionDataPath', './data/sessions');
-    const browserArgs = this.configService.get<string>('engine.browserArgs', '--no-sandbox --disable-gpu');
-
-    const apiPort = this.configService.get<number>('port', 2785);
-    const apiBaseUrl = (process.env.API_PUBLIC_URL || `http://localhost:${apiPort}`).replace(/\/$/, '');
-
-    return {
-      api: { port: apiPort, baseUrl: apiBaseUrl },
-      database: { connected: dbConnected, type: dbType, host: dbHost },
-      redis: { enabled: redisEnabled, connected: redisConnected, host: redisHost, port: redisPort },
-      queue: {
-        enabled: queueEnabled,
-        messages: { pending: 0, completed: 0, failed: 0 },
-        webhooks: { pending: 0, completed: 0, failed: 0 },
-      },
-      storage: { type: storageType, path: storagePath },
-      engine: { type: engineType, headless: engineHeadless, sessionDataPath, browserArgs },
-    };
+  getStatus() {
+    return this.infraStatusService.getStatus();
   }
 
   @Get('engines')
@@ -212,122 +218,135 @@ export class InfraController {
   @ApiOperation({ summary: 'Save infrastructure configuration to .env file' })
   @ApiResponse({ status: 200, description: 'Configuration saved' })
   @ApiBody({ description: 'Configuration to save' })
-  saveConfig(@Body() config: SaveConfigDto): { message: string; saved: boolean; envPath: string; profiles: string[] } {
+  async saveConfig(
+    @Body() config: SaveConfigDto,
+    @Req() req: AuthedRequest,
+  ): Promise<{ message: string; saved: boolean; envPath: string; profiles: string[] }> {
+    if (isDesktopMode()) {
+      throw new BadRequestException(
+        'Infrastructure settings are managed automatically by the desktop app.',
+      );
+    }
     try {
-      // Build .env content from config
-      const envLines: string[] = [];
       const profiles: string[] = [];
+      const updates: Record<string, string> = {};
 
-      // Header
-      envLines.push('# OpenWA Configuration');
-      envLines.push(`# Generated at ${new Date().toISOString()}`);
-      envLines.push('');
-
-      // Database
       if (config.database) {
-        envLines.push('# Database');
-        envLines.push(`DATABASE_TYPE=${config.database.type || 'sqlite'}`);
-        envLines.push(`POSTGRES_BUILTIN=${config.database.builtIn ? 'true' : 'false'}`);
+        updates.DATABASE_TYPE = config.database.type || 'sqlite';
+        updates.POSTGRES_BUILTIN = config.database.builtIn ? 'true' : 'false';
         if (config.database.type === 'postgres') {
           if (config.database.builtIn) {
-            // Built-in PostgreSQL - use container name as host
-            envLines.push('DATABASE_HOST=postgres');
-            envLines.push('DATABASE_PORT=5432');
-            envLines.push('DATABASE_USERNAME=openwa');
-            envLines.push('DATABASE_PASSWORD=openwa');
-            envLines.push('DATABASE_NAME=openwa');
+            updates.DATABASE_HOST = 'postgres';
+            updates.DATABASE_PORT = '5432';
+            updates.DATABASE_USERNAME = 'openwa';
+            updates.DATABASE_PASSWORD = 'openwa';
+            updates.DATABASE_NAME = 'openwa';
             profiles.push('postgres');
           } else {
-            // External PostgreSQL
-            envLines.push(`DATABASE_HOST=${config.database.host || 'localhost'}`);
-            envLines.push(`DATABASE_PORT=${config.database.port || '5432'}`);
-            envLines.push(`DATABASE_USERNAME=${config.database.username || 'postgres'}`);
-            envLines.push(`DATABASE_PASSWORD=${config.database.password || ''}`);
-            envLines.push(`DATABASE_NAME=${config.database.database || 'openwa'}`);
+            updates.DATABASE_HOST = config.database.host || 'localhost';
+            updates.DATABASE_PORT = config.database.port || '5432';
+            updates.DATABASE_USERNAME = config.database.username || 'postgres';
+            updates.DATABASE_PASSWORD = config.database.password || '';
+            updates.DATABASE_NAME = config.database.database || 'openwa';
           }
-          envLines.push(`DATABASE_POOL_SIZE=${config.database.poolSize || 10}`);
-          envLines.push(`DATABASE_SSL=${config.database.sslEnabled ? 'true' : 'false'}`);
+          updates.DATABASE_POOL_SIZE = String(config.database.poolSize || 10);
+          updates.DATABASE_SSL = config.database.sslEnabled ? 'true' : 'false';
         }
-        envLines.push('');
       }
 
-      // Redis / Queue
-      envLines.push('# Redis / Queue System');
-      envLines.push(`REDIS_ENABLED=${config.redis?.enabled ? 'true' : 'false'}`);
-      envLines.push(`REDIS_BUILTIN=${config.redis?.builtIn ? 'true' : 'false'}`);
-      envLines.push(`QUEUE_ENABLED=${config.queue?.enabled ? 'true' : 'false'}`);
-      if (config.redis?.enabled) {
-        if (config.redis.builtIn) {
-          // Built-in Redis - use container name as host
-          envLines.push('REDIS_HOST=redis');
-          envLines.push('REDIS_PORT=6379');
-          profiles.push('redis');
-        } else {
-          // External Redis
-          envLines.push(`REDIS_HOST=${config.redis.host || 'localhost'}`);
-          envLines.push(`REDIS_PORT=${config.redis.port || '6379'}`);
-          if (config.redis.password) {
-            envLines.push(`REDIS_PASSWORD=${config.redis.password}`);
+      if (config.redis !== undefined || config.queue !== undefined) {
+        updates.REDIS_ENABLED = config.redis?.enabled ? 'true' : 'false';
+        updates.REDIS_BUILTIN = config.redis?.builtIn ? 'true' : 'false';
+        updates.QUEUE_ENABLED = config.queue?.enabled ? 'true' : 'false';
+        if (config.redis?.enabled) {
+          if (config.redis.builtIn) {
+            updates.REDIS_HOST = 'redis';
+            updates.REDIS_PORT = '6379';
+            profiles.push('redis');
+          } else {
+            updates.REDIS_HOST = config.redis.host || 'localhost';
+            updates.REDIS_PORT = config.redis.port || '6379';
+            if (config.redis.password) updates.REDIS_PASSWORD = config.redis.password;
           }
         }
       }
-      envLines.push('');
 
-      // Storage
+      if (config.server) {
+        if (config.server.nodeEnv) updates.NODE_ENV = config.server.nodeEnv;
+        if (config.server.domain !== undefined) updates.DOMAIN = config.server.domain;
+        if (config.server.port) updates.PORT = config.server.port;
+        if (config.server.dashboardPort) updates.DASHBOARD_PORT = config.server.dashboardPort;
+        if (config.server.baseUrl !== undefined) updates.BASE_URL = config.server.baseUrl;
+        if (config.server.dashboardUrl !== undefined) updates.DASHBOARD_URL = config.server.dashboardUrl;
+        if (config.server.corsOrigins !== undefined) updates.CORS_ORIGINS = config.server.corsOrigins;
+      }
+
+      if (config.webhook) {
+        if (config.webhook.timeout !== undefined) updates.WEBHOOK_TIMEOUT = String(config.webhook.timeout);
+        if (config.webhook.maxRetries !== undefined) updates.WEBHOOK_MAX_RETRIES = String(config.webhook.maxRetries);
+        if (config.webhook.retryDelay !== undefined) updates.WEBHOOK_RETRY_DELAY = String(config.webhook.retryDelay);
+      }
+
+      if (config.rateLimit) {
+        if (config.rateLimit.ttl !== undefined) {
+          updates.RATE_LIMIT_TTL = String(config.rateLimit.ttl);
+          updates.RATE_LIMIT_MEDIUM_TTL = String(config.rateLimit.ttl * 1000);
+        }
+        if (config.rateLimit.max !== undefined) {
+          updates.RATE_LIMIT_MAX = String(config.rateLimit.max);
+          updates.RATE_LIMIT_MEDIUM_LIMIT = String(config.rateLimit.max);
+        }
+      }
+
       if (config.storage) {
-        envLines.push('# Storage');
-        envLines.push(`STORAGE_TYPE=${config.storage.type || 'local'}`);
-        envLines.push(`MINIO_BUILTIN=${config.storage.builtIn ? 'true' : 'false'}`);
+        updates.STORAGE_TYPE = config.storage.type || 'local';
+        updates.MINIO_BUILTIN = config.storage.builtIn ? 'true' : 'false';
         if (config.storage.type === 'local') {
-          envLines.push(`STORAGE_PATH=${config.storage.localPath || './uploads'}`);
+          updates.STORAGE_LOCAL_PATH = config.storage.localPath || './data/media';
         } else if (config.storage.type === 's3') {
           if (config.storage.builtIn) {
-            // Built-in MinIO - use container name as endpoint
-            envLines.push('S3_ENDPOINT=http://minio:9000');
-            envLines.push('S3_ACCESS_KEY=minioadmin');
-            envLines.push('S3_SECRET_KEY=minioadmin');
-            envLines.push('S3_BUCKET=openwa');
-            envLines.push('S3_REGION=us-east-1');
+            updates.S3_ENDPOINT = 'http://minio:9000';
+            updates.S3_ACCESS_KEY = 'minioadmin';
+            updates.S3_SECRET_KEY = 'minioadmin';
+            updates.S3_BUCKET = 'openwa';
+            updates.S3_REGION = 'us-east-1';
             profiles.push('minio');
           } else {
-            // External S3/MinIO
-            envLines.push(`S3_BUCKET=${config.storage.s3Bucket || ''}`);
-            envLines.push(`S3_REGION=${config.storage.s3Region || 'ap-southeast-1'}`);
-            envLines.push(`S3_ACCESS_KEY=${config.storage.s3AccessKey || ''}`);
-            envLines.push(`S3_SECRET_KEY=${config.storage.s3SecretKey || ''}`);
-            if (config.storage.s3Endpoint) {
-              envLines.push(`S3_ENDPOINT=${config.storage.s3Endpoint}`);
-            }
+            updates.S3_BUCKET = config.storage.s3Bucket || '';
+            updates.S3_REGION = config.storage.s3Region || 'ap-southeast-1';
+            updates.S3_ACCESS_KEY = config.storage.s3AccessKey || '';
+            updates.S3_SECRET_KEY = config.storage.s3SecretKey || '';
+            if (config.storage.s3Endpoint) updates.S3_ENDPOINT = config.storage.s3Endpoint;
           }
         }
-        envLines.push('');
       }
 
-      // Engine
       if (config.engine) {
-        envLines.push('# WhatsApp Engine');
-        envLines.push(`ENGINE_HEADLESS=${config.engine.headless !== false ? 'true' : 'false'}`);
-        envLines.push(`ENGINE_SESSION_PATH=${config.engine.sessionDataPath || './data/sessions'}`);
-        envLines.push(`ENGINE_BROWSER_ARGS=${config.engine.browserArgs || '--no-sandbox --disable-gpu'}`);
-        envLines.push('');
+        updates.ENGINE_TYPE = config.engine.type || 'whatsapp-web.js';
+        updates.SESSION_DATA_PATH = config.engine.sessionDataPath || './data/sessions';
+        updates.PUPPETEER_HEADLESS = config.engine.headless !== false ? 'true' : 'false';
+        updates.PUPPETEER_ARGS = (config.engine.browserArgs || '--no-sandbox,--disable-setuid-sandbox')
+          .split(/[,\s]+/)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .join(',');
       }
 
-      // Docker Profiles (for reference)
-      envLines.push('# Docker Profiles (auto-generated)');
-      envLines.push(`# Required profiles: ${profiles.length > 0 ? profiles.join(', ') : 'none'}`);
-      envLines.push('');
+      const envPath = persistDashboardEnvUpdates(updates);
+      const relativeEnvPath = toRelativeDataPath(envPath);
+      this.logger.log('Configuration saved', { envPath: relativeEnvPath });
 
-      // Write to .env file in data/ directory so it persists across container restarts
-      const envPath = path.resolve(process.cwd(), 'data', '.env.generated');
-      fs.writeFileSync(envPath, envLines.join('\n'), 'utf8');
-      this.logger.log('Configuration saved', { envPath });
+      await this.auditService.logInfo(
+        AuditAction.INFRA_CONFIG_SAVED,
+        this.auditContext(req, { profiles, envPath: relativeEnvPath }),
+      );
 
       const profileMsg = profiles.length > 0 ? ` Docker profiles required: ${profiles.join(', ')}.` : '';
 
       return {
         message: `Configuration saved successfully.${profileMsg} Server restart required to apply changes.`,
         saved: true,
-        envPath,
+        envPath: relativeEnvPath,
         profiles,
       };
     } catch (error) {
@@ -342,7 +361,10 @@ export class InfraController {
   @Post('restart')
   @ApiOperation({ summary: 'Request server restart with Docker orchestration' })
   @ApiResponse({ status: 200, description: 'Server will restart with new profiles' })
-  async requestRestart(@Body() body?: { profiles?: string[]; profilesToRemove?: string[] }): Promise<{
+  async requestRestart(
+    @Body() body: { profiles?: string[]; profilesToRemove?: string[] } | undefined,
+    @Req() req: AuthedRequest,
+  ): Promise<{
     message: string;
     restarting: boolean;
     profiles: string[];
@@ -405,6 +427,15 @@ export class InfraController {
       }
     }
 
+    await this.auditService.logInfo(
+      AuditAction.INFRA_RESTART_REQUESTED,
+      this.auditContext(req, {
+        profiles,
+        profilesToRemove,
+        dockerAvailable: this.dockerService.isDockerAvailable(),
+      }),
+    );
+
     // Schedule graceful shutdown after delay to allow response and container orchestration
     void this.shutdownService.shutdown(3000);
 
@@ -443,7 +474,7 @@ export class InfraController {
   @Get('export-data')
   @ApiOperation({ summary: 'Export all data from Data DB for migration' })
   @ApiResponse({ status: 200, description: 'Exported data as JSON' })
-  async exportData(): Promise<{
+  async exportData(@Req() req: AuthedRequest): Promise<{
     exportedAt: string;
     dataDbType: string;
     tables: MigrationTables;
@@ -468,6 +499,18 @@ export class InfraController {
     } catch (error) {
       this.logger.debug('Message batches table not available for export', { error: String(error) });
     }
+
+    await this.auditService.logInfo(
+      AuditAction.INFRA_DATA_EXPORTED,
+      this.auditContext(req, {
+        counts: {
+          sessions: sessions.length,
+          webhooks: webhooks.length,
+          messages: messages.length,
+          messageBatches: messageBatches.length,
+        },
+      }),
+    );
 
     return {
       exportedAt: new Date().toISOString(),
@@ -512,6 +555,7 @@ export class InfraController {
     data: {
       tables: Partial<MigrationTables>;
     },
+    @Req() req: AuthedRequest,
   ): Promise<{
     imported: boolean;
     counts: { sessions: number; webhooks: number; messages: number; messageBatches: number };
@@ -650,6 +694,19 @@ export class InfraController {
 
       await queryRunner.commitTransaction();
 
+      await this.auditService.logInfo(
+        AuditAction.INFRA_DATA_IMPORTED,
+        this.auditContext(req, {
+          counts: {
+            sessions: sessionsCount,
+            webhooks: webhooksCount,
+            messages: messagesCount,
+            messageBatches: messageBatchesCount,
+          },
+          warningCount: warnings.length,
+        }),
+      );
+
       return {
         imported: true,
         counts: {
@@ -693,11 +750,14 @@ export class InfraController {
   @Get('storage/export')
   @ApiOperation({ summary: 'Export all storage files as tar.gz' })
   @ApiResponse({ status: 200, description: 'Tar.gz archive stream' })
-  async exportStorage(): Promise<{ message: string; download: string }> {
-    // Note: In production, this would return a StreamableFile
-    // For simplicity, we'll save to a temp file and return the path
+  async exportStorage(@Req() req: AuthedRequest): Promise<{ message: string; download: string }> {
     const stream = await this.storageService.createExportStream();
-    const exportPath = path.join(process.cwd(), 'data', `storage-export-${Date.now()}.tar.gz`);
+    const exportsDir = path.join(process.cwd(), 'data', 'exports');
+    if (!fs.existsSync(exportsDir)) {
+      fs.mkdirSync(exportsDir, { recursive: true });
+    }
+    const fileName = `storage-export-${Date.now()}.tar.gz`;
+    const exportPath = path.join(exportsDir, fileName);
 
     const writeStream = fs.createWriteStream(exportPath);
     stream.pipe(writeStream);
@@ -707,27 +767,101 @@ export class InfraController {
       writeStream.on('error', reject);
     });
 
+    const relativeDownload = toRelativeDataPath(exportPath);
+    await this.auditService.logInfo(
+      AuditAction.INFRA_STORAGE_EXPORTED,
+      this.auditContext(req, { download: relativeDownload }),
+    );
+
     return {
       message: 'Storage export completed',
-      download: exportPath,
+      download: relativeDownload,
+    };
+  }
+
+  @Post('storage/import-upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 1024 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const name = path.basename(file.originalname || '');
+        if (!name.endsWith('.tar.gz')) {
+          cb(new BadRequestException('Only .tar.gz archives are allowed') as Error, false);
+          return;
+        }
+        cb(null, true);
+      },
+      storage: diskStorage({
+        destination: (_req, _file, cb) => {
+          const dir = path.join(process.cwd(), 'data', 'imports');
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+          cb(null, dir);
+        },
+        filename: (_req, file, cb) => {
+          const safe = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+          cb(null, safe);
+        },
+      }),
+    }),
+  )
+  @ApiOperation({ summary: 'Upload and import storage archive (tar.gz)' })
+  @ApiResponse({ status: 200, description: 'Import result' })
+  async importStorageUpload(
+    @UploadedFile() file: { path: string; originalname: string; size: number } | undefined,
+    @Req() req: AuthedRequest,
+  ): Promise<{ imported: boolean; count: number; storageType: string; fileName: string }> {
+    if (!file?.path) {
+      throw new BadRequestException('file is required (.tar.gz)');
+    }
+
+    const readStream = fs.createReadStream(file.path);
+    const count = await this.storageService.importFromStream(readStream);
+
+    await this.auditService.logInfo(
+      AuditAction.INFRA_STORAGE_IMPORTED,
+      this.auditContext(req, {
+        fileName: path.basename(file.originalname),
+        count,
+        method: 'upload',
+      }),
+    );
+
+    return {
+      imported: true,
+      count,
+      storageType: this.storageService.getCurrentStorageType(),
+      fileName: path.basename(file.originalname),
     };
   }
 
   @Post('storage/import')
-  @ApiOperation({ summary: 'Import storage files from tar.gz' })
-  @ApiBody({ description: 'Path to tar.gz file to import' })
+  @ApiOperation({ summary: 'Import storage files from tar.gz in data/imports' })
+  @ApiBody({
+    description: 'File name of tar.gz inside data/imports (not an absolute path)',
+    schema: { type: 'object', properties: { fileName: { type: 'string' } } },
+  })
   @ApiResponse({ status: 200, description: 'Import result' })
   async importStorage(
-    @Body() body: { filePath: string },
+    @Body() body: { fileName?: string; filePath?: string },
+    @Req() req: AuthedRequest,
   ): Promise<{ imported: boolean; count: number; storageType: string }> {
-    const { filePath } = body;
-
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${filePath}`);
+    const fileName = body.fileName ?? (body.filePath ? path.basename(body.filePath) : '');
+    if (!fileName) {
+      throw new BadRequestException('fileName is required');
     }
 
-    const readStream = fs.createReadStream(filePath);
+    const resolved = resolveControlledImportFile(fileName);
+    if (!fs.existsSync(resolved)) {
+      throw new NotFoundException(`Import file not found: ${fileName}`);
+    }
+
+    const readStream = fs.createReadStream(resolved);
     const count = await this.storageService.importFromStream(readStream);
+
+    await this.auditService.logInfo(
+      AuditAction.INFRA_STORAGE_IMPORTED,
+      this.auditContext(req, { fileName, count }),
+    );
 
     return {
       imported: true,

@@ -16,8 +16,8 @@ export interface ThemePalette {
   warning: string;
 }
 
-/** Optional UI kit applied via `data-theme-id` CSS (see styles/tactical-overlay.css). */
-export type ThemeEffects = 'tactical';
+/** Optional UI kit applied via dedicated stylesheets (tactical HUD, Interakt inbox, Stitch Digital Reconstruction). */
+export type ThemeEffects = 'tactical' | 'interakt' | 'stitch';
 
 export interface DashboardTheme {
   id: string;

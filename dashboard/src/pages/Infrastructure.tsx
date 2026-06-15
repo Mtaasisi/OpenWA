@@ -18,6 +18,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useInfraStatusQuery } from '../hooks/queries';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/Toast';
+import { ModalOverlay } from '../components/ModalOverlay';
 import './Infrastructure.css';
 
 import sqliteIcon from '../assets/icons/sqlite.svg';
@@ -85,13 +86,25 @@ interface RateLimitConfig {
 
 export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation();
+  const modalOverlayClass = embedded
+    ? 'modal-overlay settings-embed-modal-overlay'
+    : 'modal-overlay';
   useDocumentTitle(t('infrastructure.title'));
   const toast = useToast();
   const { data: infraStatus, isLoading: loading } = useInfraStatusQuery();
+
+  useEffect(() => {
+    void infraApi
+      .getStorageFileCount()
+      .then(s => setStorageStats({ count: s.count, sizeMB: s.sizeMB }))
+      .catch(() => setStorageStats(null));
+  }, []);
   const [saving, setSaving] = useState(false);
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [restartCountdown, setRestartCountdown] = useState(0);
   const [restartStatus, setRestartStatus] = useState<'idle' | 'restarting' | 'waiting' | 'success' | 'error'>('idle');
+  const [storageStats, setStorageStats] = useState<{ count: number; sizeMB: string } | null>(null);
+  const [storageImporting, setStorageImporting] = useState(false);
 
   const [dbConfig, setDbConfig] = useState<DatabaseConfig>({
     type: 'sqlite',
@@ -158,12 +171,28 @@ export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}
   useEffect(() => {
     if (!infraStatus) return;
 
+    if (infraStatus.server) {
+      setServerConfig(infraStatus.server);
+    }
+    if (infraStatus.webhook) {
+      setWebhookConfig(infraStatus.webhook);
+    }
+    if (infraStatus.rateLimit) {
+      setRateLimitConfig(infraStatus.rateLimit);
+    }
+
     setDbConfig(prev => ({
       ...prev,
       type: (infraStatus.database.type as 'sqlite' | 'postgres') || 'sqlite',
       host: infraStatus.database.host || 'localhost',
+      port: infraStatus.database.port || prev.port,
+      database: infraStatus.database.database || prev.database,
+      username: infraStatus.database.username || prev.username,
+      poolSize: infraStatus.database.poolSize ?? prev.poolSize,
+      sslEnabled: infraStatus.database.sslEnabled ?? prev.sslEnabled,
     }));
 
+    setRedisEnabled(infraStatus.redis.enabled);
     setRedisConfig(prev => ({
       ...prev,
       host: infraStatus.redis.host,
@@ -174,7 +203,8 @@ export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}
     setStorageConfig(prev => ({
       ...prev,
       type: infraStatus.storage.type,
-      localPath: infraStatus.storage.path || './uploads',
+      localPath: infraStatus.storage.path || './data/media',
+      s3Bucket: infraStatus.storage.bucket || prev.s3Bucket,
     }));
 
     setQueueEnabled(infraStatus.queue.enabled);
@@ -293,7 +323,7 @@ export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}
   };
 
   return (
-    <div className={`infrastructure-page ${embedded ? 'settings-embed' : ''}`}>
+    <div className={`infrastructure-page ${embedded ? 'settings-embed infrastructure-page--embed' : ''}`}>
       {!embedded && (
         <PageHeader title={t('infrastructure.title')} subtitle={t('infrastructure.subtitle')} />
       )}
@@ -908,10 +938,89 @@ export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}
             )}
           </div>
         </section>
+
+        <section className="infra-section">
+          <div className="section-header">
+            <HardDrive size={20} />
+            <div>
+              <h2>{t('infrastructure.storage.migrationTitle')}</h2>
+              <p className="section-desc">{t('infrastructure.storage.migrationDesc')}</p>
+            </div>
+          </div>
+          {storageStats && (
+            <p className="infra-migration-stats">
+              {t('infrastructure.storage.fileCount', {
+                count: storageStats.count,
+                sizeMB: storageStats.sizeMB,
+              })}
+            </p>
+          )}
+          <div className="infra-migration-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                void infraApi.exportData().then(data => {
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `openwa-export-${new Date().toISOString().slice(0, 10)}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success(t('infrastructure.storage.exportData'));
+                }).catch(err => toast.error(err instanceof Error ? err.message : String(err)));
+              }}
+            >
+              {t('infrastructure.storage.exportData')}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                void infraApi.exportStorage().then(res => {
+                  toast.success(res.message);
+                  if (res.download) toast.info(res.download);
+                }).catch(err => toast.error(err instanceof Error ? err.message : String(err)));
+              }}
+            >
+              {t('infrastructure.storage.exportStorage')}
+            </button>
+            <label className="btn-secondary infra-upload-label">
+              {storageImporting ? t('infrastructure.storage.importing') : t('infrastructure.storage.importStorage')}
+              <input
+                type="file"
+                accept=".tar.gz,application/gzip,application/x-gzip"
+                hidden
+                disabled={storageImporting}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (!file) return;
+                  setStorageImporting(true);
+                  void infraApi
+                    .importStorageUpload(file)
+                    .then(res => {
+                      toast.success(
+                        t('infrastructure.storage.importSuccess', {
+                          count: res.count,
+                          fileName: res.fileName,
+                        }),
+                      );
+                      return infraApi.getStorageFileCount();
+                    })
+                    .then(s => setStorageStats({ count: s.count, sizeMB: s.sizeMB }))
+                    .catch(err => toast.error(err instanceof Error ? err.message : String(err)))
+                    .finally(() => setStorageImporting(false));
+                }}
+              />
+            </label>
+          </div>
+        </section>
       </div>
 
       {showRestartModal && (
-        <div className="modal-overlay">
+        <ModalOverlay className={modalOverlayClass}>
           <div className="modal" style={{ maxWidth: '500px', textAlign: 'center' }}>
             <div className="modal-header" style={{ justifyContent: 'center', borderBottom: 'none' }}>
               <h2>
@@ -994,7 +1103,7 @@ export function Infrastructure({ embedded = false }: { embedded?: boolean } = {}
               )}
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       <footer className="page-footer">

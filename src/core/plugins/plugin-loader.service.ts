@@ -260,7 +260,7 @@ export class PluginLoaderService implements OnModuleInit {
       throw new Error(`Plugin ${pluginId} not found`);
     }
 
-    plugin.config = { ...plugin.config, ...config };
+    Object.assign(plugin.config, config);
 
     // Persist config
     this.pluginStorage.setPluginConfig(pluginId, plugin.config);

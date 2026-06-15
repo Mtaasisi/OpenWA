@@ -5,7 +5,7 @@ import { messageApi } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useRole } from '../hooks/useRole';
 import { useSessionsQuery, useSessionGroupsQuery } from '../hooks/queries';
-import { PageHeader } from '../components/PageHeader';
+import { WorkspacePageHeader, StatusBadge } from '../components/workspace';
 import './MessageTester.css';
 
 interface ApiResponse {
@@ -27,7 +27,7 @@ export function MessageTester({ embedded = false }: { embedded?: boolean } = {})
   const [recipient, setRecipient] = useState('');
   const [recipientType, setRecipientType] = useState<'personal' | 'group'>('personal');
   const [selectedGroup, setSelectedGroup] = useState('');
-  const [messageType, setMessageType] = useState<typeof messageTypes[number]>('text');
+  const [messageType, setMessageType] = useState<(typeof messageTypes)[number]>('text');
   const [content, setContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +59,7 @@ export function MessageTester({ embedded = false }: { embedded?: boolean } = {})
     setIsLoading(true);
     setResponse(null);
 
-    const chatId = recipientType === 'group' ? targetId : targetId.replace(/[^0-9]/g, '') + '@c.us';
+    const chatId = recipientType === 'group' ? targetId : recipient.replace(/[^0-9]/g, '') + '@c.us';
 
     try {
       let result;
@@ -91,204 +91,213 @@ export function MessageTester({ embedded = false }: { embedded?: boolean } = {})
     }
   };
 
-  if (loadingSessions) {
-    return (
-      <div
-        className={`message-tester ${embedded ? 'settings-embed' : ''}`}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: embedded ? '200px' : '400px',
-        }}
-      >
-        <Loader2 className="animate-spin" size={32} />
-      </div>
-    );
-  }
+  const body = loadingSessions ? (
+    <div className="message-tester-interakt__loading">
+      <Loader2 className="animate-spin" size={28} />
+    </div>
+  ) : (
+    <div className="message-tester-interakt__grid">
+      <section className="fu-glass-card message-tester-interakt__panel">
+        <h3 className="message-tester-interakt__title">{t('messageTester.compose')}</h3>
 
-  return (
-    <div className={`message-tester ${embedded ? 'settings-embed' : ''}`}>
-      {!embedded && (
-        <PageHeader title={t('messageTester.title')} subtitle={t('messageTester.subtitle')} />
-      )}
-
-      <div className="tester-panels">
-        <div className="compose-panel">
-          <h2>{t('messageTester.compose')}</h2>
-
-          <div className="form-group">
-            <label>{t('messageTester.session')}</label>
-            <select value={session} onChange={e => setSession(e.target.value)}>
-              {sessions.length === 0 && <option value="">{t('messageTester.noReadySessions')}</option>}
-              {sessions.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.phone || t('messageTester.sessionOptionPhoneNone')})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>{t('messageTester.recipientType')}</label>
-            <div className="toggle-group">
-              <button
-                className={recipientType === 'personal' ? 'active' : ''}
-                onClick={() => setRecipientType('personal')}
-              >
-                {t('messageTester.personal')}
-              </button>
-              <button className={recipientType === 'group' ? 'active' : ''} onClick={() => setRecipientType('group')}>
-                {t('messageTester.group')}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>{recipientType === 'group' ? t('messageTester.selectGroup') : t('messageTester.recipientPhone')}</label>
-            {recipientType === 'group' ? (
-              <>
-                <select
-                  value={selectedGroup}
-                  onChange={e => setSelectedGroup(e.target.value)}
-                  disabled={loadingGroups || groups.length === 0}
-                >
-                  {loadingGroups && <option value="">{t('messageTester.loadingGroups')}</option>}
-                  {!loadingGroups && groups.length === 0 && <option value="">{t('messageTester.noGroupsFound')}</option>}
-                  {groups.map(g => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-                <span className="hint">{t('messageTester.selectGroupHint')}</span>
-              </>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  value={recipient}
-                  onChange={e => setRecipient(e.target.value)}
-                  placeholder="+62812345678"
-                />
-                <span className="hint">{t('messageTester.phoneHint')}</span>
-              </>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>{t('messageTester.messageType')}</label>
-            <div className="toggle-group">
-              {messageTypes.map(type => (
-                <button
-                  key={type}
-                  className={messageType === type ? 'active' : ''}
-                  onClick={() => setMessageType(type)}
-                >
-                  {t(`messageTester.types.${type}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {messageType === 'text' ? (
-            <div className="form-group">
-              <label>{t('messageTester.messageContent')}</label>
-              <textarea
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                placeholder={t('messageTester.messagePlaceholder')}
-                rows={5}
-              />
-            </div>
-          ) : (
-            <>
-              <div className="form-group">
-                <label>{t('messageTester.mediaUrl')}</label>
-                <input
-                  type="text"
-                  value={mediaUrl}
-                  onChange={e => setMediaUrl(e.target.value)}
-                  placeholder="https://example.com/file.jpg"
-                />
-              </div>
-              {messageType !== 'audio' && (
-                <div className="form-group">
-                  <label>
-                    {messageType === 'document' ? t('messageTester.filename') : t('messageTester.caption')} ({t('common.optional')})
-                  </label>
-                  <input
-                    type="text"
-                    value={content}
-                    onChange={e => setContent(e.target.value)}
-                    placeholder={messageType === 'document' ? t('messageTester.filenamePlaceholder') : t('messageTester.captionPlaceholder')}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          <button
-            className="send-btn"
-            onClick={handleSend}
-            disabled={!canWrite || isLoading || !session || (recipientType === 'group' ? !selectedGroup : !recipient)}
-          >
-            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-            {isLoading ? t('messageTester.sending') : canWrite ? t('messageTester.send') : t('messageTester.viewOnly')}
-          </button>
+        <div className="message-tester-interakt__field">
+          <label>{t('messageTester.session')}</label>
+          <select className="message-tester-interakt__input" value={session} onChange={e => setSession(e.target.value)}>
+            {sessions.length === 0 && <option value="">{t('messageTester.noReadySessions')}</option>}
+            {sessions.map(s => (
+              <option key={s.id} value={s.id}>
+                {s.name} ({s.phone || t('messageTester.sessionOptionPhoneNone')})
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="response-panel">
-          <h2>{t('messageTester.responseTitle')}</h2>
+        <div className="message-tester-interakt__field">
+          <label>{t('messageTester.recipientType')}</label>
+          <div className="fu-chips" role="group">
+            {(['personal', 'group'] as const).map(type => (
+              <button
+                key={type}
+                type="button"
+                className={['fu-chip', recipientType === type ? 'fu-chip--active' : ''].join(' ')}
+                onClick={() => setRecipientType(type)}
+              >
+                {t(`messageTester.${type}`)}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {response ? (
+        <div className="message-tester-interakt__field">
+          <label>{recipientType === 'group' ? t('messageTester.selectGroup') : t('messageTester.recipientPhone')}</label>
+          {recipientType === 'group' ? (
             <>
-              <div className={`response-status ${response.success ? 'success' : 'error'}`}>
+              <select
+                className="message-tester-interakt__input"
+                value={selectedGroup}
+                onChange={e => setSelectedGroup(e.target.value)}
+                disabled={loadingGroups || groups.length === 0}
+              >
+                {loadingGroups && <option value="">{t('messageTester.loadingGroups')}</option>}
+                {!loadingGroups && groups.length === 0 && <option value="">{t('messageTester.noGroupsFound')}</option>}
+                {groups.map(g => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+              <span className="message-tester-interakt__hint">{t('messageTester.selectGroupHint')}</span>
+            </>
+          ) : (
+            <>
+              <input
+                className="message-tester-interakt__input"
+                type="text"
+                value={recipient}
+                onChange={e => setRecipient(e.target.value)}
+                placeholder="+62812345678"
+              />
+              <span className="message-tester-interakt__hint">{t('messageTester.phoneHint')}</span>
+            </>
+          )}
+        </div>
+
+        <div className="message-tester-interakt__field">
+          <label>{t('messageTester.messageType')}</label>
+          <div className="fu-chips message-tester-interakt__type-chips" role="group">
+            {messageTypes.map(type => (
+              <button
+                key={type}
+                type="button"
+                className={['fu-chip', messageType === type ? 'fu-chip--active' : ''].join(' ')}
+                onClick={() => setMessageType(type)}
+              >
+                {t(`messageTester.types.${type}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {messageType === 'text' ? (
+          <div className="message-tester-interakt__field">
+            <label>{t('messageTester.messageContent')}</label>
+            <textarea
+              className="message-tester-interakt__input message-tester-interakt__textarea"
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              placeholder={t('messageTester.messagePlaceholder')}
+              rows={5}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="message-tester-interakt__field">
+              <label>{t('messageTester.mediaUrl')}</label>
+              <input
+                className="message-tester-interakt__input"
+                type="text"
+                value={mediaUrl}
+                onChange={e => setMediaUrl(e.target.value)}
+                placeholder="https://example.com/file.jpg"
+              />
+            </div>
+            {messageType !== 'audio' && (
+              <div className="message-tester-interakt__field">
+                <label>
+                  {messageType === 'document' ? t('messageTester.filename') : t('messageTester.caption')} (
+                  {t('common.optional')})
+                </label>
+                <input
+                  className="message-tester-interakt__input"
+                  type="text"
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  placeholder={
+                    messageType === 'document'
+                      ? t('messageTester.filenamePlaceholder')
+                      : t('messageTester.captionPlaceholder')
+                  }
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        <button
+          type="button"
+          className="fu-btn fu-btn--primary message-tester-interakt__send"
+          onClick={handleSend}
+          disabled={!canWrite || isLoading || !session || (recipientType === 'group' ? !selectedGroup : !recipient)}
+        >
+          {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+          {isLoading ? t('messageTester.sending') : canWrite ? t('messageTester.send') : t('messageTester.viewOnly')}
+        </button>
+      </section>
+
+      <section className="fu-glass-card message-tester-interakt__panel">
+        <h3 className="message-tester-interakt__title">{t('messageTester.responseTitle')}</h3>
+
+        {response ? (
+          <>
+            <div className="message-tester-interakt__status">
+              <StatusBadge variant={response.success ? 'success' : 'error'}>
                 {response.success ? (
                   <>
-                    <CheckCircle size={20} />
-                    <span>{t('messageTester.successLabel')}</span>
+                    <CheckCircle size={14} />
+                    {t('messageTester.successLabel')}
                   </>
                 ) : (
                   <>
-                    <XCircle size={20} />
-                    <span>{t('messageTester.failedLabel')}</span>
+                    <XCircle size={14} />
+                    {t('messageTester.failedLabel')}
                   </>
                 )}
-              </div>
-
-              <div className="response-details">
-                <div className="detail-row">
-                  <span className="detail-label">{t('messageTester.response.timestamp')}</span>
-                  <span className="detail-value">{response.timestamp}</span>
-                </div>
-                {response.messageId && (
-                  <div className="detail-row">
-                    <span className="detail-label">{t('messageTester.response.messageId')}</span>
-                    <span className="detail-value mono">{response.messageId}</span>
-                  </div>
-                )}
-                {response.error && (
-                  <div className="detail-row">
-                    <span className="detail-label">{t('messageTester.response.error')}</span>
-                    <span className="detail-value" style={{ color: '#DC2626' }}>
-                      {response.error}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="response-json">
-                <pre>{JSON.stringify(response, null, 2)}</pre>
-              </div>
-            </>
-          ) : (
-            <div className="response-empty">
-              <p>{t('messageTester.responseEmpty')}</p>
+              </StatusBadge>
             </div>
-          )}
-        </div>
-      </div>
+
+            <dl className="message-tester-interakt__details">
+              <div>
+                <dt>{t('messageTester.response.timestamp')}</dt>
+                <dd>{response.timestamp}</dd>
+              </div>
+              {response.messageId && (
+                <div>
+                  <dt>{t('messageTester.response.messageId')}</dt>
+                  <dd className="message-tester-interakt__mono">{response.messageId}</dd>
+                </div>
+              )}
+              {response.error && (
+                <div>
+                  <dt>{t('messageTester.response.error')}</dt>
+                  <dd className="message-tester-interakt__error">{response.error}</dd>
+                </div>
+              )}
+            </dl>
+
+            <pre className="message-tester-interakt__json">{JSON.stringify(response, null, 2)}</pre>
+          </>
+        ) : (
+          <div className="message-tester-interakt__empty">
+            <p>{t('messageTester.responseEmpty')}</p>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+
+  if (embedded) {
+    return <div className="message-tester-interakt message-tester-interakt--embed">{body}</div>;
+  }
+
+  return (
+    <div className="followups-interakt message-tester-interakt">
+      <WorkspacePageHeader
+        title={t('messageTester.title')}
+        showSearch={false}
+        showExport={false}
+        showNewTask={false}
+      />
+      <div className="followups-interakt__scroll">{body}</div>
     </div>
   );
 }

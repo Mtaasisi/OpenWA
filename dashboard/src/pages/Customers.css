@@ -1,0 +1,210 @@
+/* Customers — Interakt Pro (extends Followups.css fu-* primitives) */
+
+.customers-bento {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 768px) {
+  .customers-bento {
+    grid-template-columns: 1fr;
+  }
+}
+
+.customers-filters-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.customers-toggle-chips {
+  flex-wrap: wrap;
+}
+
+.customers-stage-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.customers-status-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.customers-table__muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.customers-bucket-count {
+  margin-left: 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Pipeline tab inside Customers */
+.customers-pipeline-panel--interakt .pipeline-toolbar--interakt {
+  margin-bottom: 0.75rem;
+}
+
+.customers-pipeline-panel--interakt .pipeline-toolbar--interakt label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 140px;
+}
+
+.customers-pipeline-panel--interakt .pipeline-toolbar--interakt select,
+.customers-pipeline-panel--interakt .pipeline-toolbar--interakt input {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: 8px;
+  background: var(--bg-card);
+  font-size: 13px;
+}
+
+.pipeline-buckets--interakt {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.pipeline-bucket-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pipeline-bucket-chip__count {
+  min-width: 1.25rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.fu-chip--active .pipeline-bucket-chip__count {
+  background: color-mix(in srgb, var(--interakt-on-primary, #fff) 25%, transparent);
+}
+
+.pipeline-card--interakt .pipeline-card__stage {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-left: auto;
+  text-transform: none;
+  font-size: 10px;
+}
+
+.pipeline-list-footer {
+  margin-top: 1rem;
+}
+
+.pipeline-list--interakt {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.pipeline-card--interakt {
+  min-height: auto;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pipeline-card--interakt:hover {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
+.pipeline-card--interakt .pipeline-card__header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.customer-row-avatar.inbox-avatar {
+  width: 2rem;
+  height: 2rem;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-light);
+  color: var(--text-secondary);
+  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.pipeline-card--interakt .pipeline-card__header .inbox-contact-avatar-wrap {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.pipeline-card__avatar.customer-row-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.customers-pipeline-panel--interakt .fu-table__customer .inbox-contact-avatar-wrap {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
+.pipeline-card--interakt .pipeline-card__header .pipeline-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.pipeline-card--interakt .pipeline-card__title {
+  min-width: 0;
+  flex: 1;
+}
+
+.pipeline-card--interakt .pipeline-card__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pipeline-card--interakt .pipeline-card__subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.pipeline-card--interakt .pipeline-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.pipeline-card--interakt .pipeline-card__time,
+.pipeline-card--interakt .pipeline-card__due {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0.2rem 0;
+}
+
+.pipeline-card--interakt .pipeline-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+}

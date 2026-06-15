@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Pool } from 'pg';
 import {
   CrmInauzwaSyncSettings,
   INAUZWA_SYNC_SETTINGS_ID,
@@ -15,6 +16,15 @@ export interface InauzwaSyncPreferencesDto {
   autoSyncEnabled: boolean;
   autoSyncIntervalMinutes: number;
   refreshBeforeSend: boolean;
+  syncProducts: boolean;
+  syncCustomers: boolean;
+  syncProformas: boolean;
+  syncRecentSales: boolean;
+  syncCategories: boolean;
+  pushSalesToInauzwa: boolean;
+  businessName: string | null;
+  defaultPaymentInstructions: string | null;
+  defaultBranchPickupInfo: string | null;
   lastSyncAt: string | null;
   lastSyncError: string | null;
   lastSyncResult: InauzwaSyncResult | null;
@@ -32,6 +42,7 @@ export interface InauzwaConnectionInfoDto {
   loginEmail: string | null;
   connectedViaLogin: boolean;
   supabaseUrl: string | null;
+  vendorAutoFromLogin: boolean;
 }
 
 export interface InauzwaResolvedCredentials {
@@ -180,7 +191,98 @@ export class InauzwaSyncPreferencesService {
       loginEmail: row.loginEmail?.trim() || null,
       connectedViaLogin: !!(row.loginEmail?.trim() && (row.apiToken?.trim() || resolved.apiToken)),
       supabaseUrl: resolved.supabaseUrl,
+      vendorAutoFromLogin: !!(row.loginEmail?.trim() && row.vendorId?.trim()),
     };
+  }
+
+  async ensureLoginUserProfile(creds: InauzwaResolvedCredentials): Promise<void> {
+    const row = await this.get();
+    const email = row.loginEmail?.trim();
+    if (!email) return;
+
+    const profile = creds.databaseUrl
+      ? await this.fetchUserProfileFromDatabase(email, creds.databaseUrl)
+      : creds.source === 'supabase' &&
+          creds.supabaseUrl &&
+          creds.supabaseAnonKey &&
+          creds.apiToken
+        ? await this.fetchUserProfileFromSupabase(
+            email,
+            creds.supabaseUrl,
+            creds.supabaseAnonKey,
+            creds.apiToken,
+          )
+        : null;
+
+    if (!profile) return;
+
+    let changed = false;
+    if (profile.vendorId && row.vendorId !== profile.vendorId) {
+      row.vendorId = profile.vendorId;
+      changed = true;
+    }
+    if (profile.branchId && !row.branchId?.trim()) {
+      row.branchId = profile.branchId;
+      changed = true;
+    }
+    if (changed) await this.repo.save(row);
+  }
+
+  private async fetchUserProfileFromDatabase(
+    email: string,
+    databaseUrl: string,
+  ): Promise<{ vendorId: string | null; branchId: string | null } | null> {
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: databaseUrl.includes('sslmode=require') ? { rejectUnauthorized: false } : undefined,
+    });
+    try {
+      const result = await pool.query<{ vendor_id: string | null; branch_id: string | null }>(
+        `SELECT vendor_id, branch_id FROM users WHERE lower(email) = lower($1) LIMIT 1`,
+        [email],
+      );
+      if (!result.rows[0]) return null;
+      return {
+        vendorId: result.rows[0].vendor_id?.trim() || null,
+        branchId: result.rows[0].branch_id?.trim() || null,
+      };
+    } catch {
+      return null;
+    } finally {
+      await pool.end().catch(() => undefined);
+    }
+  }
+
+  private async fetchUserProfileFromSupabase(
+    email: string,
+    supabaseUrl: string,
+    anonKey: string,
+    accessToken: string,
+  ): Promise<{ vendorId: string | null; branchId: string | null } | null> {
+    try {
+      const response = await fetch(
+        `${supabaseUrl.replace(/\/$/, '')}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=vendor_id,branch_id&limit=1`,
+        {
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        },
+      );
+      if (!response.ok) return null;
+      const rows = (await response.json()) as Array<{
+        vendor_id?: string | null;
+        branch_id?: string | null;
+      }>;
+      if (!rows[0]) return null;
+      return {
+        vendorId: rows[0].vendor_id?.trim() || null,
+        branchId: rows[0].branch_id?.trim() || null,
+      };
+    } catch {
+      return null;
+    }
   }
 
   async toDto(): Promise<InauzwaSyncPreferencesDto> {
@@ -200,6 +302,15 @@ export class InauzwaSyncPreferencesService {
       autoSyncEnabled: row.autoSyncEnabled,
       autoSyncIntervalMinutes: row.autoSyncIntervalMinutes,
       refreshBeforeSend: row.refreshBeforeSend,
+      syncProducts: row.syncProducts ?? true,
+      syncCustomers: row.syncCustomers ?? false,
+      syncProformas: row.syncProformas ?? false,
+      syncRecentSales: row.syncRecentSales ?? false,
+      syncCategories: row.syncCategories ?? false,
+      pushSalesToInauzwa: row.pushSalesToInauzwa ?? false,
+      businessName: row.businessName ?? null,
+      defaultPaymentInstructions: row.defaultPaymentInstructions ?? null,
+      defaultBranchPickupInfo: row.defaultBranchPickupInfo ?? null,
       lastSyncAt: toIsoString(row.lastSyncAt),
       lastSyncError: row.lastSyncError,
       lastSyncResult,
@@ -258,6 +369,19 @@ export class InauzwaSyncPreferencesService {
     if (dto.refreshBeforeSend !== undefined) {
       row.refreshBeforeSend = dto.refreshBeforeSend;
     }
+    if (dto.syncProducts !== undefined) row.syncProducts = dto.syncProducts;
+    if (dto.syncCustomers !== undefined) row.syncCustomers = dto.syncCustomers;
+    if (dto.syncProformas !== undefined) row.syncProformas = dto.syncProformas;
+    if (dto.syncRecentSales !== undefined) row.syncRecentSales = dto.syncRecentSales;
+    if (dto.syncCategories !== undefined) row.syncCategories = dto.syncCategories;
+    if (dto.pushSalesToInauzwa !== undefined) row.pushSalesToInauzwa = dto.pushSalesToInauzwa;
+    if (dto.businessName !== undefined) row.businessName = dto.businessName?.trim() || null;
+    if (dto.defaultPaymentInstructions !== undefined) {
+      row.defaultPaymentInstructions = dto.defaultPaymentInstructions?.trim() || null;
+    }
+    if (dto.defaultBranchPickupInfo !== undefined) {
+      row.defaultBranchPickupInfo = dto.defaultBranchPickupInfo?.trim() || null;
+    }
     await this.repo.save(row);
     return this.toDto();
   }
@@ -281,6 +405,12 @@ export class InauzwaSyncPreferencesService {
     if (fromRequest) return fromRequest;
     const row = await this.get();
     if (row.vendorId?.trim()) return row.vendorId.trim();
+    const creds = await this.resolveCredentials();
+    if (row.loginEmail?.trim()) {
+      await this.ensureLoginUserProfile(creds);
+      const refreshed = await this.get();
+      if (refreshed.vendorId?.trim()) return refreshed.vendorId.trim();
+    }
     const env = this.configService.get<string>('inauzwa.vendorId')?.trim();
     return env || undefined;
   }
@@ -297,6 +427,15 @@ export class InauzwaSyncPreferencesService {
     row.lastSyncAt = new Date();
     row.lastSyncResultJson = JSON.stringify(result);
     row.lastSyncError = null;
+    await this.repo.save(row);
+  }
+
+  async recordSyncBranchContext(branchId: string, vendorId?: string | null): Promise<void> {
+    const row = await this.get();
+    row.branchId = branchId.trim();
+    if (vendorId?.trim()) {
+      row.vendorId = vendorId.trim();
+    }
     await this.repo.save(row);
   }
 

@@ -1,0 +1,67 @@
+.inbox-ai-training-learn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin: 0 0 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 16px;
+  border: 1px solid #ccefe4;
+  background: #f0faf6;
+  color: #111b21;
+}
+
+.inbox-ai-training-learn--interakt {
+  margin: 0.35rem 0.75rem 0;
+}
+
+.inbox-ai-training-learn__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 12rem;
+  flex: 1;
+}
+
+.inbox-ai-training-learn__text strong {
+  font-size: 0.8125rem;
+}
+
+.inbox-ai-training-learn__text span {
+  font-size: 0.75rem;
+  color: #667781;
+}
+
+.inbox-ai-training-learn__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.inbox-ai-training-learn__btn {
+  border: 1px solid #e5ede5;
+  background: #fff;
+  color: #111b21;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.inbox-ai-training-learn__btn--primary {
+  background: #00a884;
+  border-color: #008069;
+  color: #fff;
+}
+
+.inbox-ai-training-learn__close {
+  border: none;
+  background: transparent;
+  color: #667781;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: inline-flex;
+}

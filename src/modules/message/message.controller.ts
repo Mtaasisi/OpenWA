@@ -1,12 +1,23 @@
-import { Controller, Post, Get, Param, Body, Query, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  Query,
+  Res,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { assertApiKeySessionAccess } from '../../common/utils/api-key-session.util';
 import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { MessageService } from './message.service';
 import { BulkMessageService } from './bulk-message.service';
 import { SendTextMessageDto, SendMediaMessageDto, MessageResponseDto } from './dto';
 import { SendBulkMessageDto, BulkMessageResponseDto } from './dto/bulk-message.dto';
-import { RequireRole } from '../auth/decorators/auth.decorators';
-import { ApiKeyRole } from '../auth/entities/api-key.entity';
+import { RequireRole, CurrentApiKey } from '../auth/decorators/auth.decorators';
+import { ApiKeyRole, ApiKey } from '../auth/entities/api-key.entity';
 
 @ApiTags('messages')
 @Controller('sessions/:sessionId/messages')
@@ -15,6 +26,10 @@ export class MessageController {
     private readonly messageService: MessageService,
     private readonly bulkMessageService: BulkMessageService,
   ) {}
+
+  private enforceSessionAccess(apiKey: ApiKey | undefined, sessionId: string): void {
+    assertApiKeySessionAccess(apiKey, sessionId);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get message history for a session' })
@@ -39,26 +54,78 @@ export class MessageController {
     });
   }
 
+  @Get('batch/:batchId')
+  @ApiOperation({ summary: 'Get batch processing status' })
+  @ApiParam({ name: 'sessionId', description: 'Session ID' })
+  @ApiParam({ name: 'batchId', description: 'Batch ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Batch status and progress',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Batch not found',
+  })
+  async getBatchStatus(@Param('sessionId') sessionId: string, @Param('batchId') batchId: string) {
+    const batch = await this.bulkMessageService.getBatchStatus(sessionId, batchId);
+    return {
+      batchId: batch.batchId,
+      status: batch.status,
+      progress: batch.progress,
+      results: batch.results,
+      startedAt: batch.startedAt,
+      completedAt: batch.completedAt,
+    };
+  }
+
+  @Post('batch/:batchId/cancel')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cancel a running batch' })
+  @ApiParam({ name: 'sessionId', description: 'Session ID' })
+  @ApiParam({ name: 'batchId', description: 'Batch ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Batch cancelled',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Batch not found',
+  })
+  async cancelBatch(@Param('sessionId') sessionId: string, @Param('batchId') batchId: string) {
+    const batch = await this.bulkMessageService.cancelBatch(sessionId, batchId);
+    return {
+      batchId: batch.batchId,
+      status: batch.status,
+      progress: batch.progress,
+    };
+  }
+
   @Get(':messageId/media')
   @ApiOperation({ summary: 'Download message media (image, video, audio, document)' })
   @ApiParam({ name: 'messageId', description: 'Message UUID' })
   @ApiResponse({ status: 200, description: 'Media file bytes' })
-  @ApiResponse({ status: 404, description: 'Media not found or session offline' })
+  @ApiResponse({ status: 204, description: 'Media not available (offline, expired, or not cached)' })
+  @ApiResponse({ status: 404, description: 'Message not found' })
   async getMessageMedia(
     @Param('sessionId') sessionId: string,
     @Param('messageId') messageId: string,
     @Res() res: Response,
   ): Promise<void> {
-    const { buffer, mimetype, filename } = await this.messageService.getMessageMedia(
-      sessionId,
-      messageId,
-    );
-    res.setHeader('Content-Type', mimetype);
-    if (filename) {
-      res.setHeader('Content-Disposition', `inline; filename="${filename.replace(/"/g, '')}"`);
+    const media = await this.messageService.getMessageMedia(sessionId, messageId);
+    if (!media) {
+      res.status(204).end();
+      return;
+    }
+    res.setHeader('Content-Type', media.mimetype);
+    if (media.filename) {
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${media.filename.replace(/"/g, '')}"`,
+      );
     }
     res.setHeader('Cache-Control', 'private, max-age=86400');
-    res.send(buffer);
+    res.send(media.buffer);
   }
 
   @Post('send-text')
@@ -75,8 +142,13 @@ export class MessageController {
     description: 'Session not active or invalid request',
   })
   @ApiResponse({ status: 404, description: 'Session not found' })
-  async sendText(@Param('sessionId') sessionId: string, @Body() dto: SendTextMessageDto): Promise<MessageResponseDto> {
-    return this.messageService.sendText(sessionId, dto);
+  async sendText(
+    @Param('sessionId') sessionId: string,
+    @Body() dto: SendTextMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
+  ): Promise<MessageResponseDto> {
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendText(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-image')
@@ -95,8 +167,10 @@ export class MessageController {
   async sendImage(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendMediaMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendImage(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendImage(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-video')
@@ -115,8 +189,10 @@ export class MessageController {
   async sendVideo(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendMediaMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendVideo(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendVideo(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-audio')
@@ -135,8 +211,10 @@ export class MessageController {
   async sendAudio(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendMediaMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendAudio(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendAudio(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-document')
@@ -155,8 +233,10 @@ export class MessageController {
   async sendDocument(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendMediaMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendDocument(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendDocument(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   // ========== Phase 3: Extended Messaging ==========
@@ -173,8 +253,10 @@ export class MessageController {
   async sendLocation(
     @Param('sessionId') sessionId: string,
     @Body() dto: { chatId: string; latitude: number; longitude: number; description?: string; address?: string },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendLocation(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendLocation(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-contact')
@@ -189,8 +271,10 @@ export class MessageController {
   async sendContact(
     @Param('sessionId') sessionId: string,
     @Body() dto: { chatId: string; contactName: string; contactNumber: string },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendContact(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendContact(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('send-sticker')
@@ -205,8 +289,10 @@ export class MessageController {
   async sendSticker(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendMediaMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.sendSticker(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.sendSticker(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('reply')
@@ -221,8 +307,10 @@ export class MessageController {
   async reply(
     @Param('sessionId') sessionId: string,
     @Body() dto: { chatId: string; quotedMessageId: string; text: string },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.reply(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.reply(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   @Post('forward')
@@ -237,8 +325,10 @@ export class MessageController {
   async forward(
     @Param('sessionId') sessionId: string,
     @Body() dto: { fromChatId: string; toChatId: string; messageId: string },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<MessageResponseDto> {
-    return this.messageService.forward(sessionId, dto);
+    this.enforceSessionAccess(apiKey, sessionId);
+    return this.messageService.forward(sessionId, dto, { actorStaffId: apiKey.id });
   }
 
   // ========== Phase 3: Reactions ==========
@@ -258,7 +348,9 @@ export class MessageController {
   async react(
     @Param('sessionId') sessionId: string,
     @Body() dto: { chatId: string; messageId: string; emoji: string },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<{ success: boolean }> {
+    this.enforceSessionAccess(apiKey, sessionId);
     await this.messageService.reactToMessage(sessionId, dto);
     return { success: true };
   }
@@ -297,7 +389,9 @@ export class MessageController {
   async deleteMessage(
     @Param('sessionId') sessionId: string,
     @Body() dto: { chatId: string; messageId: string; forEveryone?: boolean },
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<{ success: boolean }> {
+    this.enforceSessionAccess(apiKey, sessionId);
     await this.messageService.deleteMessage(sessionId, dto);
     return { success: true };
   }
@@ -321,7 +415,9 @@ export class MessageController {
   async sendBulk(
     @Param('sessionId') sessionId: string,
     @Body() dto: SendBulkMessageDto,
+    @CurrentApiKey() apiKey: ApiKey,
   ): Promise<BulkMessageResponseDto> {
+    this.enforceSessionAccess(apiKey, sessionId);
     const batch = await this.bulkMessageService.createBatch(sessionId, dto);
     const estimatedTime = new Date(Date.now() + batch.messages.length * (batch.options?.delayBetweenMessages || 3000));
 
@@ -331,57 +427,6 @@ export class MessageController {
       totalMessages: batch.messages.length,
       estimatedCompletionTime: estimatedTime.toISOString(),
       statusUrl: `/api/sessions/${sessionId}/messages/batch/${batch.batchId}`,
-    };
-  }
-
-  @Get('batch/:batchId')
-  @ApiOperation({ summary: 'Get batch processing status' })
-  @ApiParam({ name: 'sessionId', description: 'Session ID' })
-  @ApiParam({ name: 'batchId', description: 'Batch ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Batch status and progress',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Batch not found',
-  })
-  async getBatchStatus(@Param('sessionId') sessionId: string, @Param('batchId') batchId: string) {
-    const batch = await this.bulkMessageService.getBatchStatus(sessionId, batchId);
-    return {
-      batchId: batch.batchId,
-      status: batch.status,
-      progress: batch.progress,
-      results: batch.results,
-      startedAt: batch.startedAt,
-      completedAt: batch.completedAt,
-    };
-  }
-
-  @Post('batch/:batchId/cancel')
-  @RequireRole(ApiKeyRole.OPERATOR)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cancel a running batch' })
-  @ApiParam({ name: 'sessionId', description: 'Session ID' })
-  @ApiParam({ name: 'batchId', description: 'Batch ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Batch cancelled',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Batch already completed or cancelled',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Batch not found',
-  })
-  async cancelBatch(@Param('sessionId') sessionId: string, @Param('batchId') batchId: string) {
-    const batch = await this.bulkMessageService.cancelBatch(sessionId, batchId);
-    return {
-      batchId: batch.batchId,
-      status: batch.status,
-      progress: batch.progress,
     };
   }
 }

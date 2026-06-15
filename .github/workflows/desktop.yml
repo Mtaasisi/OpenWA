@@ -1,0 +1,107 @@
+name: Desktop
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  verify:
+    name: Verify desktop shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install dashboard dependencies
+        run: cd dashboard && npm ci
+
+      - name: Install desktop dependencies
+        run: cd desktop && npm ci
+
+      - name: Build backend and dashboard
+        run: npm run build:backend && npm run build:dashboard
+
+      - name: Compile Electron main process
+        run: cd desktop && npm run build
+
+      - name: Desktop unit tests
+        run: npm test -- --testPathPatterns='database-url.util|desktop-paths.util'
+
+  build-macos:
+    name: Build macOS DMG
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-latest
+    needs: [verify]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare production backend bundle
+        run: node desktop/scripts/prepare-backend-deps.js
+
+      - name: Build macOS installer
+        run: npm run dist:mac
+
+      - name: Smoke test packaged backend
+        run: npm run smoke:desktop-packaged
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: inauzwa-crm-macos
+          path: dist-desktop/*.dmg
+          retention-days: 14
+
+  build-windows:
+    name: Build Windows installer
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    needs: [verify]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare production backend bundle
+        run: node desktop/scripts/prepare-backend-deps.js
+
+      - name: Build Windows installer
+        run: npm run dist:windows
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: inauzwa-crm-windows
+          path: dist-desktop/*.exe
+          retention-days: 14

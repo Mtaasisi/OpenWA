@@ -29,24 +29,6 @@ export class LabelController {
     return engine.getLabels();
   }
 
-  @Get(':labelId')
-  @ApiOperation({ summary: 'Get a specific label by ID' })
-  @ApiParam({ name: 'sessionId', description: 'Session ID' })
-  @ApiParam({ name: 'labelId', description: 'Label ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Label details',
-  })
-  @ApiResponse({ status: 404, description: 'Label not found' })
-  async findOne(@Param('sessionId') sessionId: string, @Param('labelId') labelId: string) {
-    const engine = this.getEngine(sessionId);
-    const label = await engine.getLabelById(labelId);
-    if (!label) {
-      throw new Error(`Label ${labelId} not found`);
-    }
-    return label;
-  }
-
   @Get('chat/:chatId')
   @ApiOperation({ summary: 'Get labels for a specific chat' })
   @ApiParam({ name: 'sessionId', description: 'Session ID' })
@@ -104,5 +86,23 @@ export class LabelController {
     const engine = this.getEngine(sessionId);
     await engine.removeLabelFromChat(chatId, labelId);
     return { success: true };
+  }
+
+  @Get(':labelId')
+  @ApiOperation({ summary: 'Get a specific label by ID' })
+  @ApiParam({ name: 'sessionId', description: 'Session ID' })
+  @ApiParam({ name: 'labelId', description: 'Label ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Label details',
+  })
+  @ApiResponse({ status: 404, description: 'Label not found' })
+  async findOne(@Param('sessionId') sessionId: string, @Param('labelId') labelId: string) {
+    const engine = this.getEngine(sessionId);
+    const label = await engine.getLabelById(labelId);
+    if (!label) {
+      throw new Error(`Label ${labelId} not found`);
+    }
+    return label;
   }
 }

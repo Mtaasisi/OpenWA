@@ -28,6 +28,7 @@ http:
   services:
     api:
       loadBalancer:
+        passHostHeader: true
         servers:
           - url: 'http://openwa-api:2785'
 

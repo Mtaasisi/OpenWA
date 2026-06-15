@@ -6,6 +6,13 @@ export enum ApiKeyRole {
   VIEWER = 'viewer',
 }
 
+export enum ApiKeyType {
+  SERVICE = 'service',
+  USER = 'user',
+}
+
+export const API_KEY_RAW_PREFIX = 'owa_k1_';
+
 @Entity('api_keys')
 export class ApiKey {
   @PrimaryGeneratedColumn('uuid')
@@ -28,11 +35,25 @@ export class ApiKey {
   })
   role: ApiKeyRole;
 
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: ApiKeyType.SERVICE,
+  })
+  type: ApiKeyType;
+
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  userId: string | null;
+
   @Column({ type: 'simple-array', nullable: true })
   allowedIps: string[] | null;
 
   @Column({ type: 'simple-array', nullable: true })
   allowedSessions: string[] | null;
+
+  /** Optional granular follow-up permissions; falls back to role defaults */
+  @Column({ type: 'simple-array', nullable: true })
+  permissions: string[] | null;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;

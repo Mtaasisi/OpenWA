@@ -1,4 +1,4 @@
-import { formatMessagePreview, isInboxChat, shouldPersistMessage } from './inbox-chat.util';
+import { formatMessagePreview, isInboxChat, normalizeMessageType, shouldPersistMessage } from './inbox-chat.util';
 import type { IncomingMessage } from '../../engine/interfaces/whatsapp-engine.interface';
 
 describe('inbox-chat.util', () => {
@@ -34,6 +34,10 @@ describe('inbox-chat.util', () => {
     it('skips status broadcast chat', () => {
       expect(shouldPersistMessage({ ...base, chatId: 'status@broadcast' })).toBe(false);
     });
+
+    it('skips WhatsApp Status updates', () => {
+      expect(shouldPersistMessage({ ...base, isStatus: true })).toBe(false);
+    });
   });
 
   describe('formatMessagePreview', () => {
@@ -43,6 +47,15 @@ describe('inbox-chat.util', () => {
 
     it('labels images without body', () => {
       expect(formatMessagePreview('', 'image')).toBe('📷 Image');
+      expect(formatMessagePreview('', 'imageMessage')).toBe('📷 Image');
+      expect(formatMessagePreview('', 'videoMessage')).toBe('🎬 Video');
+    });
+  });
+
+  describe('normalizeMessageType', () => {
+    it('maps Baileys proto types to inbox types', () => {
+      expect(normalizeMessageType('imageMessage')).toBe('image');
+      expect(normalizeMessageType('extendedTextMessage')).toBe('chat');
     });
   });
 });

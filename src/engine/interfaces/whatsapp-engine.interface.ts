@@ -5,6 +5,7 @@ export enum EngineStatus {
   INITIALIZING = 'initializing',
   QR_READY = 'qr_ready',
   AUTHENTICATING = 'authenticating',
+  LOADING_CHATS = 'loading_chats',
   READY = 'ready',
   FAILED = 'failed',
 }
@@ -20,6 +21,8 @@ export interface MediaInput {
   data: Buffer | string; // Buffer or base64 or URL
   filename?: string;
   caption?: string;
+  /** WhatsApp serialized message id to quote (reply context). */
+  quotedMessageId?: string;
 }
 
 export interface IncomingMessage {
@@ -32,15 +35,31 @@ export interface IncomingMessage {
   timestamp: number;
   fromMe: boolean;
   isGroup: boolean;
+  /** Group message sender JID (whatsapp-web.js `msg.author`). */
+  author?: string;
+  chatName?: string;
+  notifyName?: string;
   media?: {
     mimetype: string;
     filename?: string;
-    data?: string; // base64
+    data?: string; // base64 full file
+    /** Low-res jpeg preview from WhatsApp (base64, no data: prefix). */
+    thumbnail?: string;
+    width?: number;
+    height?: number;
   };
   quotedMessage?: {
     id: string;
     body: string;
   };
+  /** Baileys PN jid when remoteJid is @lid (message.key.remoteJidAlt). */
+  remoteJidAlt?: string;
+  /** Baileys PN jid for group/@lid senders (message.key.participantAlt). */
+  participantAlt?: string;
+  /** True when sender used a WhatsApp broadcast list (whatsapp-web.js `msg.broadcast`). */
+  broadcast?: boolean;
+  /** True for WhatsApp Status updates (whatsapp-web.js `msg.isStatus`). */
+  isStatus?: boolean;
 }
 
 export interface Contact {
@@ -51,6 +70,14 @@ export interface Contact {
   isMyContact: boolean;
   isBlocked: boolean;
   profilePicUrl?: string;
+}
+
+export type ContactPresenceState = 'online' | 'offline' | 'unknown';
+
+export interface ContactPresence {
+  chatId: string;
+  state: ContactPresenceState;
+  lastSeenAt?: string | null;
 }
 
 export interface Group {
@@ -205,6 +232,8 @@ export interface PaginatedProducts {
 export interface EngineEventCallbacks {
   onQRCode?: (qr: string) => void;
   onReady?: (phone: string, pushName: string) => void;
+  onAuthFailure?: (reason: string) => void;
+  onLoadingProgress?: (percent: number, message: string) => void;
   onMessage?: (message: IncomingMessage) => void;
   onMessageAck?: (messageId: string, ack: number) => void;
   onUnreadCountChanged?: (chatId: string, unreadCount: number) => void;
@@ -228,6 +257,8 @@ export interface IWhatsAppEngine {
   // Messaging - Basic
   sendTextMessage(chatId: string, text: string): Promise<MessageResult>;
   sendImageMessage(chatId: string, media: MediaInput): Promise<MessageResult>;
+  /** Send multiple images as a WhatsApp album; caption applies to the last image only. */
+  sendImageAlbum(chatId: string, imageUrls: string[], caption?: string): Promise<MessageResult[]>;
   sendVideoMessage(chatId: string, media: MediaInput): Promise<MessageResult>;
   sendAudioMessage(chatId: string, media: MediaInput): Promise<MessageResult>;
   sendDocumentMessage(chatId: string, media: MediaInput): Promise<MessageResult>;
@@ -248,11 +279,16 @@ export interface IWhatsAppEngine {
   // Contacts
   getContacts(): Promise<Contact[]>;
   getContactById(contactId: string): Promise<Contact | null>;
+  getContactPresence(contactId: string): Promise<ContactPresence>;
   checkNumberExists(number: string): Promise<boolean>;
 
   // Chats / conversations (WhatsApp client)
   listChats(): Promise<ChatSummary[]>;
+  fetchChatMessages(chatId: string, limit?: number): Promise<IncomingMessage[]>;
   markChatRead(chatId: string): Promise<void>;
+  /** Show "typing…" in chat (lasts ~25s; call again to extend). */
+  sendTyping(chatId: string): Promise<void>;
+  clearTyping(chatId: string): Promise<void>;
   downloadMessageMedia(waMessageId: string): Promise<{
     mimetype: string;
     data: Buffer;
@@ -280,6 +316,10 @@ export interface IWhatsAppEngine {
 
   // Contact Extended Operations
   getProfilePicture(contactId: string): Promise<string | null>;
+  /** Download profile picture bytes (uses WA Web session when available). */
+  downloadProfilePicture?(
+    contactId: string,
+  ): Promise<{ buffer: Buffer; contentType: string } | null>;
   blockContact(contactId: string): Promise<void>;
   unblockContact(contactId: string): Promise<void>;
 

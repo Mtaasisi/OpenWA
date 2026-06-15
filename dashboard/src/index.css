@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');
+@import './styles/interakt-tokens.css';
+@import './styles/tactical-tokens.css';
+@import './styles/form-sliders.css';
 
 :root {
   font-family: 'Plus Jakarta Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -64,21 +66,20 @@ h3 {
 
 button {
   border-radius: var(--radius, 8px);
-  border: 1px solid transparent;
+  border: none;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: transparent;
   cursor: pointer;
-  transition: border-color 0.25s;
+  -webkit-tap-highlight-color: transparent;
 }
-button:hover {
-  border-color: #646cff;
-}
+
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:focus-visible,
+button:active {
+  outline: none;
 }
 
 @media (prefers-color-scheme: light) {
@@ -88,9 +89,6 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }
 
@@ -104,7 +102,7 @@ select {
   font-size: 0.9375rem;
   font-family: inherit;
   color: var(--text-primary);
-  background-color: var(--bg-white, #fff);
+  background-color: var(--bg-white);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
@@ -121,8 +119,7 @@ select:hover {
 
 select:focus {
   outline: none;
-  border-color: var(--primary, #25d366);
-  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+  box-shadow: none;
 }
 
 select:disabled {
@@ -131,14 +128,12 @@ select:disabled {
   cursor: not-allowed;
 }
 
-/* GLOBAL MODAL STYLES */
+/* GLOBAL MODAL / OVERLAY STYLES (portaled to body — no backdrop blur) */
 
-/* Modal Overlay */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.32);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +152,7 @@ select:disabled {
 
 /* Modal Card */
 .modal {
-  background: var(--bg-white, #fff);
+  background: var(--bg-white);
   border-radius: var(--radius, 16px);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 90%;
@@ -202,7 +197,7 @@ select:disabled {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-secondary, #64748b);
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
 
@@ -220,7 +215,7 @@ select:disabled {
 .modal-body input:focus {
   outline: none;
   border-color: var(--primary, #25d366);
-  background: var(--bg-white, #fff);
+  background: var(--bg-white);
   box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
 }
 
@@ -242,7 +237,7 @@ select:disabled {
   border: 1px solid var(--border, #e2e8f0);
   border-radius: var(--radius, 8px);
   cursor: pointer;
-  color: var(--text-secondary, #64748b);
+  color: var(--text-secondary);
   transition: all 0.2s;
   flex-shrink: 0;
   padding: 0;
@@ -251,7 +246,7 @@ select:disabled {
 .btn-icon svg {
   width: 20px;
   height: 20px;
-  stroke: var(--text-secondary, #64748b);
+  stroke: var(--text-secondary);
 }
 
 .btn-icon:hover {
@@ -264,11 +259,18 @@ select:disabled {
   stroke: #dc2626;
 }
 
+.btn-icon:focus,
+.btn-icon:focus-visible,
+.btn-icon:active {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Secondary Button */
 .btn-secondary {
   padding: 0.75rem 1.25rem;
   background: var(--bg-light, #f8fafc);
-  color: var(--text-secondary, #64748b);
+  color: var(--text-secondary);
   border: 1px solid var(--border, #e2e8f0);
   border-radius: var(--radius, 8px);
   font-size: 0.9375rem;
@@ -278,9 +280,16 @@ select:disabled {
 }
 
 .btn-secondary:hover {
-  background: var(--bg-white, #fff);
+  background: var(--bg-white);
   border-color: var(--text-muted, #94a3b8);
   color: var(--text-primary, #1e293b);
+}
+
+.btn-secondary:focus,
+.btn-secondary:focus-visible,
+.btn-secondary:active {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Spin Animation */

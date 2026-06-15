@@ -28,7 +28,35 @@ export class Product {
   category: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  brand: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  model: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  barcode: string | null;
+
+  @Column({ type: 'simple-json', nullable: true })
+  tags: string[] | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  warrantyDefault: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  supplier: string | null;
+
+  @Column({ type: 'varchar', length: 16, default: 'public' })
+  visibility: string;
+
+  @Column({ type: 'real', nullable: true })
+  costPrice: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
   imageUrl: string | null;
+
+  /** Gallery URLs (primary first) when synced from INAUZWA product_images */
+  @Column({ type: 'simple-json', nullable: true })
+  imageUrls: string[] | null;
 
   @Column({ type: 'varchar', length: 16, nullable: true })
   currency: string | null;
@@ -47,6 +75,39 @@ export class Product {
   @Column({ type: 'varchar', nullable: true })
   @Index()
   externalId: string | null;
+
+  @Column({ default: false })
+  installmentEnabled: boolean;
+
+  @Column({ type: 'real', nullable: true })
+  installmentMinDeposit: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  installmentDurationDays: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  installmentScheduleType: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  installmentPolicy: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  installmentPenaltyPolicy: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  installmentExpiryDays: number | null;
+
+  @Column({ default: false })
+  installmentRequiresApproval: boolean;
+
+  @Column({ default: false })
+  allowInstallmentWhenOutOfStock: boolean;
+
+  @Column({ default: false })
+  stockingReminderEnabled: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  installmentNotes: string | null;
 
   @OneToMany(() => ProductVariant, (v) => v.product, { cascade: true })
   variants: ProductVariant[];

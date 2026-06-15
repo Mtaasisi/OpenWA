@@ -1,0 +1,63 @@
+.inbox-quote-reply-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--primary, #16a34a);
+  background: var(--surface-muted, rgba(15, 23, 42, 0.04));
+}
+
+.inbox-quote-reply-bar__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-quote-reply-bar__label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #64748b);
+}
+
+.inbox-quote-reply-bar__preview {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text, #0f172a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inbox-quote-reply-bar__clear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.inbox-quote-reply-bar__clear:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme-effects='tactical'] .inbox-quote-reply-bar {
+  border-left-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+  color: #e2e8f0;
+}
+
+[data-theme-effects='interakt'] .inbox-quote-reply-bar {
+  border-left-color: #25d366;
+  background: #f0fdf4;
+}

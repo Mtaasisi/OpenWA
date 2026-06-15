@@ -158,6 +158,7 @@ export class AiCostTrackerService implements OnModuleInit {
         input.estimatedCostUsd !== undefined ? input.estimatedCostUsd : cost;
 
       const metadata = {
+        ...(input.context?.metadata ?? {}),
         ...(input.metadata ?? {}),
         ...(pricingMissing ? { pricingStatus: 'estimated_unknown_model' } : {}),
       };
@@ -173,7 +174,10 @@ export class AiCostTrackerService implements OnModuleInit {
           source: input.context?.source ?? 'background_job',
           conversationId: input.context?.conversationId ?? null,
           customerId: input.context?.customerId ?? null,
+          contactId: input.context?.contactId ?? null,
           messageId: input.context?.messageId ?? null,
+          batchId: input.context?.batchId ?? null,
+          modelTier: input.context?.tier ?? null,
           requestId: input.context?.requestId ?? null,
           inputTokens,
           outputTokens,

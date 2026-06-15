@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, Search, Filter, Loader2, FileText, Trash2 } from 'lucide-react';
+import { Download, Loader2, FileText, Trash2 } from 'lucide-react';
 import type { AuditLog } from '../services/api';
 import { auditApi } from '../services/api';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useRole } from '../hooks/useRole';
 import { useLogsQuery } from '../hooks/queries';
-import { PageHeader } from '../components/PageHeader';
+import { WorkspacePageHeader, EmptyState, StatusBadge } from '../components/workspace';
+import type { StatusBadgeVariant } from '../components/workspace/StatusBadge';
+import { MaterialSymbol } from '../components/MaterialSymbol';
 import './Logs.css';
 
 const AUDIT_ACTIONS = [
@@ -25,13 +27,20 @@ const AUDIT_ACTIONS = [
 ] as const;
 
 function logsToCsv(rows: AuditLog[]): string {
-  const header = ['timestamp', 'action', 'session', 'api_key', 'ip', 'severity'];
+  const header = ['timestamp', 'action', 'session', 'details', 'api_key', 'ip', 'severity'];
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const detailFor = (log: AuditLog) => {
+    const reason = log.metadata?.reason;
+    if (typeof reason === 'string' && reason) return reason;
+    if (log.errorMessage) return log.errorMessage;
+    return '';
+  };
   const lines = rows.map(log =>
     [
       log.createdAt,
       log.action,
       log.sessionName || log.sessionId || '',
+      detailFor(log),
       log.apiKeyName || '',
       log.ipAddress || '',
       log.severity,
@@ -40,6 +49,19 @@ function logsToCsv(rows: AuditLog[]): string {
       .join(','),
   );
   return [header.join(','), ...lines].join('\n');
+}
+
+function logDetail(log: AuditLog): string {
+  const reason = log.metadata?.reason;
+  if (typeof reason === 'string' && reason) return reason;
+  if (log.errorMessage) return log.errorMessage;
+  return '—';
+}
+
+function severityVariant(severity: string): StatusBadgeVariant {
+  if (severity === 'error') return 'error';
+  if (severity === 'warn') return 'warning';
+  return 'info';
 }
 
 export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
@@ -56,6 +78,7 @@ export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
   const [exporting, setExporting] = useState(false);
   const [cleaning, setCleaning] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
   const limit = 20;
 
   useEffect(() => {
@@ -137,84 +160,90 @@ export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
     return Array.from({ length: max }, (_, i) => start + i);
   }, [page, totalPages]);
 
-  if (loading && logs.length === 0) {
-    return (
-      <div
-        className={`logs-page ${embedded ? 'settings-embed' : ''}`}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: embedded ? '200px' : '400px',
-        }}
-      >
-        <Loader2 className="animate-spin" size={32} />
-      </div>
-    );
-  }
+  const from = total === 0 ? 0 : (page - 1) * limit + 1;
+  const to = Math.min(page * limit, total);
 
-  const headerActions = (
+  const toolbarActions = (
     <>
       {isAdmin && (
         <button
           type="button"
-          className="btn-secondary"
+          className="fu-btn fu-btn--ghost"
           disabled={cleaning}
           onClick={() => void handleCleanupQrNoise()}
           title={t('logs.cleanupQrHint')}
         >
-          {cleaning ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+          {cleaning ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
           {t('logs.cleanupQr')}
         </button>
       )}
       <button
         type="button"
-        className="btn-secondary"
+        className="fu-btn fu-btn--ghost"
         disabled={exporting || total === 0}
         onClick={() => void handleExportCsv()}
       >
-        {exporting ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
+        {exporting ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
         {t('logs.exportCsv')}
       </button>
     </>
   );
 
-  return (
-    <div className={`logs-page ${embedded ? 'settings-embed' : ''}`}>
+  const body = (
+    <>
       {toast && (
         <div className="logs-toast" role="status">
           {toast}
-          <button type="button" onClick={() => setToast(null)}>
+          <button type="button" onClick={() => setToast(null)} aria-label={t('common.close')}>
             ×
           </button>
         </div>
       )}
 
-      {!embedded && (
-        <PageHeader title={t('logs.title')} subtitle={t('logs.subtitle')} actions={headerActions} />
-      )}
+      {embedded && !moreOptionsOpen ? (
+        <button
+          type="button"
+          className="fu-btn fu-btn--ghost fu-btn--sm settings-inline-more-btn"
+          onClick={() => setMoreOptionsOpen(true)}
+        >
+          <span>{t('settings.moreOptions')}</span>
+        </button>
+      ) : null}
 
-      {embedded && <div className="settings-embed-toolbar">{headerActions}</div>}
+      {embedded && moreOptionsOpen ? (
+        <>
+          <button
+            type="button"
+            className="fu-btn fu-btn--ghost fu-btn--sm settings-inline-more-btn"
+            onClick={() => setMoreOptionsOpen(false)}
+          >
+            <span>{t('settings.showLess')}</span>
+          </button>
+          <div className="logs-interakt__toolbar">{toolbarActions}</div>
+        </>
+      ) : null}
 
-      <div className="filters-bar">
-        <div className="search-input">
-          <Search size={18} />
+      {!embedded ? <div className="logs-interakt__toolbar">{toolbarActions}</div> : null}
+
+      <div className="fu-filters logs-interakt__filters">
+        <div className="fu-header__search logs-interakt__search">
+          <MaterialSymbol name="search" size={16} />
           <input
-            type="text"
+            type="search"
             placeholder={t('logs.searchPlaceholder')}
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
           />
         </div>
-
-        <div className="filter-group">
-          <Filter size={16} />
+        <div className="fu-filter-pill">
+          <MaterialSymbol name="flag" size={18} className="fu-filter-pill__icon" />
           <select
             value={severityFilter}
             onChange={e => {
               setSeverityFilter(e.target.value);
               setPage(1);
             }}
+            aria-label={t('logs.severity.all')}
           >
             <option value="all">{t('logs.severity.all')}</option>
             <option value="info">{t('logs.severity.info')}</option>
@@ -222,8 +251,8 @@ export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
             <option value="error">{t('logs.severity.error')}</option>
           </select>
         </div>
-
-        <div className="filter-group">
+        <div className="fu-filter-pill">
+          <MaterialSymbol name="bolt" size={18} className="fu-filter-pill__icon" />
           <select
             value={actionFilter}
             onChange={e => {
@@ -242,61 +271,102 @@ export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
         </div>
       </div>
 
-      <div className="logs-table-container">
-        <div className="logs-table">
-          <div className="table-row header">
-            <span>{t('logs.columns.timestamp')}</span>
-            <span>{t('logs.columns.action')}</span>
-            <span>{t('logs.columns.session')}</span>
-            <span>{t('logs.columns.apiKey')}</span>
-            <span>{t('logs.columns.ip')}</span>
-            <span>{t('logs.columns.severity')}</span>
-          </div>
-          {logs.length === 0 ? (
-            <div className="empty-table-state">
-              <FileText size={48} strokeWidth={1} />
-              <h3>{t('logs.empty.title')}</h3>
-              <p>{t('logs.empty.description')}</p>
-            </div>
-          ) : (
-            logs.map(log => (
-              <div key={log.id} className="table-row">
-                <span className="timestamp">{formatTimestamp(log.createdAt)}</span>
-                <span className="action">{log.action}</span>
-                <span title={log.sessionId}>{sessionLabel(log)}</span>
-                <span className="api-key">{log.apiKeyName || '—'}</span>
-                <span className="ip">{log.ipAddress || '—'}</span>
-                <span>
-                  <span className={`severity-badge ${log.severity}`}>{log.severity.toUpperCase()}</span>
-                </span>
+      {loading && logs.length === 0 ? (
+        <div className="logs-interakt__loading">
+          <Loader2 className="animate-spin" size={28} />
+        </div>
+      ) : logs.length === 0 ? (
+        <EmptyState
+          icon={<FileText size={32} strokeWidth={1.25} />}
+          title={t('logs.empty.title')}
+          description={t('logs.empty.description')}
+        />
+      ) : (
+        <div className="fu-table-wrap fu-reports-table">
+          <table className="fu-table logs-table">
+            <thead>
+              <tr>
+                <th>{t('logs.columns.timestamp')}</th>
+                <th>{t('logs.columns.action')}</th>
+                <th>{t('logs.columns.session')}</th>
+                <th>{t('logs.columns.details')}</th>
+                <th>{t('logs.columns.apiKey')}</th>
+                <th>{t('logs.columns.ip')}</th>
+                <th>{t('logs.columns.severity')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map(log => (
+                <tr key={log.id}>
+                  <td className="logs-cell-mono">{formatTimestamp(log.createdAt)}</td>
+                  <td className="logs-cell-action">{log.action}</td>
+                  <td title={log.sessionId ?? undefined}>{sessionLabel(log)}</td>
+                  <td className="logs-cell-detail" title={logDetail(log)}>
+                    {logDetail(log)}
+                  </td>
+                  <td className="logs-cell-mono">{log.apiKeyName || '—'}</td>
+                  <td className="logs-cell-mono">{log.ipAddress || '—'}</td>
+                  <td>
+                    <StatusBadge variant={severityVariant(log.severity)}>
+                      {log.severity.toUpperCase()}
+                    </StatusBadge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {totalPages > 1 && (
+            <div className="fu-table-footer">
+              <span>{t('followups.pagination.showing', { from, to, total })}</span>
+              <div className="fu-pagination">
+                <button
+                  type="button"
+                  className="fu-pagination__btn"
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  <MaterialSymbol name="chevron_left" size={16} />
+                </button>
+                {pageNumbers.map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={['fu-pagination__btn', p === page ? 'fu-pagination__btn--active' : ''].join(' ')}
+                    onClick={() => setPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="fu-pagination__btn"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  <MaterialSymbol name="chevron_right" size={16} />
+                </button>
               </div>
-            ))
+            </div>
           )}
         </div>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button type="button" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-            {t('common.previous')}
-          </button>
-          <span className="page-numbers">
-            {pageNumbers.map(p => (
-              <button
-                key={p}
-                type="button"
-                className={p === page ? 'active' : ''}
-                onClick={() => setPage(p)}
-              >
-                {p}
-              </button>
-            ))}
-          </span>
-          <button type="button" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-            {t('common.next')}
-          </button>
-        </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="logs-interakt logs-interakt--embed">{body}</div>;
+  }
+
+  return (
+    <div className="followups-interakt logs-interakt">
+      <WorkspacePageHeader
+        title={t('logs.title')}
+        showSearch={false}
+        showExport={false}
+        showNewTask={false}
+        extraActions={toolbarActions}
+      />
+      <div className="followups-interakt__scroll">{body}</div>
     </div>
   );
 }

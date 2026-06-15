@@ -11,6 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
+import { AuthSessionService } from '../auth/auth-session.service';
+import { API_KEY_RAW_PREFIX } from '../auth/entities/api-key.entity';
 import type {
   WSClientMessage,
   WSSubscribeRequest,
@@ -25,9 +27,11 @@ import { SUBSCRIBABLE_EVENTS, buildRoomName } from './dto/ws-messages.dto';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // In production, restrict this
+    origin: true,
+    credentials: true,
   },
   namespace: '/events',
+  transports: ['polling', 'websocket'],
 })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -35,37 +39,55 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   private logger = new Logger('EventsGateway');
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authSession: AuthSessionService,
+  ) {}
 
   afterInit() {
     this.logger.log('WebSocket Gateway initialized');
   }
 
   async handleConnection(client: Socket) {
-    // Extract API key from auth payload, header, or query param
-    const auth = client.handshake.auth as { apiKey?: string } | undefined;
-    const apiKey =
-      auth?.apiKey ||
-      (client.handshake.headers['x-api-key'] as string) ||
-      (client.handshake.query.apiKey as string);
+    const auth = client.handshake.auth as { apiKey?: string; token?: string } | undefined;
+    const headerKey = client.handshake.headers['x-api-key'] as string | undefined;
+    const queryKey = client.handshake.query.apiKey as string | undefined;
+    const queryToken = client.handshake.query.token as string | undefined;
+    const bearer = this.extractBearer(client.handshake.headers.authorization as string | undefined);
 
-    if (!apiKey) {
-      this.logger.warn(`Client ${client.id} rejected: No API key provided`);
-      client.emit('message', this.createError('UNAUTHORIZED', 'API key required'));
+    const credential =
+      auth?.token ||
+      auth?.apiKey ||
+      queryToken ||
+      headerKey ||
+      queryKey ||
+      bearer;
+
+    if (!credential) {
+      this.logger.warn(`Client ${client.id} rejected: No credentials provided`);
+      client.emit('message', this.createError('UNAUTHORIZED', 'Authentication required'));
       client.disconnect();
       return;
     }
 
     try {
-      const validKey = await this.authService.validateApiKey(apiKey);
+      let validKey;
+      if (credential.startsWith(API_KEY_RAW_PREFIX)) {
+        validKey = await this.authService.validateApiKey(credential, undefined, undefined, {
+          trackUsage: false,
+        });
+      } else {
+        const identity = await this.authSession.resolveIdentityFromAccessToken(credential);
+        validKey = identity.apiKey;
+      }
+
       if (!validKey) {
-        this.logger.warn(`Client ${client.id} rejected: Invalid API key`);
-        client.emit('message', this.createError('UNAUTHORIZED', 'Invalid API key'));
+        this.logger.warn(`Client ${client.id} rejected: Invalid credentials`);
+        client.emit('message', this.createError('UNAUTHORIZED', 'Invalid credentials'));
         client.disconnect();
         return;
       }
 
-      // Store API key info on socket for later use
       (client.data as { apiKey: unknown }).apiKey = validKey;
       this.logger.log(`Client connected: ${client.id} (key: ${validKey.name})`);
     } catch (error) {
@@ -79,6 +101,13 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  private extractBearer(authorization?: string): string | undefined {
+    if (authorization?.startsWith('Bearer ')) {
+      return authorization.substring(7).trim();
+    }
+    return undefined;
   }
 
   @SubscribeMessage('message')
@@ -196,13 +225,16 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       timestamp: new Date().toISOString(),
     };
 
-    // Emit to specific session + event room
-    this.server.to(buildRoomName(sessionId, event)).emit('message', eventMessage);
+    // Session lifecycle events (QR, status) must reach all wildcard subscribers.
+    const isSessionLifecycle = event === 'session.status' || event === 'session.qr';
 
-    // Emit to wildcard rooms
-    this.server.to(buildRoomName(sessionId, '*')).emit('message', eventMessage);
+    this.server.to(buildRoomName(sessionId, event)).emit('message', eventMessage);
     this.server.to(buildRoomName('*', event)).emit('message', eventMessage);
-    this.server.to(buildRoomName('*', '*')).emit('message', eventMessage);
+
+    if (isSessionLifecycle) {
+      this.server.to(buildRoomName(sessionId, '*')).emit('message', eventMessage);
+      this.server.to(buildRoomName('*', '*')).emit('message', eventMessage);
+    }
   }
 
   /**
@@ -251,5 +283,102 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       error,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  /** Follow-up automation alerts (session-scoped or global via sessionId '*') */
+  emitFollowupAlert(
+    event:
+      | 'followup.warning'
+      | 'followup.escalated'
+      | 'followup.kpi_penalty'
+      | 'followup.autopilot_paused'
+      | 'followup.autopilot_updated',
+    sessionId: string,
+    data: Record<string, unknown>,
+  ): void {
+    this.emitToRooms(sessionId, event, data);
+  }
+
+  emitAiTyping(sessionId: string, data: { chatId: string; active: boolean }): void {
+    this.emitToRooms(sessionId, 'ai.typing', data);
+  }
+
+  emitAiSendQueued(
+    sessionId: string,
+    data: {
+      chatId: string;
+      queueItemId: string;
+      scheduledAt: string;
+      delayMs: number;
+    },
+  ): void {
+    this.emitToRooms(sessionId, 'ai.sendQueued', data);
+  }
+
+  emitAiEscalated(sessionId: string, data: { chatId: string; reason?: string }): void {
+    this.emitToRooms(sessionId, 'ai.escalated', data);
+  }
+
+  emitAiOptOut(sessionId: string, data: { chatId: string; source?: string }): void {
+    this.emitToRooms(sessionId, 'ai.opt_out', data);
+  }
+
+  emitAiLearningPending(
+    sessionId: string,
+    data: { itemId: string; chatId: string; question: string; timesAsked?: number },
+  ): void {
+    this.emitToRooms(sessionId, 'ai.learning.pending', data);
+    this.server?.emit('ai.learning.pending', { sessionId, ...data });
+  }
+
+  emitAiLearningRepeated(
+    sessionId: string,
+    data: { itemId: string; question: string; timesAsked: number },
+  ): void {
+    this.emitToRooms(sessionId, 'ai.learning.repeated', data);
+    this.server?.emit('ai.learning.repeated', { sessionId, ...data });
+  }
+
+  emitProductDemandSpike(data: {
+    productName: string;
+    requestCount: number;
+    branchId?: string | null;
+  }): void {
+    this.server?.emit('product.demand.spike', data);
+  }
+
+  emitKnowledgeNeedsReview(data: { knowledgeId: string; questionPattern: string }): void {
+    this.server?.emit('knowledge.needs_review', data);
+  }
+
+  emitInboxChatAssigned(
+    sessionId: string,
+    data: {
+      chatId: string;
+      assignedStaffId: string;
+      customerName?: string | null;
+      customerPhone?: string | null;
+    },
+  ): void {
+    this.emitToRooms(sessionId, 'inbox.chat_assigned', data);
+  }
+
+  emitSmsStatusChanged(data: {
+    status: 'failed' | 'low_balance' | 'connected';
+    error?: string | null;
+    balance?: number | null;
+  }): void {
+    this.emitToRooms('*', 'sms.status_changed', data);
+    this.server?.emit('sms.status_changed', data);
+  }
+
+  emitStorageWarning(data: { id: string; message: string; severity?: string }): void {
+    this.emitToRooms('*', 'storage.warning', data);
+    this.server?.emit('storage.warning', data);
+  }
+
+  emitSyncFailed(data: { error: string; branchId?: string | null }): void {
+    this.emitToRooms('*', 'sync.failed', data);
+    this.server?.emit('sync.failed', data);
   }
 }

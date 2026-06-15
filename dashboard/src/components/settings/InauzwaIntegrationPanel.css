@@ -1,0 +1,279 @@
+/* Inauzwa / products sync — shared + settings embed (Storage & Backup parity) */
+
+.products-sync-card {
+  border: 1px solid var(--interakt-outline-soft, var(--border));
+  border-radius: 1rem;
+  background: var(--interakt-surface-glass-high, color-mix(in srgb, var(--bg-card) 72%, transparent));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--interakt-shadow-sm, 0 4px 14px color-mix(in srgb, #000 6%, transparent));
+  overflow: hidden;
+}
+
+.products-sync-card--compact {
+  max-width: 100%;
+}
+
+.products-sync-setup {
+  margin: 0;
+}
+
+.products-sync-setup__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  list-style: none;
+  border-bottom: 1px solid var(--interakt-outline-faint, color-mix(in srgb, var(--border) 25%, transparent));
+}
+
+.products-sync-setup__summary::-webkit-details-marker {
+  display: none;
+}
+
+.products-sync-setup__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.products-sync-setup__badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
+  background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  color: var(--text-secondary);
+}
+
+.products-sync-setup__badge--ok {
+  border-color: var(--interakt-primary-border);
+  background: var(--interakt-primary-soft);
+  color: var(--interakt-primary);
+}
+
+.products-sync-setup__body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.products-sync-card__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.products-sync-card__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.products-sync-card__hint--sub {
+  opacity: 0.9;
+}
+
+.products-sync-card__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--interakt-danger, var(--danger));
+}
+
+.products-sync-connection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.products-sync-connection__full {
+  display: block;
+}
+
+.products-form-row {
+  display: grid;
+  gap: 0.85rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .products-form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.products-form-row label,
+.products-sync-connection label,
+.products-sync-setup__body > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.products-form-row input,
+.products-form-row select,
+.products-form-row textarea,
+.products-sync-connection input,
+.products-sync-connection select,
+.products-sync-connection textarea,
+.products-sync-setup__body > label input,
+.products-sync-setup__body > label select,
+.products-sync-setup__body > label textarea {
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--interakt-outline, var(--border));
+  background: var(--interakt-surface-elevated, var(--bg-white));
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.products-sync-fetch-toggles {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--interakt-outline-faint);
+  background: var(--interakt-surface-muted-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.products-sync-fetch-toggles legend {
+  padding: 0 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.products-sync-fetch-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.products-sync-connection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.products-sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* Settings embed */
+.settings-inauzwa-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-inauzwa-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .settings-inauzwa-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.settings-inauzwa-kpi {
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--interakt-outline-soft);
+  background: var(--interakt-surface-glass-high);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.settings-inauzwa-kpi__label {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.settings-inauzwa-kpi__value {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.settings-inauzwa-panel--embed .products-sync-card__desc {
+  display: none;
+}
+
+.settings-inauzwa-panel--embed .products-sync-setup__summary {
+  display: none;
+}
+
+.settings-inauzwa-panel--embed .products-sync-setup__body {
+  padding-top: 0;
+}
+
+.settings-inauzwa-sync .products-sync-setup__body {
+  padding: 0;
+}
+
+.settings-inauzwa-sync .products-sync-card__desc:first-child {
+  margin-top: 0;
+}
+
+.settings-inauzwa-panel--embed .settings-inauzwa-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--interakt-outline-faint);
+}
+
+.settings-inauzwa-panel--embed .settings-inauzwa-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.settings-inauzwa-panel--embed .interakt-product-cta {
+  border-radius: 1rem;
+  border: 1px solid var(--interakt-outline-soft);
+  background: var(--interakt-surface-glass-high);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--interakt-shadow-sm);
+}

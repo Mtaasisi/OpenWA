@@ -1,3 +1,4 @@
+import { migPrimaryUuidColumn, migDateTime, migNowDefault } from '../migration-utils';
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
 export class AddInboxThreadReads1779500000000 implements MigrationInterface {
@@ -8,18 +9,11 @@ export class AddInboxThreadReads1779500000000 implements MigrationInterface {
       new Table({
         name: 'inbox_thread_reads',
         columns: [
-          {
-            name: 'id',
-            type: 'varchar',
-            length: '36',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'uuid',
-          },
+          migPrimaryUuidColumn(queryRunner),
           { name: 'sessionId', type: 'varchar', isNullable: false },
           { name: 'chatId', type: 'varchar', isNullable: false },
-          { name: 'lastReadAt', type: 'datetime', isNullable: false },
-          { name: 'updatedAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
+          { name: 'lastReadAt', type: migDateTime(queryRunner), isNullable: false },
+          { name: 'updatedAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
         ],
       }),
       true,

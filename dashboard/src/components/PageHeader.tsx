@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import type { LayoutOutletContext } from '../lib/layout-outlet-context';
+import { isDesktopApp } from '../lib/desktop-shell';
+import { SidebarReopenButton } from './workspace/SidebarReopenButton';
 import './PageHeader.css';
 
 interface PageHeaderProps {
@@ -25,10 +29,17 @@ interface PageHeaderProps {
  * />
  */
 export function PageHeader({ title, subtitle, badge, actions }: PageHeaderProps) {
+  const layoutCtx = useOutletContext<LayoutOutletContext | undefined>();
+  const showSidebarReopen =
+    isDesktopApp() && Boolean(layoutCtx?.interaktSidebarClosed);
+
   return (
     <header className="page-header">
       <div className="page-header__top">
         <div className="page-header__title-group">
+          {showSidebarReopen ? (
+            <SidebarReopenButton onClick={layoutCtx!.reopenInteraktSidebar} />
+          ) : null}
           <h1>{title}</h1>
           {badge && <span className="page-header__badge">{badge}</span>}
         </div>

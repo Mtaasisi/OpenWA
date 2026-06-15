@@ -301,7 +301,7 @@ Checklist of what the **Inbox** section includes today (`/inbox` in the dashboar
 
 ## 11. Tactical Overlay theme (`/themes` → apply **Tactical Overlay**)
 
-When the active dashboard theme has `effects: tactical`, `Inbox.tsx` renders **`InboxTacticalView`** instead of **`InboxClassicView`**. State (sessions, threads, send, CRM dirty, mobile panes) comes from the shared **`useInboxController`** hook.
+When the active dashboard theme has `effects: tactical`, **`Inbox.tsx`** renders **`InboxWorkspaceView`** with `variant="tactical"`, which delegates to the tactical shell inside **`InboxClassicView`** (`inbox-tactical-shell.tsx`). State (sessions, threads, send, CRM dirty, mobile panes) comes from the shared **`useInboxController`** hook — the same controller as classic and Interakt variants.
 
 ### 11.1 Layout & chrome
 
@@ -312,10 +312,11 @@ When the active dashboard theme has `effects: tactical`, `Inbox.tsx` renders **`
 | **Start session** | Toolbar button in single-node mode when selected session is not `ready` |
 | User menu (avatar) | Links to Dashboard (`/`), Settings appearance (`/settings?section=appearance`), Logout |
 | Session rail | 64px column — quick switch between sessions; **settings** icon → `/settings` (hidden ≤768px) |
-| Conversation list | ~340px — search, six filter chips, tactical list chips |
-| Chat thread | Grid background, HUD bubbles (`InboxTacticalMessageBubble`), tactical composer placeholder |
-| CRM panel | Inline column **>1024px**; **drawer** ≤1024px (header user icon in chat) |
-| Styles | `InboxTactical.css` + `styles/tactical-overlay.css` — palette `#22d3ee` on `#02060c` |
+| Conversation list | ~340px — shared **`InboxListHeader`** (tactical variant): search, channel filter, mark-all-read, filter menu |
+| Chat thread | Grid background, HUD bubbles (`InboxTacticalMessageBubble`), **`InboxChatHeader`** + AI status strip, tabbed **`InboxComposer`** |
+| CRM panel | Full **`InboxCustomerPanel`** stack via **`InboxCrmPanelRouter`** (AI profile, learning, consent, threads) — inline **>1024px**; **drawer** ≤1024px |
+| Modals | Shared layer in **`InboxSharedModals`**: new chat, transfer, QR, link safety; schedule follow-up via **`InboxInteraktActionModals`** |
+| Styles | `InboxTactical.css` + `styles/tactical-overlay.css` + `styles/tactical-tokens.css` |
 
 Classic inbox UI remains for all other themes.
 
@@ -333,11 +334,7 @@ Same rules as §3.2: **All**, **Unread**, **Needs reply**, **Private**, **Groups
 
 ### 11.4 CRM (tactical)
 
-| Tab (UI label) | Internal id | Content |
-|----------------|-------------|---------|
-| **Overview** | `telemetry` | Contact details, resolved toggle, follow-up datetime, activity stats |
-| **Notes** | `intel` | Internal note only (same field as classic CRM) |
-| **Customer** | `gear` | Customer name, phone, linked external ID; product picker to send catalog items |
+Uses the same **`InboxCustomerPanel`** / Customer 360 tabs as Interakt and classic (details, timeline, AI learning, consent strip, customer threads, quick actions). Tactical styling is applied via `.tac-crm-wrap` / `.inbox-crm-panel--interakt` HUD rules in `InboxTactical.css`.
 
 Save shows success/error feedback when CRM is dirty (same PATCH as classic). Unsaved warning when switching threads or view mode still applies via controller.
 
@@ -346,12 +343,13 @@ Save shows success/error feedback when CRM is dirty (same PATCH as classic). Uns
 Prerequisites: dashboard `http://localhost:2886`, API key `dev-admin-key`, at least one session.
 
 1. **Enable theme:** Settings → Appearance → **Manage themes** (or `/themes`) → **Tactical Overlay** → Apply → open `/inbox`.
-2. **Desktop (1280×800):** Rail visible; list + thread + CRM inline; filters **Groups** / **Resolved** work; send text if session `ready`.
-3. **Tablet (768×1024):** No inline CRM; tap user icon in chat → drawer opens; close via X or overlay click.
-4. **Mobile (375×812):** List only initially; open conversation → chat pane; **back** returns to list; CRM drawer from user icon.
-5. **Toolbar:** User menu → Dashboard / Settings / Logout; **Start session** when single-node + offline.
-6. **Disconnected:** Banner in thread; composer disabled; stored history still visible.
-7. **Theme switch:** Apply a non-tactical theme → classic three-column inbox returns; app sidebar visible again.
+2. **Desktop (1280×800):** Rail visible; list + thread + CRM inline; channel filter and mark-all-read in list header; tabbed composer (Reply / Notes / Follow-up / Quote when supported); send text if session `ready`.
+3. **Tablet (768×1024):** No inline CRM; open CRM from chat header panel toggle → drawer; close via X or overlay click.
+4. **Mobile (375×812):** List only initially; open conversation → chat pane; **back** returns to list; CRM drawer from header.
+5. **Toolbar:** User menu → Dashboard / Settings / Logout; **Start session** when single-node + offline; **New chat** modal from list header.
+6. **Header actions:** Pin thread, transfer, pause/resume AI, resolve chat (same as Interakt).
+7. **Disconnected:** Banner in thread; composer disabled; stored history still visible.
+8. **Theme switch:** Apply a non-tactical theme → classic or Interakt inbox returns; app sidebar visible again.
 
 ---
 
@@ -407,10 +405,12 @@ Use this section so “must have” vs “nice to have” stays clear:
 ### Tactical Overlay (see §11.5)
 
 - [ ] Apply **Tactical Overlay**; app sidebar hidden on inbox
-- [ ] Desktop: rail + inline CRM; tablet/mobile: CRM drawer only
-- [ ] Mobile list ↔ chat via back button
+- [ ] Desktop: rail + inline full CRM; tabbed composer; list header channel filter
+- [ ] New chat modal opens from list header
+- [ ] Tablet/mobile: CRM drawer; mobile list ↔ chat via back button
 - [ ] Toolbar user menu + start session (single-node offline)
-- [ ] Tactical CRM tabs **Overview** / **Notes** / **Customer**; save when dirty
+- [ ] Pin, transfer, schedule follow-up, resolve chat (Interakt parity)
+- [ ] Playwright: `dashboard/e2e/inbox-tactical-variant.spec.ts`
 
 ---
 

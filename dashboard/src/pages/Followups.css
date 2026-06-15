@@ -1,0 +1,4 @@
+/* Follow-ups page-specific (Interakt primitives load via WorkspacePageHeader) */
+.followup-card.highlight {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+}

@@ -20,6 +20,10 @@ import {
   CreateVariantDto,
   UpdateVariantDto,
   SendProductMessageDto,
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto,
+  BulkPasteInventoryDto,
+  GenerateVariantsDto,
   InauzwaSyncDto,
   UpdateInauzwaSyncPreferencesDto,
   TestInauzwaConnectionDto,
@@ -27,8 +31,8 @@ import {
   InauzwaSupabaseSessionDto,
 } from './dto/product.dto';
 import { InauzwaSyncPreferencesService } from './inauzwa-sync-preferences.service';
-import { RequireRole } from '../auth/decorators/auth.decorators';
-import { ApiKeyRole } from '../auth/entities/api-key.entity';
+import { RequireRole, CurrentApiKey } from '../auth/decorators/auth.decorators';
+import { ApiKeyRole, ApiKey } from '../auth/entities/api-key.entity';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -114,6 +118,12 @@ export class ProductsController {
     return this.inauzwaSyncService.sync(dto);
   }
 
+  @Get('health/summary')
+  @ApiOperation({ summary: 'Product catalog health summary' })
+  healthSummary() {
+    return this.productsService.getHealthSummary();
+  }
+
   @Get('catalog/stats')
   @ApiOperation({ summary: 'Catalog-wide inventory stats (unfiltered by search)' })
   catalogStats(@Query('activeOnly') activeOnly?: string) {
@@ -128,12 +138,80 @@ export class ProductsController {
     @Query('q') q?: string,
     @Query('inStockOnly') inStockOnly?: string,
     @Query('activeOnly') activeOnly?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
   ) {
+    const parsedLimit = limit != null ? Number(limit) : undefined;
     return this.productsService.list({
       q,
       inStockOnly: inStockOnly === 'true',
       activeOnly: activeOnly !== 'false',
+      limit: parsedLimit != null && !Number.isNaN(parsedLimit) ? parsedLimit : undefined,
+      offset: offset != null ? Number(offset) : undefined,
     });
+  }
+
+  @Get(':id/health')
+  @ApiOperation({ summary: 'Product health check' })
+  productHealth(@Param('id') id: string) {
+    return this.productsService.getProductHealth(id);
+  }
+
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Product audit history' })
+  productHistory(@Param('id') id: string) {
+    return this.productsService.getProductHistory(id);
+  }
+
+  @Get(':id/inventory-items')
+  @ApiOperation({ summary: 'List inventory items for product' })
+  listInventory(
+    @Param('id') id: string,
+    @Query('variantId') variantId?: string,
+    @Query('branchId') branchId?: string,
+    @Query('status') status?: string,
+    @Query('q') q?: string,
+  ) {
+    return this.productsService.listInventoryItems(id, { variantId, branchId, status, q });
+  }
+
+  @Post(':id/inventory-items')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @ApiOperation({ summary: 'Add inventory item (IMEI/serial)' })
+  createInventory(@Param('id') id: string, @Body() dto: CreateInventoryItemDto) {
+    return this.productsService.createInventoryItem(id, dto);
+  }
+
+  @Patch(':id/inventory-items/:itemId')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @ApiOperation({ summary: 'Update inventory item' })
+  updateInventory(
+    @Param('id') id: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateInventoryItemDto,
+  ) {
+    return this.productsService.updateInventoryItem(id, itemId, dto);
+  }
+
+  @Delete(':id/inventory-items/:itemId')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @ApiOperation({ summary: 'Deactivate inventory item' })
+  deleteInventory(@Param('id') id: string, @Param('itemId') itemId: string) {
+    return this.productsService.deleteInventoryItem(id, itemId);
+  }
+
+  @Post(':id/inventory-items/bulk-paste')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @ApiOperation({ summary: 'Bulk paste IMEI/serial list' })
+  bulkPasteInventory(@Param('id') id: string, @Body() dto: BulkPasteInventoryDto) {
+    return this.productsService.bulkPasteInventory(id, dto);
+  }
+
+  @Post(':id/variants/generate')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @ApiOperation({ summary: 'Generate variant matrix' })
+  generateVariants(@Param('id') id: string, @Body() dto: GenerateVariantsDto) {
+    return this.productsService.generateVariants(id, dto);
   }
 
   @Get(':id')
@@ -212,7 +290,7 @@ export class ProductsController {
   @Post(':id/send')
   @RequireRole(ApiKeyRole.OPERATOR)
   @ApiOperation({ summary: 'Send product details to a WhatsApp chat' })
-  send(@Param('id') id: string, @Body() dto: SendProductMessageDto) {
-    return this.productsService.sendToChat(id, dto);
+  send(@Param('id') id: string, @Body() dto: SendProductMessageDto, @CurrentApiKey() apiKey: ApiKey) {
+    return this.productsService.sendToChat(id, dto, apiKey);
   }
 }

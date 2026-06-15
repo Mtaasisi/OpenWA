@@ -37,6 +37,7 @@
     "qa:whatsapp-safety": "npm run build && npm run test -- --testPathPatterns='whatsapp-safety|whatsapp-link-preflight|whatsapp-consent|whatsapp-cloud|product-demand-campaign|production-security|repair-renamed-migrations|dashboard-attention' && npm run test:e2e -- --testPathPatterns=whatsapp-safety-api && cd dashboard && npm run test -- src/lib/whatsapp-link-safety.util.spec.ts && npm run test && npm run test:e2e -- e2e/whatsapp-safety-panel.spec.ts e2e/campaigns-demand.spec.ts e2e/dashboard-demand-alert.spec.ts e2e/inbox-whatsapp-consent.spec.ts e2e/link-safety-preflight.spec.ts",
     "qa:ai-cost-safety": "npm run build && npm run test -- --testPathPatterns='ai-cost-safety|ai-model-router|ai-cost-tracker|ai-cost-permissions|ai-inbox-agent' --forceExit && cd dashboard && npm run test:e2e -- e2e/ai-usage-cost.spec.ts",
     "qa:ai-cost-staging": "bash scripts/qa-ai-cost-staging.sh",
+    "qa:ai-provider-smoke": "bash scripts/qa-ai-provider-smoke.sh",
     "test:ai-learning-api": "jest --config ./test/jest-e2e.json --testPathPatterns='ai-learning-api|ai-training-api|product-demand-api'",
     "seed:ai-profiles": "ts-node -r tsconfig-paths/register src/scripts/seed-ai-branch-profiles.ts",
     "bootstrap:ai": "bash scripts/bootstrap-ai-setup.sh",

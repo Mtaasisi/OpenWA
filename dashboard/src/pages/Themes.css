@@ -128,6 +128,12 @@
   background: rgba(34, 211, 238, 0.08);
 }
 
+.theme-card__effects-badge--interakt {
+  color: var(--primary, #1f6b4a);
+  border-color: color-mix(in srgb, var(--primary, #1f6b4a) 40%, transparent);
+  background: color-mix(in srgb, var(--primary, #1f6b4a) 10%, transparent);
+}
+
 .theme-preview__bar {
   display: flex;
   align-items: center;
@@ -294,8 +300,8 @@
 .themes-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
-  background: rgba(15, 23, 42, 0.45);
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.32);
   display: flex;
   align-items: center;
   justify-content: center;

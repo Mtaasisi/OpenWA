@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, RefreshCw, Package, Plug, Unplug, LogIn } from 'lucide-react';
+import { ChevronDown, Loader2, RefreshCw, Package, Plug, Unplug, LogIn } from 'lucide-react';
 import { productsApi } from '../../services/api';
-import { signInToInauzwaSupabase } from '../../lib/inauzwaSupabaseLogin';
 import { useRole } from '../../hooks/useRole';
+import { MaterialSymbol } from '../MaterialSymbol';
+import { SettingsIntegrationCard } from './SettingsIntegrationShell';
+import '../settings/settings-interakt-panels.css';
 import '../../pages/Products.css';
+import './InauzwaIntegrationPanel.css';
 
 interface InauzwaIntegrationPanelProps {
   /** Open configured sync details by default (Products page). */
@@ -24,11 +27,18 @@ export function InauzwaIntegrationPanel({
   const queryClient = useQueryClient();
 
   const [syncBranchId, setSyncBranchId] = useState('');
-  const [syncVendorId, setSyncVendorId] = useState('');
   const [syncMode, setSyncMode] = useState<'merge' | 'replace'>('merge');
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
   const [autoSyncInterval, setAutoSyncInterval] = useState(60);
   const [refreshBeforeSend, setRefreshBeforeSend] = useState(true);
+  const [syncCustomers, setSyncCustomers] = useState(false);
+  const [syncProformas, setSyncProformas] = useState(false);
+  const [syncRecentSales, setSyncRecentSales] = useState(false);
+  const [syncCategories, setSyncCategories] = useState(false);
+  const [pushSalesToInauzwa, setPushSalesToInauzwa] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [defaultPaymentInstructions, setDefaultPaymentInstructions] = useState('');
+  const [defaultBranchPickupInfo, setDefaultBranchPickupInfo] = useState('');
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   const [connectMode, setConnectMode] = useState<'login' | 'database' | 'api'>('login');
@@ -40,6 +50,7 @@ export function InauzwaIntegrationPanel({
   const [apiToken, setApiToken] = useState('');
   const [currency, setCurrency] = useState('TZS');
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
+  const [syncMoreOpen, setSyncMoreOpen] = useState(false);
 
   const { data: inauzwaStatus, refetch: refetchInauzwaStatus, isLoading } = useQuery({
     queryKey: ['products', 'inauzwa-status'],
@@ -55,18 +66,26 @@ export function InauzwaIntegrationPanel({
   useEffect(() => {
     if (!inauzwaStatus?.preferences) return;
     const p = inauzwaStatus.preferences;
+    const connection = p.connection;
     setSyncBranchId(p.branchId ?? inauzwaStatus.branchId ?? '');
-    setSyncVendorId(p.vendorId ?? inauzwaStatus.vendorId ?? '');
-    setAutoSyncEnabled(p.autoSyncEnabled);
-    setAutoSyncInterval(p.autoSyncIntervalMinutes);
-    setRefreshBeforeSend(p.refreshBeforeSend);
+    setAutoSyncEnabled(p.autoSyncEnabled ?? false);
+    setAutoSyncInterval(p.autoSyncIntervalMinutes ?? 60);
+    setRefreshBeforeSend(p.refreshBeforeSend ?? true);
+    setSyncCustomers(p.syncCustomers ?? false);
+    setSyncProformas(p.syncProformas ?? false);
+    setSyncRecentSales(p.syncRecentSales ?? false);
+    setSyncCategories(p.syncCategories ?? false);
+    setPushSalesToInauzwa(p.pushSalesToInauzwa ?? false);
+    setBusinessName(p.businessName ?? '');
+    setDefaultPaymentInstructions(p.defaultPaymentInstructions ?? '');
+    setDefaultBranchPickupInfo(p.defaultBranchPickupInfo ?? '');
     setCurrency(p.currency || inauzwaStatus.currency || 'TZS');
-    if (p.connection.source === 'api') setConnectMode(p.connection.connectedViaLogin ? 'login' : 'api');
-    if (p.connection.apiUrl) setApiUrl(p.connection.apiUrl);
+    if (connection?.source === 'api') setConnectMode(connection.connectedViaLogin ? 'login' : 'api');
+    if (connection?.apiUrl) setApiUrl(connection.apiUrl);
     if (inauzwaStatus.defaultApiUrl && !loginApiUrl) {
       setLoginApiUrl(inauzwaStatus.defaultApiUrl);
-    } else if (p.connection.apiUrl && !loginApiUrl) {
-      setLoginApiUrl(p.connection.apiUrl);
+    } else if (connection?.apiUrl && !loginApiUrl) {
+      setLoginApiUrl(connection.apiUrl);
     }
   }, [inauzwaStatus?.preferences, inauzwaStatus?.branchId, inauzwaStatus?.vendorId, inauzwaStatus?.currency, inauzwaStatus?.defaultApiUrl, loginApiUrl]);
 
@@ -88,14 +107,24 @@ export function InauzwaIntegrationPanel({
       source: res.source,
     });
 
+  const selectedBranch = branches.find(b => b.id === syncBranchId);
+
   const saveInauzwaSettings = useMutation({
     mutationFn: () =>
       productsApi.updateInauzwaSettings({
         branchId: syncBranchId.trim() || null,
-        vendorId: syncVendorId.trim() || null,
+        vendorId: selectedBranch?.vendorId ?? inauzwaStatus?.vendorId ?? null,
         autoSyncEnabled,
         autoSyncIntervalMinutes: autoSyncInterval,
         refreshBeforeSend,
+        syncCustomers,
+        syncProformas,
+        syncRecentSales,
+        syncCategories,
+        pushSalesToInauzwa,
+        businessName: businessName.trim() || null,
+        defaultPaymentInstructions: defaultPaymentInstructions.trim() || null,
+        defaultBranchPickupInfo: defaultBranchPickupInfo.trim() || null,
       }),
     onSuccess: () => void refetchInauzwaStatus(),
   });
@@ -106,35 +135,12 @@ export function InauzwaIntegrationPanel({
       const password = loginPassword;
       const apiUrl = loginApiUrl.trim() || undefined;
 
-      if (inauzwaStatus?.hasSupabaseConfig && inauzwaStatus.defaultSupabaseUrl && inauzwaStatus.defaultSupabaseAnonKey) {
-        try {
-          const session = await signInToInauzwaSupabase(
-            inauzwaStatus.defaultSupabaseUrl,
-            inauzwaStatus.defaultSupabaseAnonKey,
-            email,
-            password,
-          );
-          return productsApi.completeInauzwaSupabaseSession({
-            accessToken: session.accessToken,
-            email: session.email,
-            supabaseUrl: inauzwaStatus.defaultSupabaseUrl,
-            supabaseAnonKey: inauzwaStatus.defaultSupabaseAnonKey,
-            apiUrl,
-            branchId: session.branchId,
-            vendorId: session.vendorId,
-            fullName: session.fullName,
-          });
-        } catch {
-          // Browser Supabase auth can fail on localhost (CORS/site URL). Fall back to server login.
-        }
-      }
-
+      // Credentials stay on the server — never load Supabase anon keys into the browser.
       return productsApi.loginInauzwa({ email, password, apiUrl });
     },
     onSuccess: res => {
       setLoginPassword('');
       setSyncBranchId(res.branchId ?? res.preferences.branchId ?? '');
-      setSyncVendorId(res.vendorId ?? res.preferences.vendorId ?? '');
       setConnectionMessage(
         t('products.inauzwa.loginSuccess', {
           email: res.email,
@@ -197,7 +203,6 @@ export function InauzwaIntegrationPanel({
       await saveInauzwaSettings.mutateAsync();
       return productsApi.syncInauzwa({
         branchId: syncBranchId.trim() || undefined,
-        vendorId: syncVendorId.trim() || undefined,
         mode: syncMode,
         activeOnly: true,
       });
@@ -224,7 +229,7 @@ export function InauzwaIntegrationPanel({
     connectMode === 'database'
       ? !!databaseUrl.trim()
       : connectMode === 'api'
-        ? !!apiUrl.trim() && (!!apiToken.trim() || !!inauzwaStatus?.preferences.connection.hasApiToken)
+        ? !!apiUrl.trim() && (!!apiToken.trim() || !!inauzwaStatus?.preferences?.connection?.hasApiToken)
         : false;
 
   const renderConnectionSetup = () => (
@@ -288,7 +293,7 @@ export function InauzwaIntegrationPanel({
               <div className="products-sync-actions">
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="fu-btn fu-btn--primary"
                   disabled={!loginEmail.trim() || !loginPassword || loginInauzwa.isPending}
                   onClick={() => loginInauzwa.mutate()}
                 >
@@ -342,7 +347,7 @@ export function InauzwaIntegrationPanel({
           <div className="products-sync-actions">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="fu-btn fu-btn--ghost"
               disabled={!canSaveConnection || testConnection.isPending}
               onClick={() => testConnection.mutate()}
             >
@@ -351,7 +356,7 @@ export function InauzwaIntegrationPanel({
             </button>
             <button
               type="button"
-              className="btn btn-primary"
+              className="fu-btn fu-btn--primary"
               disabled={!canSaveConnection || saveConnection.isPending}
               onClick={() => saveConnection.mutate()}
             >
@@ -366,6 +371,11 @@ export function InauzwaIntegrationPanel({
     </div>
   );
 
+  const resolvedVendorId =
+    inauzwaStatus?.preferences.vendorId ?? inauzwaStatus?.vendorId ?? null;
+  const vendorAutoFromLogin = !!inauzwaStatus?.preferences?.connection?.vendorAutoFromLogin;
+  const linkedAccountEmail = inauzwaStatus?.preferences?.connection?.loginEmail;
+
   if (isLoading) {
     return (
       <div className="settings-integration-loading">
@@ -376,36 +386,88 @@ export function InauzwaIntegrationPanel({
 
   if (!inauzwaStatus) return null;
 
-  const detailsOpen = defaultOpen && inauzwaStatus.configured;
-  const connection = inauzwaStatus.preferences.connection;
+  const isSettingsEmbed = showCatalogLink;
+  const detailsOpen = isSettingsEmbed || (defaultOpen && inauzwaStatus.configured);
+  const connection = inauzwaStatus.preferences?.connection ?? {
+    configured: false,
+    source: null,
+    configuredVia: null,
+    databaseUrlMasked: null,
+    apiUrl: null,
+    hasApiToken: false,
+    loginEmail: null,
+    connectedViaLogin: false,
+    vendorAutoFromLogin: false,
+  };
+  const branchLabel =
+    branches.find(b => b.id === (syncBranchId || inauzwaStatus.branchId))?.name ??
+    (syncBranchId || inauzwaStatus.branchId || '—');
+  const lastSyncLabel = inauzwaStatus.preferences.lastSyncAt
+    ? new Date(inauzwaStatus.preferences.lastSyncAt).toLocaleString()
+    : '—';
+
+  const syncStatusBadge = !inauzwaStatus.configured ? (
+    <span className="products-sync-setup__badge">{t('products.inauzwa.notConfiguredBadge')}</span>
+  ) : (
+    <span className="products-sync-setup__badge products-sync-setup__badge--ok">
+      {inauzwaStatus.database ? t('products.inauzwa.viaDatabase') : t('products.inauzwa.viaApi')}
+    </span>
+  );
 
   return (
-    <div className="settings-integration-panel">
-      <section
-        className={`products-sync-card ${!inauzwaStatus.configured ? 'products-sync-card--compact' : ''}`}
-      >
-        {!inauzwaStatus.configured ? (
-          <details className="products-sync-setup" open={defaultOpen}>
-            <summary className="products-sync-setup__summary">
-              <span className="products-sync-setup__title">{t('products.inauzwa.title')}</span>
-              <span className="products-sync-setup__badge">{t('products.inauzwa.notConfiguredBadge')}</span>
-            </summary>
-            <div className="products-sync-setup__body">
-              <p className="products-sync-card__desc">{t('products.inauzwa.description')}</p>
-              {renderConnectionSetup()}
-            </div>
-          </details>
+    <div
+      className={
+        isSettingsEmbed
+          ? 'settings-inauzwa-panel settings-inauzwa-panel--embed'
+          : 'settings-integration-panel'
+      }
+    >
+      {isSettingsEmbed && inauzwaStatus.configured ? (
+        <div className="settings-inauzwa-kpi-grid" aria-label={t('products.inauzwa.title')}>
+          <div className="settings-inauzwa-kpi">
+            <p className="settings-inauzwa-kpi__label">{t('products.inauzwa.kpi.connection')}</p>
+            <p className="settings-inauzwa-kpi__value">{t('products.inauzwa.kpi.connected')}</p>
+          </div>
+          <div className="settings-inauzwa-kpi">
+            <p className="settings-inauzwa-kpi__label">{t('products.inauzwa.kpi.source')}</p>
+            <p className="settings-inauzwa-kpi__value">
+              {inauzwaStatus.database ? t('products.inauzwa.viaDatabase') : t('products.inauzwa.viaApi')}
+            </p>
+          </div>
+          <div className="settings-inauzwa-kpi">
+            <p className="settings-inauzwa-kpi__label">{t('products.inauzwa.kpi.branch')}</p>
+            <p className="settings-inauzwa-kpi__value">{branchLabel}</p>
+          </div>
+          <div className="settings-inauzwa-kpi">
+            <p className="settings-inauzwa-kpi__label">{t('products.inauzwa.kpi.lastSync')}</p>
+            <p className="settings-inauzwa-kpi__value">{lastSyncLabel}</p>
+          </div>
+        </div>
+      ) : null}
+      {showCatalogLink && !inauzwaStatus.configured ? (
+        isSettingsEmbed ? (
+          <SettingsIntegrationCard
+            title={t('products.inauzwa.notConnectedTitle')}
+            icon="cloud_off"
+          >
+            <p className="settings-int-hint">{t('products.inauzwa.description')}</p>
+          </SettingsIntegrationCard>
         ) : (
-          <details className="products-sync-setup products-sync-setup--configured" open={detailsOpen}>
-            <summary className="products-sync-setup__summary">
-              <span className="products-sync-setup__title">{t('products.inauzwa.title')}</span>
-              <span className="products-sync-setup__badge products-sync-setup__badge--ok">
-                {inauzwaStatus.database
-                  ? t('products.inauzwa.viaDatabase')
-                  : t('products.inauzwa.viaApi')}
-              </span>
-            </summary>
-            <div className="products-sync-setup__body">
+          <div className="interakt-alert" role="status">
+            <span className="interakt-alert__icon">
+              <MaterialSymbol name="cloud_off" size={28} filled />
+            </span>
+            <div>
+              <h3>{t('products.inauzwa.notConnectedTitle')}</h3>
+              <p>{t('products.inauzwa.description')}</p>
+            </div>
+          </div>
+        )
+      ) : null}
+      {(() => {
+        const showSyncAdvanced = !isSettingsEmbed || syncMoreOpen;
+        const configuredBody = (
+          <div className="products-sync-setup__body">
               <p className="products-sync-card__desc">{t('products.inauzwa.description')}</p>
               {connection.configuredVia === 'env' ? (
                 <p className="products-sync-card__hint">{t('products.inauzwa.configuredViaEnv')}</p>
@@ -422,10 +484,10 @@ export function InauzwaIntegrationPanel({
                           })
                         : t('products.inauzwa.connectedApi', { url: connection.apiUrl ?? '—' })}
                   </p>
-                  {isAdmin && (
+                  {isAdmin && showSyncAdvanced && (
                     <button
                       type="button"
-                      className="btn btn-secondary btn-sm"
+                      className="fu-btn fu-btn--ghost fu-btn--sm"
                       disabled={disconnectConnection.isPending}
                       onClick={() => disconnectConnection.mutate()}
                     >
@@ -451,7 +513,9 @@ export function InauzwaIntegrationPanel({
                       <option value="">{t('products.inauzwa.selectBranch')}</option>
                       {branches.map(b => (
                         <option key={b.id} value={b.id}>
-                          {b.name}
+                          {b.productCount != null
+                            ? `${b.name} (${b.productCount})`
+                            : b.name}
                         </option>
                       ))}
                     </select>
@@ -464,16 +528,52 @@ export function InauzwaIntegrationPanel({
                     />
                   )}
                 </label>
-                <label>
-                  {t('products.inauzwa.vendor')}
-                  <input
-                    value={syncVendorId}
-                    onChange={e => setSyncVendorId(e.target.value)}
-                    placeholder={inauzwaStatus.vendorId ?? t('products.inauzwa.vendorPlaceholder')}
-                    disabled={!canWrite}
-                  />
-                </label>
+                {showSyncAdvanced ? (
+                  <label>
+                    {t('products.inauzwa.vendor')}
+                    <input
+                      value={resolvedVendorId ?? ''}
+                      readOnly
+                      placeholder={
+                        linkedAccountEmail
+                          ? t('products.inauzwa.vendorPendingLogin')
+                          : t('products.inauzwa.vendorSignInRequired')
+                      }
+                      disabled
+                    />
+                  </label>
+                ) : null}
               </div>
+              {showSyncAdvanced && vendorAutoFromLogin && linkedAccountEmail ? (
+                <p className="products-sync-card__hint products-sync-card__hint--sub">
+                  {t('products.inauzwa.vendorAuto', { email: linkedAccountEmail })}
+                </p>
+              ) : showSyncAdvanced && !resolvedVendorId && !linkedAccountEmail ? (
+                <p className="products-sync-card__hint products-sync-card__hint--sub">
+                  {t('products.inauzwa.vendorSignInRequired')}
+                </p>
+              ) : null}
+              {isSettingsEmbed && !syncMoreOpen ? (
+                <button
+                  type="button"
+                  className="fu-btn fu-btn--ghost fu-btn--sm settings-inline-more-btn"
+                  onClick={() => setSyncMoreOpen(true)}
+                >
+                  <span>{t('settings.moreOptions')}</span>
+                  <ChevronDown size={18} aria-hidden />
+                </button>
+              ) : null}
+              {isSettingsEmbed && syncMoreOpen ? (
+                <button
+                  type="button"
+                  className="fu-btn fu-btn--ghost fu-btn--sm settings-inline-show-less"
+                  onClick={() => setSyncMoreOpen(false)}
+                >
+                  {t('settings.showLess')}
+                </button>
+              ) : null}
+              {showSyncAdvanced ? (
+                <>
               <div className="products-form-row">
                 <label>
                   {t('products.inauzwa.mode')}
@@ -518,6 +618,45 @@ export function InauzwaIntegrationPanel({
                 />{' '}
                 {t('products.inauzwa.refreshBeforeSend')}
               </label>
+              <fieldset className="products-sync-fetch-toggles">
+                <legend>{t('products.inauzwa.fetchLegend')}</legend>
+                <label>
+                  <input type="checkbox" checked={syncCustomers} onChange={e => setSyncCustomers(e.target.checked)} disabled={!canWrite} />{' '}
+                  {t('products.inauzwa.syncCustomers')}
+                </label>
+                <label>
+                  <input type="checkbox" checked={syncProformas} onChange={e => setSyncProformas(e.target.checked)} disabled={!canWrite} />{' '}
+                  {t('products.inauzwa.syncProformas')}
+                </label>
+                <label>
+                  <input type="checkbox" checked={syncRecentSales} onChange={e => setSyncRecentSales(e.target.checked)} disabled={!canWrite} />{' '}
+                  {t('products.inauzwa.syncRecentSales')}
+                </label>
+                <label>
+                  <input type="checkbox" checked={syncCategories} onChange={e => setSyncCategories(e.target.checked)} disabled={!canWrite} />{' '}
+                  {t('products.inauzwa.syncCategories')}
+                </label>
+                <label>
+                  <input type="checkbox" checked={pushSalesToInauzwa} onChange={e => setPushSalesToInauzwa(e.target.checked)} disabled={!canWrite} />{' '}
+                  {t('products.inauzwa.pushSalesToInauzwa')}
+                </label>
+              </fieldset>
+              <div className="products-form-row">
+                <label>
+                  {t('products.inauzwa.businessName')}
+                  <input value={businessName} onChange={e => setBusinessName(e.target.value)} disabled={!canWrite} />
+                </label>
+                <label>
+                  {t('products.inauzwa.defaultPaymentInstructions')}
+                  <textarea value={defaultPaymentInstructions} onChange={e => setDefaultPaymentInstructions(e.target.value)} disabled={!canWrite} rows={2} />
+                </label>
+                <label>
+                  {t('products.inauzwa.defaultBranchPickupInfo')}
+                  <textarea value={defaultBranchPickupInfo} onChange={e => setDefaultBranchPickupInfo(e.target.value)} disabled={!canWrite} rows={2} />
+                </label>
+              </div>
+                </>
+              ) : null}
               {inauzwaStatus.preferences.lastSyncAt && (
                 <p className="products-sync-card__hint">
                   {t('products.inauzwa.lastSync', {
@@ -532,7 +671,7 @@ export function InauzwaIntegrationPanel({
                 <div className="products-sync-actions">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="fu-btn fu-btn--ghost"
                     disabled={saveInauzwaSettings.isPending}
                     onClick={() => saveInauzwaSettings.mutate()}
                   >
@@ -540,7 +679,7 @@ export function InauzwaIntegrationPanel({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="fu-btn fu-btn--ghost"
                     disabled={quickSync.isPending || syncInauzwa.isPending}
                     onClick={() => quickSync.mutate()}
                   >
@@ -553,7 +692,7 @@ export function InauzwaIntegrationPanel({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="fu-btn fu-btn--primary"
                     disabled={syncInauzwa.isPending}
                     onClick={() => syncInauzwa.mutate()}
                   >
@@ -564,19 +703,91 @@ export function InauzwaIntegrationPanel({
               )}
               {syncResult && <p className="inbox-crm-save-msg">{syncResult}</p>}
               {connectionMessage && <p className="inbox-crm-save-msg">{connectionMessage}</p>}
-            </div>
-          </details>
-        )}
-      </section>
+          </div>
+        );
 
-      {showCatalogLink && (
-        <p className="settings-integration-catalog-link">
-          <Link to="/products" className="inbox-crm-link">
-            <Package size={14} aria-hidden />
-            {t('settings.integrations.manageCatalog')}
-          </Link>
-        </p>
-      )}
+        const unconfiguredBody = (
+          <div className="products-sync-setup__body">
+            <p className="products-sync-card__desc">{t('products.inauzwa.description')}</p>
+            {renderConnectionSetup()}
+          </div>
+        );
+
+        const syncInner = !inauzwaStatus.configured ? (
+          isSettingsEmbed ? (
+            unconfiguredBody
+          ) : (
+            <details className="products-sync-setup" open={detailsOpen}>
+              <summary className="products-sync-setup__summary">
+                <span className="products-sync-setup__title">{t('products.inauzwa.title')}</span>
+                <span className="products-sync-setup__badge">
+                  {t('products.inauzwa.notConfiguredBadge')}
+                </span>
+              </summary>
+              {unconfiguredBody}
+            </details>
+          )
+        ) : isSettingsEmbed ? (
+          configuredBody
+        ) : (
+          <details className="products-sync-setup products-sync-setup--configured" open={detailsOpen}>
+            <summary className="products-sync-setup__summary">
+              <span className="products-sync-setup__title">{t('products.inauzwa.title')}</span>
+              <span className="products-sync-setup__badge products-sync-setup__badge--ok">
+                {inauzwaStatus.database
+                  ? t('products.inauzwa.viaDatabase')
+                  : t('products.inauzwa.viaApi')}
+              </span>
+            </summary>
+            {configuredBody}
+          </details>
+        );
+
+        return isSettingsEmbed ? (
+          <SettingsIntegrationCard
+            title={t('products.inauzwa.syncSection')}
+            icon="cloud_sync"
+            actions={syncStatusBadge}
+          >
+            <div className="settings-inauzwa-sync">{syncInner}</div>
+          </SettingsIntegrationCard>
+        ) : (
+          <section
+            className={`products-sync-card ${!inauzwaStatus.configured ? 'products-sync-card--compact' : ''}`}
+          >
+            {syncInner}
+          </section>
+        );
+      })()}
+
+      {showCatalogLink ? (
+        isSettingsEmbed ? (
+          <SettingsIntegrationCard
+            title={t('settings.integrations.catalogCtaTitle')}
+            icon="inventory_2"
+            actions={
+              <Link to="/products" className="fu-btn fu-btn--primary fu-btn--sm">
+                <Package size={14} aria-hidden />
+                {t('settings.integrations.manageCatalog')}
+              </Link>
+            }
+          >
+            <p className="settings-int-hint">{t('settings.integrations.catalogCtaDesc')}</p>
+          </SettingsIntegrationCard>
+        ) : (
+          <div className="interakt-product-cta">
+            <span className="interakt-bento-card__icon interakt-bento-card__icon--primary interakt-product-cta__icon">
+              <MaterialSymbol name="inventory_2" size={32} filled />
+            </span>
+            <h3 className="interakt-product-cta__title">{t('settings.integrations.catalogCtaTitle')}</h3>
+            <p className="interakt-product-cta__desc">{t('settings.integrations.catalogCtaDesc')}</p>
+            <Link to="/products" className="fu-btn fu-btn--primary">
+              <Package size={16} aria-hidden />
+              {t('settings.integrations.manageCatalog')}
+            </Link>
+          </div>
+        )
+      ) : null}
     </div>
   );
 }

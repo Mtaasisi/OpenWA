@@ -1109,15 +1109,6 @@
   margin-bottom: 0.5rem;
 }
 
-.tac-msg__media--loading,
-.tac-msg__media--error {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.625rem;
-  color: var(--text-muted);
-}
-
 .tac-msg__media-link img {
   max-width: 100%;
   max-height: 12rem;
@@ -1976,4 +1967,77 @@
   .tac-toolbar__left .tac-brand__title {
     display: none;
   }
+}
+
+/* Shared Interakt chrome hosts inside tactical HUD */
+.tac-list-header-host .inbox-interakt-list-header,
+.tac-chat-header-host .inbox-interakt-chat-header,
+.tac-composer-host .inbox-interakt-composer {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.tac-list-header-host .inbox-interakt-list-header {
+  border-bottom: 1px solid var(--tac-border);
+  background: #03070d;
+}
+
+.tac-chat-header-host .inbox-interakt-chat-header {
+  border-bottom: 1px solid var(--tac-border);
+  background: #03070d;
+  min-height: 3.25rem;
+}
+
+.tac-composer-host .inbox-interakt-composer {
+  border: 1px solid var(--tac-border);
+  border-radius: 0;
+  background: #050b14;
+}
+
+.tac-composer-host .inbox-interakt-composer-tabs button {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.6875rem;
+}
+
+.tac-composer-host .inbox-interakt-composer-tabs button[aria-selected='true'] {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.tactical-inbox .inbox-interakt-ai-status-strip {
+  border-bottom: 1px solid var(--tac-border);
+  background: #03070d;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tac-crm-wrap .inbox-crm-panel--interakt,
+.tac-crm-drawer .inbox-crm-panel--interakt {
+  border-radius: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  background: #03070d;
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-chip--swipe,
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-bar__more {
+  border-radius: 0;
+  background: #050b14;
+  border-color: var(--tac-border);
+  color: var(--text-secondary);
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-chip--swipe.is-active,
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-filter-bar__more.is-active {
+  background: color-mix(in srgb, var(--primary) 12%, #050b14);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-list-header__icon-btn:hover,
+[data-theme-effects='tactical'] .tactical-inbox .inbox-interakt-list-header__icon-btn.is-active {
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--primary);
 }

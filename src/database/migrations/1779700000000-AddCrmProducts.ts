@@ -1,3 +1,4 @@
+import { migPrimaryUuidColumn, migUuidFkColumn, migDateTime, migNowDefault } from '../migration-utils';
 import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
 
 export class AddCrmProducts1779700000000 implements MigrationInterface {
@@ -8,14 +9,7 @@ export class AddCrmProducts1779700000000 implements MigrationInterface {
       new Table({
         name: 'crm_products',
         columns: [
-          {
-            name: 'id',
-            type: 'varchar',
-            length: '36',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'uuid',
-          },
+          migPrimaryUuidColumn(queryRunner),
           { name: 'name', type: 'varchar', isNullable: false },
           { name: 'description', type: 'text', isNullable: true },
           { name: 'sku', type: 'varchar', isNullable: true },
@@ -25,8 +19,8 @@ export class AddCrmProducts1779700000000 implements MigrationInterface {
           { name: 'sellingPrice', type: 'real', isNullable: true },
           { name: 'isActive', type: 'boolean', default: true, isNullable: false },
           { name: 'sortOrder', type: 'int', default: 0, isNullable: false },
-          { name: 'createdAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
-          { name: 'updatedAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
+          { name: 'createdAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
+          { name: 'updatedAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
         ],
       }),
       true,
@@ -44,27 +38,20 @@ export class AddCrmProducts1779700000000 implements MigrationInterface {
       new Table({
         name: 'crm_product_variants',
         columns: [
-          {
-            name: 'id',
-            type: 'varchar',
-            length: '36',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'uuid',
-          },
-          { name: 'productId', type: 'varchar', length: '36', isNullable: false },
+          migPrimaryUuidColumn(queryRunner),
+          migUuidFkColumn(queryRunner, 'productId'),
           { name: 'name', type: 'varchar', isNullable: false },
           { name: 'sku', type: 'varchar', isNullable: true },
           { name: 'sellingPrice', type: 'real', isNullable: true },
           { name: 'quantity', type: 'int', default: 0, isNullable: false },
           { name: 'variantType', type: 'varchar', length: '32', default: "'standard'", isNullable: false },
           { name: 'isParent', type: 'boolean', default: false, isNullable: false },
-          { name: 'parentVariantId', type: 'varchar', length: '36', isNullable: true },
+          migUuidFkColumn(queryRunner, 'parentVariantId', true),
           { name: 'attributes', type: 'text', isNullable: true },
           { name: 'isActive', type: 'boolean', default: true, isNullable: false },
           { name: 'sortOrder', type: 'int', default: 0, isNullable: false },
-          { name: 'createdAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
-          { name: 'updatedAt', type: 'datetime', default: 'CURRENT_TIMESTAMP', isNullable: false },
+          { name: 'createdAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
+          { name: 'updatedAt', type: migDateTime(queryRunner), default: migNowDefault(queryRunner), isNullable: false },
         ],
       }),
       true,

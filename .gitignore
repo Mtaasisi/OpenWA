@@ -5,6 +5,12 @@ node_modules/
 
 # Build output
 dist/
+dist-desktop/
+desktop/.bundle/
+dashboard/dist/
+desktop/dist/
+desktop/node_modules/
+desktop/runtimes/
 build/
 .next/
 out/
@@ -14,6 +20,8 @@ coverage/
 
 # Environment
 .env
+.env.production
+.vps-credentials.local
 .env.local
 .env.development.local
 .env.test.local
@@ -34,6 +42,9 @@ logs/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Cursor / agent metadata (not source)
+.git/cursor/
 
 # IDE
 .idea/

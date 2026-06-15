@@ -3,17 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AiBudgetGuardService } from './cost/ai-budget-guard.service';
 import { AiConfig, AI_CONFIG_ID } from './entities/ai-config.entity';
+import { AiBudgetSettingsDto } from './dto/ai.dto';
 import { AiCostPermissionGuard, RequireAiCostPermission } from './cost/guards/ai-cost-permission.guard';
 import { AiCostPermission } from './cost/ai-cost-permission.enums';
-
-class BudgetSettingsDto {
-  aiDailyBudgetUsd?: number;
-  aiMonthlyBudgetUsd?: number;
-  autoReplyDailyBudgetUsd?: number;
-  stopAutoReplyWhenBudgetExceeded?: boolean;
-  notifyAdminWhenBudgetAtPercent?: number;
-  allowAdminOverrideBudget?: boolean;
-}
 
 @Controller('admin/ai-budget')
 @UseGuards(AiCostPermissionGuard)
@@ -32,7 +24,7 @@ export class AiBudgetAdminController {
 
   @Post('settings')
   @RequireAiCostPermission(AiCostPermission.MANAGE)
-  async updateSettings(@Body() dto: BudgetSettingsDto) {
+  async updateSettings(@Body() dto: AiBudgetSettingsDto) {
     const config = await this.configRepo.findOne({ where: { id: AI_CONFIG_ID } });
     if (!config) throw new Error('AI config not found');
     if (dto.aiDailyBudgetUsd !== undefined) config.aiDailyBudgetUsd = dto.aiDailyBudgetUsd;

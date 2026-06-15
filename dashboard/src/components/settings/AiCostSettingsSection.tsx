@@ -14,6 +14,8 @@ type Props = {
   showCostSafety?: boolean;
   showContextControl?: boolean;
   showDedupe?: boolean;
+  showMessageBuffer?: boolean;
+  showLearningCache?: boolean;
 };
 
 export function AiCostSettingsSection({
@@ -22,6 +24,8 @@ export function AiCostSettingsSection({
   showCostSafety = true,
   showContextControl = true,
   showDedupe = true,
+  showMessageBuffer = true,
+  showLearningCache = true,
 }: Props) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -44,7 +48,7 @@ export function AiCostSettingsSection({
   const [stopAutoReplyWhenBudgetExceeded, setStopAutoReplyWhenBudgetExceeded] = useState(true);
   const [notifyAdminWhenBudgetAtPercent, setNotifyAdminWhenBudgetAtPercent] = useState('80');
   const [allowAdminOverrideBudget, setAllowAdminOverrideBudget] = useState(true);
-  const [autoReplyContextMessagesMax, setAutoReplyContextMessagesMax] = useState('12');
+  const [autoReplyContextMessagesMax, setAutoReplyContextMessagesMax] = useState('5');
   const [includeCrmWhenNeeded, setIncludeCrmWhenNeeded] = useState(true);
   const [includeKnowledgeWhenNeeded, setIncludeKnowledgeWhenNeeded] = useState(true);
   const [includeCatalogWhenNeeded, setIncludeCatalogWhenNeeded] = useState(true);
@@ -55,6 +59,18 @@ export function AiCostSettingsSection({
   const [maxAiCallsPerInboundMessage, setMaxAiCallsPerInboundMessage] = useState('2');
   const [ignoreDuplicateMessageIds, setIgnoreDuplicateMessageIds] = useState(true);
   const [ignorePromotionalMessages, setIgnorePromotionalMessages] = useState(true);
+  const [messageBufferEnabled, setMessageBufferEnabled] = useState(true);
+  const [messageBufferDebounceSeconds, setMessageBufferDebounceSeconds] = useState('10');
+  const [messageBufferMaxWaitSeconds, setMessageBufferMaxWaitSeconds] = useState('30');
+  const [messageBufferMaxMessages, setMessageBufferMaxMessages] = useState('10');
+  const [messageBufferMaxCharacters, setMessageBufferMaxCharacters] = useState('4000');
+  const [oneReplyPerMessageBurst, setOneReplyPerMessageBurst] = useState(true);
+  const [learnedReplyCacheEnabled, setLearnedReplyCacheEnabled] = useState(true);
+  const [autoLearnSafeIntents, setAutoLearnSafeIntents] = useState(true);
+  const [autoApproveConfidenceThreshold, setAutoApproveConfidenceThreshold] = useState('90');
+  const [pendingReviewThreshold, setPendingReviewThreshold] = useState('60');
+  const [disableLearningForSensitive, setDisableLearningForSensitive] = useState(true);
+  const [replyVariationRotation, setReplyVariationRotation] = useState(true);
 
   useEffect(() => {
     if (!config) return;
@@ -69,7 +85,7 @@ export function AiCostSettingsSection({
     setStopAutoReplyWhenBudgetExceeded(config.stopAutoReplyWhenBudgetExceeded !== false);
     setNotifyAdminWhenBudgetAtPercent(String(config.notifyAdminWhenBudgetAtPercent ?? 80));
     setAllowAdminOverrideBudget(config.allowAdminOverrideBudget !== false);
-    setAutoReplyContextMessagesMax(String(config.autoReplyContextMessagesMax ?? 12));
+    setAutoReplyContextMessagesMax(String(config.autoReplyContextMessagesMax ?? 5));
     setIncludeCrmWhenNeeded(config.includeCrmWhenNeeded !== false);
     setIncludeKnowledgeWhenNeeded(config.includeKnowledgeWhenNeeded !== false);
     setIncludeCatalogWhenNeeded(config.includeCatalogWhenNeeded !== false);
@@ -80,6 +96,18 @@ export function AiCostSettingsSection({
     setMaxAiCallsPerInboundMessage(String(config.maxAiCallsPerInboundMessage ?? 2));
     setIgnoreDuplicateMessageIds(config.ignoreDuplicateMessageIds !== false);
     setIgnorePromotionalMessages(config.ignorePromotionalMessages !== false);
+    setMessageBufferEnabled(config.messageBufferEnabled !== false);
+    setMessageBufferDebounceSeconds(String(config.messageBufferDebounceSeconds ?? 10));
+    setMessageBufferMaxWaitSeconds(String(config.messageBufferMaxWaitSeconds ?? 30));
+    setMessageBufferMaxMessages(String(config.messageBufferMaxMessages ?? 10));
+    setMessageBufferMaxCharacters(String(config.messageBufferMaxCharacters ?? 4000));
+    setOneReplyPerMessageBurst(config.oneReplyPerMessageBurst !== false);
+    setLearnedReplyCacheEnabled(config.learnedReplyCacheEnabled !== false);
+    setAutoLearnSafeIntents(config.autoLearnSafeIntents !== false);
+    setAutoApproveConfidenceThreshold(String(config.autoApproveConfidenceThreshold ?? 90));
+    setPendingReviewThreshold(String(config.pendingReviewThreshold ?? 60));
+    setDisableLearningForSensitive(config.disableLearningForSensitive !== false);
+    setReplyVariationRotation(config.replyVariationRotation !== false);
   }, [config]);
 
   const saveMutation = useMutation({
@@ -109,6 +137,18 @@ export function AiCostSettingsSection({
         maxAiCallsPerInboundMessage: Number(maxAiCallsPerInboundMessage),
         ignoreDuplicateMessageIds,
         ignorePromotionalMessages,
+        messageBufferEnabled,
+        messageBufferDebounceSeconds: Number(messageBufferDebounceSeconds),
+        messageBufferMaxWaitSeconds: Number(messageBufferMaxWaitSeconds),
+        messageBufferMaxMessages: Number(messageBufferMaxMessages),
+        messageBufferMaxCharacters: Number(messageBufferMaxCharacters),
+        oneReplyPerMessageBurst,
+        learnedReplyCacheEnabled,
+        autoLearnSafeIntents,
+        autoApproveConfidenceThreshold: Number(autoApproveConfidenceThreshold),
+        pendingReviewThreshold: Number(pendingReviewThreshold),
+        disableLearningForSensitive,
+        replyVariationRotation,
       }),
     onSuccess: () => {
       toast.success(t('ai.usage.costSettingsSaved'));
@@ -130,7 +170,8 @@ export function AiCostSettingsSection({
     <div className="ai-cost-settings">
       <p className="ai-settings-card__hint" style={{ marginBottom: 16 }}>
         <Link to={settingsPanelHref('ai-usage')}>{t('ai.usage.openDashboard')}</Link>{' '}
-        {t('ai.usage.openDashboardHint')}
+        {t('ai.usage.openDashboardHint')}{' '}
+        <Link to={settingsPanelHref('ai-learning-cache')}>{t('ai.learningCache.openPanel')}</Link>
       </p>
 
       {showModelRouting && (
@@ -213,7 +254,7 @@ export function AiCostSettingsSection({
           <h3 className="ai-settings-card__title">{t('ai.usage.contextControl')}</h3>
           <label className="ai-settings-label">
             {t('ai.usage.maxContextMessages')}
-            <input className="ai-settings-input" type="number" min={4} max={12} value={autoReplyContextMessagesMax} onChange={e => setAutoReplyContextMessagesMax(e.target.value)} />
+            <input className="ai-settings-input" type="number" min={3} max={5} value={autoReplyContextMessagesMax} onChange={e => setAutoReplyContextMessagesMax(e.target.value)} />
           </label>
           <InteraktCheckOption checked={includeCrmWhenNeeded} onChange={setIncludeCrmWhenNeeded} title={t('ai.usage.includeCrmWhenNeeded')} />
           <InteraktCheckOption checked={includeKnowledgeWhenNeeded} onChange={setIncludeKnowledgeWhenNeeded} title={t('ai.usage.includeKnowledgeWhenNeeded')} />
@@ -235,6 +276,77 @@ export function AiCostSettingsSection({
           </label>
           <InteraktCheckOption checked={ignoreDuplicateMessageIds} onChange={setIgnoreDuplicateMessageIds} title={t('ai.usage.skipDuplicateIds')} />
           <InteraktCheckOption checked={ignorePromotionalMessages} onChange={setIgnorePromotionalMessages} title={t('ai.usage.ignorePromotional')} />
+        </section>
+      )}
+
+      {showMessageBuffer && (
+        <section className="ai-settings-card ai-settings-card--elevated" style={{ marginBottom: 16 }}>
+          <h3 className="ai-settings-card__title">{t('ai.usage.messageBuffer')}</h3>
+          <InteraktCheckOption
+            checked={messageBufferEnabled}
+            onChange={setMessageBufferEnabled}
+            title={t('ai.usage.messageBufferEnabled')}
+            hint={t('ai.usage.messageBufferEnabledHint')}
+          />
+          <div className="ai-settings-grid">
+            <label className="ai-settings-label">
+              {t('ai.usage.messageBufferDebounce')}
+              <input className="ai-settings-input" type="number" min={1} max={120} value={messageBufferDebounceSeconds} onChange={e => setMessageBufferDebounceSeconds(e.target.value)} />
+            </label>
+            <label className="ai-settings-label">
+              {t('ai.usage.messageBufferMaxWait')}
+              <input className="ai-settings-input" type="number" min={5} max={300} value={messageBufferMaxWaitSeconds} onChange={e => setMessageBufferMaxWaitSeconds(e.target.value)} />
+            </label>
+            <label className="ai-settings-label">
+              {t('ai.usage.messageBufferMaxMessages')}
+              <input className="ai-settings-input" type="number" min={1} max={50} value={messageBufferMaxMessages} onChange={e => setMessageBufferMaxMessages(e.target.value)} />
+            </label>
+            <label className="ai-settings-label">
+              {t('ai.usage.messageBufferMaxChars')}
+              <input className="ai-settings-input" type="number" min={500} max={20000} value={messageBufferMaxCharacters} onChange={e => setMessageBufferMaxCharacters(e.target.value)} />
+            </label>
+          </div>
+          <InteraktCheckOption
+            checked={oneReplyPerMessageBurst}
+            onChange={setOneReplyPerMessageBurst}
+            title={t('ai.usage.oneReplyPerBurst')}
+          />
+        </section>
+      )}
+
+      {showLearningCache && (
+        <section className="ai-settings-card ai-settings-card--elevated" style={{ marginBottom: 16 }}>
+          <h3 className="ai-settings-card__title">{t('ai.usage.learningCache')}</h3>
+          <InteraktCheckOption
+            checked={learnedReplyCacheEnabled}
+            onChange={setLearnedReplyCacheEnabled}
+            title={t('ai.usage.learnedReplyCacheEnabled')}
+          />
+          <InteraktCheckOption
+            checked={autoLearnSafeIntents}
+            onChange={setAutoLearnSafeIntents}
+            title={t('ai.usage.autoLearnSafeIntents')}
+          />
+          <div className="ai-settings-grid">
+            <label className="ai-settings-label">
+              {t('ai.usage.autoApproveThreshold')}
+              <input className="ai-settings-input" type="number" min={50} max={100} value={autoApproveConfidenceThreshold} onChange={e => setAutoApproveConfidenceThreshold(e.target.value)} />
+            </label>
+            <label className="ai-settings-label">
+              {t('ai.usage.pendingReviewThreshold')}
+              <input className="ai-settings-input" type="number" min={0} max={100} value={pendingReviewThreshold} onChange={e => setPendingReviewThreshold(e.target.value)} />
+            </label>
+          </div>
+          <InteraktCheckOption
+            checked={disableLearningForSensitive}
+            onChange={setDisableLearningForSensitive}
+            title={t('ai.usage.disableLearningSensitive')}
+          />
+          <InteraktCheckOption
+            checked={replyVariationRotation}
+            onChange={setReplyVariationRotation}
+            title={t('ai.usage.replyVariationRotation')}
+          />
         </section>
       )}
 

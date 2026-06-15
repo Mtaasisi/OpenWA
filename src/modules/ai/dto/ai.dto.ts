@@ -391,6 +391,82 @@ export class UpsertAiConfigDto {
   @IsBoolean()
   @IsOptional()
   ignorePromotionalMessages?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  messageBufferEnabled?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  messageBufferDebounceSeconds?: number;
+
+  @IsNumber()
+  @IsOptional()
+  messageBufferMaxWaitSeconds?: number;
+
+  @IsNumber()
+  @IsOptional()
+  messageBufferMaxMessages?: number;
+
+  @IsNumber()
+  @IsOptional()
+  messageBufferMaxCharacters?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  oneReplyPerMessageBurst?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  learnedReplyCacheEnabled?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  autoLearnSafeIntents?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  autoApproveConfidenceThreshold?: number;
+
+  @IsNumber()
+  @IsOptional()
+  pendingReviewThreshold?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  disableLearningForSensitive?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  replyVariationRotation?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  ignoreGroupMessages?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  ignoreSelfMessages?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  autoReplyPromptBudgetTokens?: number;
+
+  @IsNumber()
+  @IsOptional()
+  autoReplySimplePromptBudgetTokens?: number;
+
+  @IsNumber()
+  @IsOptional()
+  knowledgeMaxChunks?: number;
+
+  @IsNumber()
+  @IsOptional()
+  knowledgeMaxCharsPerChunk?: number;
+
+  @IsNumber()
+  @IsOptional()
+  knowledgeMaxTotalChars?: number;
 }
 
 export class FallbackModelDto {
@@ -407,6 +483,37 @@ export class FallbackModelDto {
   @IsString()
   @IsOptional()
   baseUrl?: string;
+}
+
+export class AiBudgetSettingsDto {
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  aiDailyBudgetUsd?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  aiMonthlyBudgetUsd?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  autoReplyDailyBudgetUsd?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  stopAutoReplyWhenBudgetExceeded?: boolean;
+
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  @IsOptional()
+  notifyAdminWhenBudgetAtPercent?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  allowAdminOverrideBudget?: boolean;
 }
 
 export class ChatImageAttachmentDto {

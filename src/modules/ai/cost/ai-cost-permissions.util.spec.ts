@@ -1,5 +1,5 @@
 import { ApiKey, ApiKeyRole } from '../../auth/entities/api-key.entity';
-import { AiCostPermission } from './ai-cost-permission.enums';
+import { AiCostPermission, AiLearningPermission } from './ai-cost-permission.enums';
 import {
   getEffectiveAiCostPermissions,
   hasAiCostPermission,
@@ -18,7 +18,7 @@ describe('ai-cost-permissions.util', () => {
 
   it('grants view-only to operator by default', () => {
     const perms = getEffectiveAiCostPermissions(key(ApiKeyRole.OPERATOR));
-    expect(perms).toEqual([AiCostPermission.VIEW]);
+    expect(perms).toEqual([AiCostPermission.VIEW, AiLearningPermission.VIEW]);
   });
 
   it('uses custom permissions when set', () => {

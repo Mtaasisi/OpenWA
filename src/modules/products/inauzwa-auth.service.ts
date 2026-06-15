@@ -148,11 +148,11 @@ export class InauzwaAuthService {
       ? normalizeInauzwaApiUrl(dto.apiUrl)
       : this.resolveDefaultApiUrl();
 
-  const branchId = dto.branchId?.trim() || null;
+    const branchId = dto.branchId?.trim() || null;
     const vendorId = dto.vendorId?.trim() || null;
     const fullName = dto.fullName?.trim() || null;
 
-    const preferences = await this.preferences.update({
+    await this.preferences.update({
       databaseUrl: null,
       apiUrl: apiUrlFallback,
       apiToken: accessToken,
@@ -165,14 +165,7 @@ export class InauzwaAuthService {
       clearConnection: false,
     });
 
-    return {
-      email,
-      fullName,
-      branchId,
-      vendorId,
-      authMethod: 'supabase',
-      preferences,
-    };
+    return this.buildLoginResult(email, fullName, 'supabase');
   }
 
   private async loginViaNodeApi(
@@ -216,7 +209,7 @@ export class InauzwaAuthService {
     const branchId = body.user?.branchId?.trim() || null;
     const vendorId = body.user?.vendorId?.trim() || null;
 
-    const preferences = await this.preferences.update({
+    await this.preferences.update({
       databaseUrl: null,
       apiUrl,
       apiToken: body.token,
@@ -229,14 +222,7 @@ export class InauzwaAuthService {
       clearConnection: false,
     });
 
-    return {
-      email,
-      fullName: body.user?.fullName?.trim() || null,
-      branchId,
-      vendorId,
-      authMethod: 'node_api',
-      preferences,
-    };
+    return this.buildLoginResult(email, body.user?.fullName?.trim() || null, 'node_api');
   }
 
   private async loginViaSupabase(
@@ -320,7 +306,7 @@ export class InauzwaAuthService {
       );
     }
 
-    const preferences = await this.preferences.update({
+    await this.preferences.update({
       databaseUrl: null,
       apiUrl: apiUrlFallback,
       apiToken: accessToken,
@@ -333,12 +319,23 @@ export class InauzwaAuthService {
       clearConnection: false,
     });
 
+    return this.buildLoginResult(email, fullName, 'supabase');
+  }
+
+  private async buildLoginResult(
+    email: string,
+    fullName: string | null,
+    authMethod: 'node_api' | 'supabase',
+  ): Promise<InauzwaLoginResult> {
+    const creds = await this.preferences.resolveCredentials();
+    await this.preferences.ensureLoginUserProfile(creds);
+    const preferences = await this.preferences.toDto();
     return {
       email,
       fullName,
-      branchId,
-      vendorId,
-      authMethod: 'supabase',
+      branchId: preferences.branchId,
+      vendorId: preferences.vendorId,
+      authMethod,
       preferences,
     };
   }

@@ -176,17 +176,21 @@ import json, os
 p = os.path.join("${TMP}", "ai-config.json")
 with open(p) as f:
     c = json.load(f)
+ctx = c.get("autoReplyContextMessages")
+ctx_max = c.get("autoReplyContextMessagesMax")
 checks = {
     "autoReplyModelTier": c.get("autoReplyModelTier") == "cheap_fast",
     "allowPremiumModelForAutoReply": c.get("allowPremiumModelForAutoReply") is False,
-    "autoReplyContextMessages": c.get("autoReplyContextMessages") == 8,
+    "autoReplyContextMessages_le_5": (ctx or 99) <= 5,
+    "autoReplyContextMessagesMax_le_5": (ctx_max or 99) <= 5,
     "maxCustomerToolIterations": c.get("maxCustomerToolIterations") == 2,
     "maxAdminToolIterations": c.get("maxAdminToolIterations") == 5,
     "maxAiCallsPerInboundMessage": c.get("maxAiCallsPerInboundMessage") == 2,
     "ignoreDuplicateMessageIds": c.get("ignoreDuplicateMessageIds") is not False,
 }
 for k, ok in checks.items():
-    print(f"  {'OK' if ok else 'WARN'}: {k} = {c.get(k)}")
+    print(f"  {'OK' if ok else 'WARN'}: {k}")
+print(f"  context: autoReplyContextMessages={ctx}, autoReplyContextMessagesMax={ctx_max}")
 PY
 else
   warn "GET /settings/ai ($code) — admin settings may require admin role"

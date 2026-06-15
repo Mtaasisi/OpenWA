@@ -1,0 +1,73 @@
+.reports-hub__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reports-hub__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reports-hub__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.reports-hub__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 7.5rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.reports-hub__card:hover {
+  border-color: var(--interakt-primary-border, color-mix(in srgb, var(--primary) 40%, var(--border)));
+  box-shadow: var(--interakt-shadow-sm, var(--shadow-sm));
+}
+
+.reports-hub__card-icon {
+  color: var(--interakt-primary, var(--primary));
+  margin-bottom: 0.25rem;
+}
+
+.reports-hub__card h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reports-hub__card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.reports-hub__channels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reports-hub__channel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: auto;
+  padding: 0.75rem 1rem;
+  flex-direction: row;
+}
+
+.reports-hub__channel-status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+}

@@ -1,0 +1,242 @@
+.demand-campaign-panel__row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+.demand-campaign-panel__editor {
+  margin: 0.5rem 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.demand-campaign-panel__editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.demand-campaign-panel__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.demand-campaign-panel__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.demand-campaign-preflight-modal {
+  margin: auto;
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.demand-campaign-preflight-modal h3 {
+  margin: 0;
+}
+
+.demand-campaign-preflight-modal__subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.demand-campaign-preflight-modal__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.demand-campaign-preflight-modal__metrics div {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.demand-campaign-preflight-modal__metrics span {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.demand-campaign-preflight-modal__metrics strong {
+  font-size: 0.875rem;
+}
+
+.demand-campaign-preflight-modal__fixes h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+}
+
+.demand-campaign-preflight-modal__fixes ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+}
+
+.demand-campaign-preflight-modal__template {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+}
+
+.demand-campaign-preflight-modal__template select {
+  width: 100%;
+}
+
+.demand-campaign-preflight-modal__status {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.demand-campaign-preflight-modal__status--ok {
+  color: var(--success, #15803d);
+}
+
+.demand-campaign-preflight-modal__status--blocked {
+  color: var(--danger, #b91c1c);
+}
+
+.demand-campaign-preflight-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.campaigns-bento {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.campaigns-coming-soon-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-card) 88%, var(--primary) 12%);
+  border: 1px solid var(--border);
+}
+
+.campaigns-coming-soon-strip p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.campaigns-panel__connect-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.campaigns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .campaigns-bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.campaign-card {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.campaign-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.campaign-card__head h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.campaign-card__desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.campaign-card__channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.campaign-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.campaign-card__stats div {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+}
+
+.campaign-card__stats dt {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.campaign-card__stats dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.campaign-card__foot {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.campaign-card__foot .fu-btn {
+  flex: 1;
+  justify-content: center;
+}

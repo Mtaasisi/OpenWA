@@ -1,18 +1,40 @@
-import { Injectable, NotFoundException, UnauthorizedException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  OnModuleInit,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { createHash, randomBytes } from 'crypto';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { ApiKey, ApiKeyRole } from './entities/api-key.entity';
+import { ApiKey, ApiKeyRole, ApiKeyType } from './entities/api-key.entity';
 import { CreateApiKeyDto, UpdateApiKeyDto } from './dto';
 import { createLogger } from '../../common/services/logger.service';
+import {
+  assertNotDevAdminKeyInProduction,
+  DEV_ADMIN_KEY,
+  isProductionEnv,
+  maskApiKeyForLogs,
+} from '../../common/utils/production-security.util';
 
 const API_KEY_FILE = join(process.cwd(), 'data', '.api-key');
+
+type ValidateApiKeyOptions = {
+  /** When false, skip per-request usage counter writes (WebSocket auth, cached reads). */
+  trackUsage?: boolean;
+};
 
 @Injectable()
 export class AuthService implements OnModuleInit {
   private readonly logger = createLogger('AuthService');
+  private readonly validationCache = new Map<string, { apiKey: ApiKey; expiresAt: number }>();
+  private readonly pendingUsage = new Map<string, { count: number; lastUsedAt: Date }>();
+  private usageFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly VALIDATION_CACHE_MS = 60_000;
+  private static readonly USAGE_FLUSH_MS = 5_000;
 
   constructor(
     @InjectRepository(ApiKey, 'main')
@@ -26,9 +48,8 @@ export class AuthService implements OnModuleInit {
     let isNewKey = false;
 
     if (count === 0) {
-      // Use predictable key in development, random key in production
-      displayKey =
-        process.env.NODE_ENV === 'production' ? `owa_k1_${randomBytes(32).toString('hex')}` : 'dev-admin-key';
+      displayKey = this.resolveInitialAdminKey();
+      assertNotDevAdminKeyInProduction(displayKey);
 
       await this.seedApiKey(displayKey, 'Default Admin Key', ApiKeyRole.ADMIN);
       isNewKey = true;
@@ -70,13 +91,34 @@ export class AuthService implements OnModuleInit {
     } else {
       this.logger.log('  🔑 API Key:');
     }
-    this.logger.log(`     ${displayKey}`);
+    if (isProductionEnv()) {
+      this.logger.log(`     ${maskApiKeyForLogs(displayKey!)} (full key saved to data/.api-key on first boot)`);
+    } else {
+      this.logger.log(`     ${displayKey}`);
+    }
     this.logger.log('');
     this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     this.logger.log('');
   }
 
+  private resolveInitialAdminKey(): string {
+    const master = process.env.API_MASTER_KEY?.trim();
+    if (master) {
+      if (isProductionEnv() && master === DEV_ADMIN_KEY) {
+        throw new InternalServerErrorException(
+          'API_MASTER_KEY cannot be dev-admin-key in production',
+        );
+      }
+      return master;
+    }
+    if (isProductionEnv()) {
+      return `owa_k1_${randomBytes(32).toString('hex')}`;
+    }
+    return DEV_ADMIN_KEY;
+  }
+
   private async seedApiKey(rawKey: string, name: string, role: ApiKeyRole): Promise<ApiKey> {
+    assertNotDevAdminKeyInProduction(rawKey);
     const keyHash = this.hashKey(rawKey);
     const keyPrefix = rawKey.substring(0, 12);
 
@@ -85,6 +127,7 @@ export class AuthService implements OnModuleInit {
       keyHash,
       keyPrefix,
       role,
+      type: ApiKeyType.SERVICE,
     });
 
     return this.apiKeyRepository.save(apiKey);
@@ -101,6 +144,7 @@ export class AuthService implements OnModuleInit {
       keyHash,
       keyPrefix,
       role: dto.role || ApiKeyRole.OPERATOR,
+      type: ApiKeyType.SERVICE,
       allowedIps: dto.allowedIps || null,
       allowedSessions: dto.allowedSessions || null,
       expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
@@ -116,8 +160,18 @@ export class AuthService implements OnModuleInit {
     return { apiKey: saved, rawKey };
   }
 
+  /** All active keys (service + user-linked) for staff/inbox assignee resolution. */
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
+      where: { isActive: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /** Service/integration keys only (admin API key management). */
+  async findAllServiceKeys(): Promise<ApiKey[]> {
+    return this.apiKeyRepository.find({
+      where: { type: ApiKeyType.SERVICE },
       order: { createdAt: 'DESC' },
     });
   }
@@ -125,6 +179,9 @@ export class AuthService implements OnModuleInit {
   async findOne(id: string): Promise<ApiKey> {
     const apiKey = await this.apiKeyRepository.findOne({ where: { id } });
     if (!apiKey) {
+      throw new NotFoundException(`API key with id '${id}' not found`);
+    }
+    if (apiKey.type === ApiKeyType.USER) {
       throw new NotFoundException(`API key with id '${id}' not found`);
     }
     return apiKey;
@@ -154,17 +211,50 @@ export class AuthService implements OnModuleInit {
   async revoke(id: string): Promise<ApiKey> {
     const apiKey = await this.findOne(id);
     apiKey.isActive = false;
+    this.validationCache.clear();
     return this.apiKeyRepository.save(apiKey);
   }
 
-  async validateApiKey(rawKey: string, clientIp?: string, sessionId?: string): Promise<ApiKey> {
+  async validateApiKey(
+    rawKey: string,
+    clientIp?: string,
+    sessionId?: string,
+    options: ValidateApiKeyOptions = {},
+  ): Promise<ApiKey> {
+    const trackUsage = options.trackUsage !== false;
+    if (isProductionEnv() && rawKey === DEV_ADMIN_KEY) {
+      throw new UnauthorizedException('Invalid API key');
+    }
+
     const keyHash = this.hashKey(rawKey);
+    const cached = this.validationCache.get(keyHash);
+    if (cached && cached.expiresAt > Date.now()) {
+      this.assertKeyAccess(cached.apiKey, clientIp, sessionId);
+      if (trackUsage) this.queueUsageUpdate(cached.apiKey.id);
+      return cached.apiKey;
+    }
+
     const apiKey = await this.apiKeyRepository.findOne({ where: { keyHash } });
 
     if (!apiKey) {
       throw new UnauthorizedException('Invalid API key');
     }
 
+    this.assertKeyAccess(apiKey, clientIp, sessionId);
+
+    this.validationCache.set(keyHash, {
+      apiKey,
+      expiresAt: Date.now() + AuthService.VALIDATION_CACHE_MS,
+    });
+
+    if (trackUsage) {
+      this.queueUsageUpdate(apiKey.id);
+    }
+
+    return apiKey;
+  }
+
+  private assertKeyAccess(apiKey: ApiKey, clientIp?: string, sessionId?: string): void {
     if (!apiKey.isActive) {
       throw new UnauthorizedException('API key is revoked');
     }
@@ -173,7 +263,6 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('API key has expired');
     }
 
-    // Check IP whitelist
     if (apiKey.allowedIps && apiKey.allowedIps.length > 0 && clientIp) {
       if (!this.isIpAllowed(clientIp, apiKey.allowedIps)) {
         this.logger.warn(`IP not allowed: ${clientIp}`, {
@@ -184,19 +273,40 @@ export class AuthService implements OnModuleInit {
       }
     }
 
-    // Check session restriction
     if (apiKey.allowedSessions && apiKey.allowedSessions.length > 0 && sessionId) {
       if (!apiKey.allowedSessions.includes(sessionId)) {
         throw new UnauthorizedException('API key not authorized for this session');
       }
     }
+  }
 
-    // Update usage stats
-    apiKey.lastUsedAt = new Date();
-    apiKey.usageCount += 1;
-    await this.apiKeyRepository.save(apiKey);
+  private queueUsageUpdate(keyId: string): void {
+    const entry = this.pendingUsage.get(keyId) ?? { count: 0, lastUsedAt: new Date() };
+    entry.count += 1;
+    entry.lastUsedAt = new Date();
+    this.pendingUsage.set(keyId, entry);
+    if (!this.usageFlushTimer) {
+      this.usageFlushTimer = setTimeout(() => {
+        void this.flushUsageUpdates();
+      }, AuthService.USAGE_FLUSH_MS);
+    }
+  }
 
-    return apiKey;
+  private async flushUsageUpdates(): Promise<void> {
+    this.usageFlushTimer = null;
+    const batch = [...this.pendingUsage.entries()];
+    this.pendingUsage.clear();
+    for (const [keyId, usage] of batch) {
+      try {
+        await this.apiKeyRepository.increment({ id: keyId }, 'usageCount', usage.count);
+        await this.apiKeyRepository.update(keyId, { lastUsedAt: usage.lastUsedAt });
+      } catch (err) {
+        this.logger.warn('Failed to flush API key usage stats', {
+          keyId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
   }
 
   private hashKey(rawKey: string): string {

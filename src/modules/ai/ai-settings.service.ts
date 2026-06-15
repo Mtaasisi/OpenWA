@@ -16,6 +16,8 @@ import {
   AI_UNRESTRICTED_SAFETY_PATCH,
   isAiUnrestricted,
 } from './utils/ai-unrestricted.util';
+import { pickModelForTier } from './cost/ai-model-router.util';
+import { AiModelTier } from './cost/ai-cost.types';
 
 export interface FallbackModelEntry {
   provider: string;
@@ -60,7 +62,12 @@ export class AiSettingsService {
       disabledTools: config.disabledTools ?? [],
       knowledgeRagEnabled: config.knowledgeRagEnabled !== false,
       memoryRagEnabled: config.memoryRagEnabled !== false,
-      apiKeySet: !!config.apiKeyEncrypted,
+      apiKeySet: !!config.apiKeyEncrypted || !!this.envKeyForProvider(config.provider),
+      apiKeySource: this.envKeyForProvider(config.provider)
+        ? 'environment'
+        : config.apiKeyEncrypted
+          ? 'database'
+          : null,
       testStatus: config.testStatus,
       testError: config.testError,
       progressiveProfilingEnabled: config.progressiveProfilingEnabled !== false,
@@ -124,7 +131,7 @@ export class AiSettingsService {
       allowAdminOverrideBudget: config.allowAdminOverrideBudget !== false,
       aiBudgetPaused: config.aiBudgetPaused === true,
       autoReplyPaused: config.autoReplyPaused === true,
-      autoReplyContextMessagesMax: config.autoReplyContextMessagesMax ?? 12,
+      autoReplyContextMessagesMax: config.autoReplyContextMessagesMax ?? 5,
       autoReplyCooldownSeconds: config.autoReplyCooldownSeconds ?? 60,
       maxCustomerToolIterations: config.maxCustomerToolIterations ?? 2,
       maxAdminToolIterations: config.maxAdminToolIterations ?? 5,
@@ -135,6 +142,25 @@ export class AiSettingsService {
       includeMemoryWhenNeeded: config.includeMemoryWhenNeeded !== false,
       ignoreDuplicateMessageIds: config.ignoreDuplicateMessageIds !== false,
       ignorePromotionalMessages: config.ignorePromotionalMessages !== false,
+      messageBufferEnabled: config.messageBufferEnabled !== false,
+      messageBufferDebounceSeconds: config.messageBufferDebounceSeconds ?? 10,
+      messageBufferMaxWaitSeconds: config.messageBufferMaxWaitSeconds ?? 30,
+      messageBufferMaxMessages: config.messageBufferMaxMessages ?? 10,
+      messageBufferMaxCharacters: config.messageBufferMaxCharacters ?? 4000,
+      oneReplyPerMessageBurst: config.oneReplyPerMessageBurst !== false,
+      learnedReplyCacheEnabled: config.learnedReplyCacheEnabled !== false,
+      autoLearnSafeIntents: config.autoLearnSafeIntents !== false,
+      autoApproveConfidenceThreshold: config.autoApproveConfidenceThreshold ?? 90,
+      pendingReviewThreshold: config.pendingReviewThreshold ?? 60,
+      disableLearningForSensitive: config.disableLearningForSensitive !== false,
+      replyVariationRotation: config.replyVariationRotation !== false,
+      ignoreGroupMessages: config.ignoreGroupMessages !== false,
+      ignoreSelfMessages: config.ignoreSelfMessages !== false,
+      autoReplyPromptBudgetTokens: config.autoReplyPromptBudgetTokens ?? 1500,
+      autoReplySimplePromptBudgetTokens: config.autoReplySimplePromptBudgetTokens ?? 500,
+      knowledgeMaxChunks: config.knowledgeMaxChunks ?? 2,
+      knowledgeMaxCharsPerChunk: config.knowledgeMaxCharsPerChunk ?? 600,
+      knowledgeMaxTotalChars: config.knowledgeMaxTotalChars ?? 1200,
       updatedAt: config.updatedAt,
     };
   }
@@ -346,6 +372,53 @@ export class AiSettingsService {
     if (dto.ignorePromotionalMessages !== undefined) {
       config.ignorePromotionalMessages = dto.ignorePromotionalMessages;
     }
+    if (dto.messageBufferEnabled !== undefined) config.messageBufferEnabled = dto.messageBufferEnabled;
+    if (dto.messageBufferDebounceSeconds !== undefined) {
+      config.messageBufferDebounceSeconds = dto.messageBufferDebounceSeconds;
+    }
+    if (dto.messageBufferMaxWaitSeconds !== undefined) {
+      config.messageBufferMaxWaitSeconds = dto.messageBufferMaxWaitSeconds;
+    }
+    if (dto.messageBufferMaxMessages !== undefined) {
+      config.messageBufferMaxMessages = dto.messageBufferMaxMessages;
+    }
+    if (dto.messageBufferMaxCharacters !== undefined) {
+      config.messageBufferMaxCharacters = dto.messageBufferMaxCharacters;
+    }
+    if (dto.oneReplyPerMessageBurst !== undefined) {
+      config.oneReplyPerMessageBurst = dto.oneReplyPerMessageBurst;
+    }
+    if (dto.learnedReplyCacheEnabled !== undefined) {
+      config.learnedReplyCacheEnabled = dto.learnedReplyCacheEnabled;
+    }
+    if (dto.autoLearnSafeIntents !== undefined) config.autoLearnSafeIntents = dto.autoLearnSafeIntents;
+    if (dto.autoApproveConfidenceThreshold !== undefined) {
+      config.autoApproveConfidenceThreshold = dto.autoApproveConfidenceThreshold;
+    }
+    if (dto.pendingReviewThreshold !== undefined) {
+      config.pendingReviewThreshold = dto.pendingReviewThreshold;
+    }
+    if (dto.disableLearningForSensitive !== undefined) {
+      config.disableLearningForSensitive = dto.disableLearningForSensitive;
+    }
+    if (dto.replyVariationRotation !== undefined) {
+      config.replyVariationRotation = dto.replyVariationRotation;
+    }
+    if (dto.ignoreGroupMessages !== undefined) config.ignoreGroupMessages = dto.ignoreGroupMessages;
+    if (dto.ignoreSelfMessages !== undefined) config.ignoreSelfMessages = dto.ignoreSelfMessages;
+    if (dto.autoReplyPromptBudgetTokens !== undefined) {
+      config.autoReplyPromptBudgetTokens = dto.autoReplyPromptBudgetTokens;
+    }
+    if (dto.autoReplySimplePromptBudgetTokens !== undefined) {
+      config.autoReplySimplePromptBudgetTokens = dto.autoReplySimplePromptBudgetTokens;
+    }
+    if (dto.knowledgeMaxChunks !== undefined) config.knowledgeMaxChunks = dto.knowledgeMaxChunks;
+    if (dto.knowledgeMaxCharsPerChunk !== undefined) {
+      config.knowledgeMaxCharsPerChunk = dto.knowledgeMaxCharsPerChunk;
+    }
+    if (dto.knowledgeMaxTotalChars !== undefined) {
+      config.knowledgeMaxTotalChars = dto.knowledgeMaxTotalChars;
+    }
     if (dto.apiKey?.trim()) {
       config.apiKeyEncrypted = encryptAiSecret(dto.apiKey.trim());
       config.testStatus = null;
@@ -372,32 +445,74 @@ export class AiSettingsService {
     return this.get();
   }
 
+  async revealApiKey(): Promise<{
+    apiKey: string | null;
+    source: 'database' | 'environment' | null;
+  }> {
+    const config = await this.ensureConfig();
+    const envKey = this.envKeyForProvider(config.provider);
+    if (envKey) {
+      return { apiKey: envKey, source: 'environment' };
+    }
+    if (!config.apiKeyEncrypted) {
+      return { apiKey: null, source: null };
+    }
+    return { apiKey: decryptAiSecret(config.apiKeyEncrypted), source: 'database' };
+  }
+
   async test() {
     const config = await this.ensureConfig();
-    if (!config.apiKeyEncrypted) {
+    const apiKey = this.decryptKey(config);
+    if (!apiKey) {
       return { ok: false, error: 'AI provider is not configured. Save an API key first.' };
     }
-    const apiKey = decryptAiSecret(config.apiKeyEncrypted);
     const start = Date.now();
-    try {
-      const reply = await this.pingProvider(
-        config.provider,
-        config.model,
+    const chain = [
+      {
+        provider: config.provider,
+        model: this.pingModelForTest(config.provider, config.model),
         apiKey,
-        config.baseUrl,
-      );
-      config.testStatus = 'ok';
-      config.testError = null;
-      await this.configRepo.save(config);
-      return { ok: true, reply, latencyMs: Date.now() - start };
-    } catch (err: unknown) {
-      const raw = err instanceof Error ? err.message : String(err);
-      const message = this.normalizeTestError(raw, config.provider);
-      config.testStatus = 'error';
-      config.testError = message;
-      await this.configRepo.save(config);
-      return { ok: false, error: message };
+        baseUrl: config.baseUrl,
+      },
+      ...(await this.getResolvedFallbacks(config)),
+    ];
+    const seen = new Set<string>();
+    const candidates = chain.filter(c => {
+      const id = `${c.provider}:${c.model}:${c.apiKey.slice(0, 12)}`;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
+    let lastMessage = 'All AI providers failed. Check your API key and fallback models in Settings → Integrations → AI.';
+    for (const candidate of candidates) {
+      try {
+        const reply = await this.pingProvider(
+          candidate.provider as AiProvider,
+          candidate.model,
+          candidate.apiKey,
+          candidate.baseUrl,
+        );
+        config.testStatus = 'ok';
+        config.testError = null;
+        await this.configRepo.save(config);
+        return {
+          ok: true,
+          reply,
+          latencyMs: Date.now() - start,
+          testedProvider: candidate.provider,
+          testedModel: candidate.model,
+        };
+      } catch (err: unknown) {
+        const raw = err instanceof Error ? err.message : String(err);
+        lastMessage = this.normalizeTestError(raw, candidate.provider as AiProvider);
+      }
     }
+
+    config.testStatus = 'error';
+    config.testError = lastMessage;
+    await this.configRepo.save(config);
+    return { ok: false, error: lastMessage };
   }
 
   getProviderModels(provider: AiProvider): string[] {
@@ -407,7 +522,7 @@ export class AiSettingsService {
   async getFallbacks() {
     const config = await this.ensureConfig();
     const raw = config.fallbackModels ?? [];
-    const primaryKey = config.apiKeyEncrypted ? decryptAiSecret(config.apiKeyEncrypted) : '';
+    const primaryKey = this.decryptKey(config);
     return raw.map(({ provider, model, baseUrl, apiKeyEncrypted }) => {
       const hasOwnKey = !!apiKeyEncrypted;
       const keyMaterial = hasOwnKey ? decryptAiSecret(apiKeyEncrypted!) : primaryKey;
@@ -449,13 +564,39 @@ export class AiSettingsService {
 
   async getActiveConfig(): Promise<AiConfig | null> {
     const config = await this.configRepo.findOne({ where: { id: AI_CONFIG_ID } });
-    if (!config?.enabled || !config.apiKeyEncrypted) return null;
+    if (!config?.enabled || !this.decryptKey(config)) return null;
     return config;
   }
 
   decryptKey(config: AiConfig): string {
+    const envKey = this.envKeyForProvider(config.provider);
+    if (envKey) return envKey;
     if (!config.apiKeyEncrypted) return '';
     return decryptAiSecret(config.apiKeyEncrypted);
+  }
+
+  private envKeyForProvider(provider: AiProvider): string | null {
+    const map: Partial<Record<AiProvider, string | undefined>> = {
+      [AiProvider.ANTHROPIC]: process.env.ANTHROPIC_API_KEY,
+      [AiProvider.OPENAI]: process.env.OPENAI_API_KEY,
+      [AiProvider.GEMINI]: process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY,
+      [AiProvider.GROQ]: process.env.GROQ_API_KEY,
+      [AiProvider.OPENROUTER]: process.env.OPENROUTER_API_KEY,
+      [AiProvider.DEEPSEEK]: process.env.DEEPSEEK_API_KEY,
+    };
+    const key = map[provider]?.trim();
+    return key || null;
+  }
+
+  private pingModelForTest(provider: AiProvider, configuredModel: string): string {
+    switch (provider) {
+      case AiProvider.ANTHROPIC:
+      case AiProvider.OPENAI:
+      case AiProvider.GEMINI:
+        return pickModelForTier(provider, AiModelTier.CHEAP_FAST);
+      default:
+        return configuredModel;
+    }
   }
 
   /** Filter tool list by global toggle, RAG/memory flags, and per-tool disabled list. */
@@ -484,7 +625,7 @@ export class AiSettingsService {
   async getResolvedFallbacks(config: AiConfig): Promise<
     Array<{ provider: string; model: string; apiKey: string; baseUrl?: string | null }>
   > {
-    const primaryKey = config.apiKeyEncrypted ? decryptAiSecret(config.apiKeyEncrypted) : '';
+    const primaryKey = this.decryptKey(config);
     return (config.fallbackModels ?? []).map((f) => ({
       provider: f.provider,
       model: f.model,
@@ -507,7 +648,7 @@ export class AiSettingsService {
         autoReplyEnabled: true,
         autoReplyPrivateOnly: true,
         autoReplyCooldownMinutes: 0,
-        autoReplyContextMessages: 12,
+        autoReplyContextMessages: 3,
         autoReplyPrompt: null,
         autoReplyOutsideHoursOnly: false,
         autoReplyTimezone: 'Africa/Dar_es_Salaam',

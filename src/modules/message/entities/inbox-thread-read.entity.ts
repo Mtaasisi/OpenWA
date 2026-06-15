@@ -1,3 +1,4 @@
+import { dateTimeColumnType } from '../../../common/utils/column-types';
 import { Entity, PrimaryGeneratedColumn, Column, Index, UpdateDateColumn } from 'typeorm';
 
 @Entity('inbox_thread_reads')
@@ -13,7 +14,7 @@ export class InboxThreadRead {
   @Column()
   chatId: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: dateTimeColumnType() })
   lastReadAt: Date;
 
   @UpdateDateColumn()

@@ -2985,7 +2985,20 @@ export interface AiConfigView {
   includeMemoryWhenNeeded?: boolean;
   ignoreDuplicateMessageIds?: boolean;
   ignorePromotionalMessages?: boolean;
+  messageBufferEnabled?: boolean;
+  messageBufferDebounceSeconds?: number;
+  messageBufferMaxWaitSeconds?: number;
+  messageBufferMaxMessages?: number;
+  messageBufferMaxCharacters?: number;
+  oneReplyPerMessageBurst?: boolean;
+  learnedReplyCacheEnabled?: boolean;
+  autoLearnSafeIntents?: boolean;
+  autoApproveConfidenceThreshold?: number;
+  pendingReviewThreshold?: number;
+  disableLearningForSensitive?: boolean;
+  replyVariationRotation?: boolean;
   apiKeySet: boolean;
+  apiKeySource?: 'database' | 'environment' | null;
   testStatus?: string | null;
   testError?: string | null;
   updatedAt?: string;
@@ -3144,6 +3157,7 @@ export const aiApi = {
     request<void>('/settings/ai/fallbacks', { method: 'POST', body: JSON.stringify(body) }),
   removeFallback: (index: number) =>
     request<void>(`/settings/ai/fallbacks/${index}`, { method: 'DELETE' }),
+  revealApiKey: () => request<{ apiKey: string | null }>('/settings/ai/api-key'),
   clearApiKey: () =>
     request<AiConfigView>('/settings/ai/api-key', { method: 'DELETE' }),
   listTools: () =>
@@ -3324,6 +3338,14 @@ export interface AiUsageSummaryView {
   averageCostPerReply: number;
   mostExpensiveModel: string | null;
   mostExpensiveFeature: string | null;
+  cacheHitRate?: number;
+  cacheHitCount?: number;
+  moneySavedByCacheUsd?: number;
+  budgetBlockedCount?: number;
+  duplicateSkippedCount?: number;
+  averagePromptTokens?: number;
+  averageCompletionTokens?: number;
+  promptBudgetWarningCount?: number;
 }
 
 export interface AiBudgetStatusView {
@@ -3350,6 +3372,8 @@ export interface AiUsageLogRow {
   outputTokens: number;
   actualCostUsd: number;
   status: string;
+  errorMessage?: string | null;
+  metadata?: Record<string, unknown> | null;
   toolCallsCount: number;
   conversationId?: string | null;
   messageId?: string | null;
@@ -3382,6 +3406,9 @@ export const aiUsageApi = {
     provider?: string;
     model?: string;
     status?: string;
+    conversationId?: string;
+    batchId?: string;
+    since?: string;
   }) => {
     const q = new URLSearchParams();
     if (params?.limit) q.set('limit', String(params.limit));
@@ -3390,11 +3417,31 @@ export const aiUsageApi = {
     if (params?.provider) q.set('provider', params.provider);
     if (params?.model) q.set('model', params.model);
     if (params?.status) q.set('status', params.status);
+    if (params?.conversationId) q.set('conversationId', params.conversationId);
+    if (params?.batchId) q.set('batchId', params.batchId);
+    if (params?.since) q.set('since', params.since);
     const qs = q.toString();
     return request<{ items: AiUsageLogRow[]; total: number }>(
       `/admin/ai-usage/recent${qs ? `?${qs}` : ''}`,
     );
   },
+  getPromptContributors: (since?: string) =>
+    request<{
+      sampleCount: number;
+      rulesTokens: number;
+      knowledgeTokens: number;
+      historyTokens: number;
+      toolsTokens: number;
+      customerMessageTokens: number;
+      crmTokens: number;
+      catalogTokens: number;
+      memoryTokens: number;
+      topOffender: string | null;
+    }>(
+      since
+        ? `/admin/ai-usage/prompt-contributors?since=${encodeURIComponent(since)}`
+        : '/admin/ai-usage/prompt-contributors',
+    ),
   getBudgetStatus: () => request<AiBudgetStatusView>('/admin/ai-budget/status'),
   updateBudgetSettings: (body: {
     aiDailyBudgetUsd?: number;
@@ -3416,6 +3463,242 @@ export const aiUsageApi = {
     request<{ ok: boolean; autoReplyPaused: boolean }>('/admin/ai-control/resume-auto-reply', {
       method: 'POST',
     }),
+};
+
+export interface AiLearnedIntentRow {
+  id: string;
+  phrase: string;
+  normalizedPhrase: string;
+  intent: string;
+  suggestedReply: string | null;
+  confidence: number;
+  status: string;
+  usageCount: number;
+  lastUsedAt: string | null;
+  autoApproved: boolean;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+}
+
+export interface AiUnknownMessageRow {
+  id: string;
+  rawText: string;
+  normalizedText: string | null;
+  detectedIntent: string | null;
+  aiSuggestedReply: string | null;
+  aiSuggestedMeaning: string | null;
+  confidence: number;
+  frequencyCount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface AiReplyTemplateRow {
+  id: string;
+  name: string;
+  category: string;
+  message: string;
+  language: string;
+  active: boolean;
+  isFavorite: boolean;
+  usageCount: number;
+  ratingPercent: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AiLearningCacheStats {
+  activeCount: number;
+  totalUsage: number;
+  topIntents: Array<{ intent: string; count: number; usage: number }>;
+}
+
+export interface AiTrainingAnalyticsResponse {
+  kpis: Array<{
+    label: string;
+    value: string;
+    change?: string;
+    changePositive?: boolean;
+  }>;
+  cacheHitSeries: Array<{ date: string; rate: number }>;
+  intentsByStatus: Array<{ status: string; count: number }>;
+  costSavedSeries: Array<{ date: string; amount: number }>;
+  topIntentsByUsage: Array<{ intent: string; usage: number }>;
+  unknownTrend: Array<{ date: string; count: number }>;
+  topSavingPhrases: Array<{ phrase: string; savedCalls: number }>;
+  repeatedUnknown: Array<{ message: string; count: number }>;
+  lowConfidenceIntents: AiLearnedIntentRow[];
+}
+
+export const aiLearningCacheApi = {
+  getCacheStats: (branchId?: string) => {
+    const q = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
+    return request<AiLearningCacheStats>(`/admin/ai-learning/cache-stats${q}`);
+  },
+  getAnalytics: (params?: { range?: string; branchId?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.range) q.set('range', params.range);
+    if (params?.branchId) q.set('branchId', params.branchId);
+    const qs = q.toString();
+    return request<AiTrainingAnalyticsResponse>(
+      `/admin/ai-learning/analytics${qs ? `?${qs}` : ''}`,
+    );
+  },
+  listLearnedIntents: (params?: { limit?: number; branchId?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.branchId) q.set('branchId', params.branchId);
+    const qs = q.toString();
+    return request<{ items: AiLearnedIntentRow[] }>(
+      `/admin/ai-learning/learned-intents${qs ? `?${qs}` : ''}`,
+    );
+  },
+  approveLearnedIntent: (id: string) =>
+    request<{ ok: boolean; item?: AiLearnedIntentRow }>(
+      `/admin/ai-learning/learned-intents/${encodeURIComponent(id)}/approve`,
+      { method: 'POST' },
+    ),
+  disableLearnedIntent: (id: string) =>
+    request<{ ok: boolean; item?: AiLearnedIntentRow }>(
+      `/admin/ai-learning/learned-intents/${encodeURIComponent(id)}/disable`,
+      { method: 'POST' },
+    ),
+  rejectLearnedIntent: (id: string) =>
+    request<{ ok: boolean; item?: AiLearnedIntentRow }>(
+      `/admin/ai-learning/learned-intents/${encodeURIComponent(id)}/reject`,
+      { method: 'POST' },
+    ),
+  createLearnedIntent: (body: {
+    phrase: string;
+    intent: string;
+    suggestedReply: string;
+    replyVariations?: string[];
+    branchId?: string | null;
+  }) =>
+    request<{ ok: boolean; item?: AiLearnedIntentRow; error?: string }>(
+      '/admin/ai-learning/learned-intents',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  mergeLearnedIntents: (body: { primaryId: string; duplicateIds: string[] }) =>
+    request<{ ok: boolean; item?: AiLearnedIntentRow; error?: string }>(
+      '/admin/ai-learning/learned-intents/merge',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  importLearnedIntentsCsv: (csv: string) =>
+    request<{ ok: boolean; imported?: number; skipped?: number; error?: string }>(
+      '/admin/ai-learning/learned-intents/import-csv',
+      { method: 'POST', body: JSON.stringify({ csv }) },
+    ),
+  listUnknownMessages: (params?: { limit?: number; branchId?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.branchId) q.set('branchId', params.branchId);
+    const qs = q.toString();
+    return request<{ items: AiUnknownMessageRow[] }>(
+      `/admin/ai-learning/unknown-messages${qs ? `?${qs}` : ''}`,
+    );
+  },
+  approveUnknownMessage: (id: string, body: { reply?: string; intent?: string }) =>
+    request<{ ok: boolean }>(
+      `/admin/ai-learning/unknown-messages/${encodeURIComponent(id)}/approve`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  rejectUnknownMessage: (id: string) =>
+    request<{ ok: boolean }>(
+      `/admin/ai-learning/unknown-messages/${encodeURIComponent(id)}/reject`,
+      { method: 'POST' },
+    ),
+  ignoreUnknownMessage: (id: string) =>
+    request<{ ok: boolean }>(
+      `/admin/ai-learning/unknown-messages/${encodeURIComponent(id)}/ignore`,
+      { method: 'POST' },
+    ),
+  listReplyTemplates: (branchId?: string) => {
+    const q = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
+    return request<{ items: AiReplyTemplateRow[] }>(
+      `/admin/ai-learning/reply-templates${q}`,
+    );
+  },
+  createReplyTemplate: (body: {
+    name: string;
+    category: string;
+    message: string;
+    language?: string;
+    active?: boolean;
+    branchId?: string | null;
+  }) =>
+    request<{ ok: boolean; item?: AiReplyTemplateRow; error?: string }>(
+      '/admin/ai-learning/reply-templates',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  updateReplyTemplate: (
+    id: string,
+    body: {
+      name?: string;
+      category?: string;
+      message?: string;
+      language?: string;
+      active?: boolean;
+      isFavorite?: boolean;
+    },
+  ) =>
+    request<{ ok: boolean; item?: AiReplyTemplateRow; error?: string }>(
+      `/admin/ai-learning/reply-templates/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
+  deleteReplyTemplate: (id: string) =>
+    request<{ ok: boolean }>(
+      `/admin/ai-learning/reply-templates/${encodeURIComponent(id)}`,
+      { method: 'DELETE' },
+    ),
+  bulkLearnedIntents: (body: {
+    ids: string[];
+    action: 'approve' | 'reject' | 'disable' | 'change_category' | 'assign_template';
+    category?: string;
+    replyTemplateId?: string;
+  }) =>
+    request<{ ok: boolean; updated?: number; skipped?: number; error?: string }>(
+      '/admin/ai-learning/learned-intents/bulk',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  bulkUnknownMessages: (body: {
+    ids: string[];
+    action: 'approve' | 'reject' | 'disable' | 'change_category';
+    category?: string;
+  }) =>
+    request<{ ok: boolean; updated?: number; skipped?: number; trained?: number; error?: string }>(
+      '/admin/ai-learning/unknown-messages/bulk',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+};
+
+export interface AiMessageBufferRow {
+  id: string;
+  conversationId: string;
+  batchId: string;
+  status: string;
+  messageIds: string[] | null;
+  combinedText: string | null;
+  firstMessageAt: string;
+  lastMessageAt: string;
+  processedAt: string | null;
+  createdAt: string;
+}
+
+export const aiMessageBufferApi = {
+  listRecent: (limit = 20) =>
+    request<{ items: AiMessageBufferRow[] }>(
+      `/admin/ai-message-buffers/recent?limit=${limit}`,
+    ),
+  getStats: () =>
+    request<{ processedToday: number; pendingNow: number; failedToday: number }>(
+      '/admin/ai-message-buffers/stats',
+    ),
+  getByBatchId: (batchId: string) =>
+    request<{ item: AiMessageBufferRow | null }>(
+      `/admin/ai-message-buffers/${encodeURIComponent(batchId)}`,
+    ),
 };
 
 export type AiLearningItemStatus =
